@@ -26,6 +26,27 @@ e = hole_filling_experiment(; problem = prob, projection = HatProjection(12, 13)
         end
     end
 
+    @testset "remap animation of a remap result" begin
+        # without a charge-conserving reweighting: the frames end at the remapped markers
+        r = remap(KickDriftRemap(; projection = HatProjection(12, 13), maxit = 2), prob.markers)
+        frames = remap_animation_frames(prob, r; n = 4, nreweight = 3)
+        @test length(frames) == 1 + 2 * 4 + 3
+        @test frames[1] == (prob.x0, prob.v0, "before")
+        @test [t for (_, _, t) in frames[[2, 6]]] == ["stage 1", "stage 2"]
+        @test mod.(frames[9][1], prob.L) ≈ r.markers.x rtol = 8eps()
+        @test frames[end][2] ≈ r.markers.v rtol = 8eps()
+        @test frames[end][3] == "reweighting to the target weights"
+        # with it: three more frames, which end at the charge-conserving markers
+        rc = remap(
+            KickDriftRemap(; projection = HatProjection(12, 13), maxit = 2,
+                charge = ChargeConservingReweighting(prob.L, 16)),
+            prob.markers)
+        frames = remap_animation_frames(prob, rc; n = 4, nreweight = 3)
+        @test length(frames) == 1 + 2 * 4 + 2 * 3
+        @test frames[end][2] ≈ rc.markers.v rtol = 8eps()
+        @test frames[end][3] == "charge-conserving reweighting"
+    end
+
     @testset "stage states" begin
         s = remap_stage_states(e, :weight_dependent)
         @test [t for (_, _, t) in s] ==

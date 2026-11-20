@@ -87,6 +87,20 @@ result = remap(KickDriftRemap(; projection = HatProjection(12, 13), maxit = 10),
 plot_remap(small.markers, result.markers; titles = ("before", "after the remap"))
 ```
 
+The animation shows the same remap step by step: the two stages of the kick–drift map with their
+parameters scaled from zero to the fitted values, then the reweighting to the target weights at
+fixed ``(x, p)``
+([`remap_animation_frames`](@ref ParticleRemapping.Projection.remap_animation_frames)).
+
+```@example projection-index
+animate_remap("remap-example.mp4", remap_animation_frames(small, result), small.hole)
+nothing # hide
+```
+
+```@raw html
+<video src="remap-example.mp4" controls loop muted playsinline style="width:100%"></video>
+```
+
 ## The pages of this chapter
 
 - [Construction](@ref projection-construction): the projection, the target points, the

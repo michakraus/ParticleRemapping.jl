@@ -24,3 +24,7 @@
 - A test suite of 41 test files in the groups `core` and `slow`, and scripts in
   `scripts/<construction>/` that reproduce the numbers and figures of each note.
 - `KNOWN_ISSUES.md` with the entries K1–K8.
+- `remap_animation_frames(problem, result)` animates the `RemapResult` of a `KickDriftRemap` or a
+  `NonSeparableRemap` on the markers of a `hole_filling_problem`, as
+  `remap_animation_frames(experiment, variant)` does for a remap of `hole_filling_experiment`. The
+  overview page of the Hamiltonian particle projection shows the animation of its example.
