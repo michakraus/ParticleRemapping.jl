@@ -4,7 +4,8 @@ Every number of the [sliced redistribution](@ref sliced-overview) comes from a t
 `test/sliced/`, a script in `scripts/sliced/` or an `@example` block of its pages. The functions
 of [`SlicedRedistribution`](@ref ParticleRemapping.SlicedRedistribution) port the source
 verification script of the construction, the one of the sliced construction in the
-particle-in-cell project, `Sliced-Symplectic-Particle-Redistribution/scripts/verify_symplectic_redistribution.jl`.
+particle-in-cell project,
+`Particle Remapping/Sliced-Symplectic-Particle-Redistribution/scripts/verify_symplectic_redistribution.jl`.
 The construction has no written note; the derivation that produced the script is the source of
 the observations marked *derivation* on the page [What does not work](@ref sliced-failures).
 The tables of the suites are on the [experiments](@ref sliced-experiments) page.

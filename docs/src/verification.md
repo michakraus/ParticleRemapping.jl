@@ -117,7 +117,8 @@ Jacobian numbers do not reproduce with either relaxation
 ([verification of the redistribution](@ref rd-verification)).
 
 **Sliced redistribution** (the script
-`Sliced-Symplectic-Particle-Redistribution/scripts/verify_symplectic_redistribution.jl`; the
+`Particle Remapping/Sliced-Symplectic-Particle-Redistribution/scripts/verify_symplectic_redistribution.jl`;
+the
 construction has no written note, and the [sliced chapter](@ref sliced-overview) is its first
 write-up).
 
