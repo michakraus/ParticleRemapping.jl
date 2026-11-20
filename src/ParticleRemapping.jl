@@ -33,6 +33,7 @@ include("common/symplectic.jl")
 include("common/grids.jl")
 include("common/bsplines.jl")
 include("common/interface.jl")
+include("common/stages.jl")
 include("common/plotting.jl")
 
 # the four constructions, each in its own module

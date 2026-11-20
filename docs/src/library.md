@@ -64,13 +64,30 @@ remap
 conservation_report
 ```
 
+## The states of a remap
+
+Every construction gives the states of its remap, from the markers before it to the markers after
+it, as a vector of [`RemapStage`](@ref): [`remap_states`](@ref) for a figure with one panel per
+stage, and [`remap_frames`](@ref) for an animation.
+
+```@docs
+RemapStage
+remap_states
+remap_frames
+interpolate_stages
+```
+
 ## Plots
 
 The plotting functions need a Makie backend, for example `using CairoMakie`, which loads the
-extension `ParticleRemappingMakieExt`.
+extension `ParticleRemappingMakieExt`. Every figure and animation of the manual uses the style of
+[`remap_theme`](@ref); the [figures and animations](@ref figures) page states its rules.
 
 ```@docs
+remap_theme
 plot_markers
 plot_markers!
 plot_remap
+plot_stages
+animate_stages
 ```
