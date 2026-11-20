@@ -45,6 +45,13 @@ remap(::SlicedQuantileRemap, ::Markers{T, <:AbstractVector}) where {T}
 remap(::SlicedQuantileRemap, ::Markers{T, <:AbstractMatrix}) where {T}
 ```
 
+## Stages and frames
+
+```@docs
+remap_states(::SlicedQuantileRemap, ::Markers, ::RemapResult)
+ParticleRemapping.remap_frames(::SlicedQuantileRemap, ::Markers, ::RemapResult)
+```
+
 ## Diagnostics
 
 ```@docs

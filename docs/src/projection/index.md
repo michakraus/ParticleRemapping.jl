@@ -11,7 +11,7 @@ points, the minimiser of a relative entropy under the constraint of the grid cha
 of a dynamical low-rank density. For every fixed ``\theta``, the map preserves ``\omega`` exactly,
 and it conserves the total momentum ``P`` and the total weight exactly. The charge-conserving
 variant also keeps the grid charge. Consistency (R3) and equidistribution (R4) hold up to the fit
-residual and the resolution of the projection ([Properties](@ref projection-properties)).
+residual and the resolution of the projection ([properties](@ref projection-properties)).
 
 The chapter [What a symplectic redistribution can do](@ref obstructions) states four facts that
 shape the construction:
@@ -58,48 +58,88 @@ code implements the whole algorithm for ``d = 1``.
    points ``y^*_a``, the target weights ``w^*_a`` and the target momenta
    ``p^*_a = m w^*_a v^*_a``.
 3. Fit ``\theta`` so that ``R_\theta`` moves each marker close to its target.
-4. Apply ``R_\theta``.
-5. Reweight at fixed ``(x, p)``: ``(x'_a, p'_a, w'_a) = (x^S_a \bmod L, p^S_a, w^*_a)``, or the
-   charge-conserving weights in place of ``w^*_a``.
+4. Apply ``R_\theta``: the canonical map ``\psi``, at the old weights.
+5. Reweight at fixed ``(x, p)``, the gauge step:
+   ``(x'_a, p'_a, w'_a) = (x^S_a \bmod L, p^S_a, w^*_a)``, or the charge-conserving weights in
+   place of ``w^*_a``.
 
 The [algorithm](@ref projection-algorithm) of the construction page gives the steps in full.
 
-## Example
+## [Example](@id projection-example)
 
 The markers sit on a ``24 \times 24`` lattice in ``[0, 2\pi) \times [-4, 4]``, with the weights
-``w = c f`` for ``f = (1 + 0.3 \cos x)(2\pi)^{-1/2} e^{-v^2/2}``, and an elliptic hole around
-``(\pi/2, 1.2)`` removes some of them
+``w = c f`` for ``f = (1 + 0.3 \cos x)(2\pi)^{-1/2} e^{-v^2/2}``, and an elliptic hole with the
+semi-axes ``0.9`` and ``0.8`` around ``(\pi/2, 1.2)`` removes some of them
 ([`hole_filling_problem`](@ref ParticleRemapping.Projection.hole_filling_problem)). The
-kick–drift map remaps them, with the target weights of the lumped projection on ``12 \times 13``
-hat functions and a fit that stops after 10 iterations. The result reports the objective after the
-fit relative to ``\theta = 0`` and the changes of the total momentum and the total weight.
+kick–drift map with two stages remaps them
+([`KickDriftRemap`](@ref ParticleRemapping.Projection.KickDriftRemap)): the targets come from the
+density-interpolation flow on ``12 \times 13`` hat functions, the target weights are ``c f`` at the
+targets, so that the example shows the map and not the error of a projection, and the fit stops
+after 20 iterations. The result reports the number of markers, the objective after the fit
+relative to ``\theta = 0`` and the relative changes of the total momentum and the total weight.
+The same example gives the figures `projection-remap.pdf`, `projection-stages.pdf` and the
+animation `projection-stages.mp4` of `scripts/projection/make_figures.jl`.
 
 ```@example projection-index
 using ParticleRemapping, CairoMakie, Random
 Random.seed!(20261119)
 small = hole_filling_problem(; hole_x = π / 2, nL = 24, hole_a = 0.9, hole_b = 0.8)
-result = remap(KickDriftRemap(; projection = HatProjection(12, 13), maxit = 10), small.markers)
-(; objective_ratio = result.info.objective_ratio,
+method = KickDriftRemap(; projection = HatProjection(12, 13), maxit = 20,
+    density = (xs, vs) -> small.density.(xs, vs))
+result = remap(method, small.markers)
+(; N = small.N, objective_ratio = result.info.objective_ratio,
     momentum_change = result.info.momentum_change, weight_change = result.info.weight_change)
 ```
 
+The markers before and after the remap, coloured and sized by weight, with the target points as
+open circles:
+
 ```@example projection-index
-plot_remap(small.markers, result.markers; titles = ("before", "after the remap"))
+targets = (result.info.targets.x, result.info.targets.v)
+plot_remap(small.markers, result.markers; titles = ("(a) before", "(b) after the remap"),
+    targets, period = (0, 2π))
 ```
 
-The animation shows the same remap step by step: the two stages of the kick–drift map with their
-parameters scaled from zero to the fitted values, then the reweighting to the target weights at
-fixed ``(x, p)``
-([`remap_animation_frames`](@ref ParticleRemapping.Projection.remap_animation_frames)).
+The states of the remap ([`remap_states`](@ref ParticleRemapping.remap_states)): the markers
+after each kick and each drift at the old weights, with the velocities ``p / (m w)``, and after
+the gauge step to the target weights, with the targets in the last panel. A kick moves the markers
+only in ``v``, a drift only in ``x``; the gauge step keeps ``(x, p)`` and changes each velocity by
+the factor ``w / w^*``. The view is ``|v| \leq 5``.
 
 ```@example projection-index
-animate_remap("remap-example.mp4", remap_animation_frames(small, result), small.hole)
+states = remap_states(method, small.markers, result)
+hole! = (ax, _) -> plot_hole_outline!(ax, small.hole)
+plot_stages(states; columns = 3, period = (0, 2π), window = (0, 2π, -5, 5), decorate! = hole!,
+    targets, target_panels = [length(states)])
+```
+
+The animation follows the natural path of the map
+([`remap_frames`](@ref ParticleRemapping.remap_frames)): the parameters of each kick and each
+drift scaled from zero to their fitted values, one after the other, then the gauge step at fixed
+``(x, p)``.
+
+```@example projection-index
+animate_stages("projection-stages.mp4", remap_frames(method, small.markers, result);
+    period = (0, 2π), decorate! = hole!)
 nothing # hide
 ```
 
 ```@raw html
-<video src="remap-example.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="projection-stages.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
+
+The changes of the total weight, the total momentum and the kinetic energy, and the largest
+relative changes of the grid moments on 12 linear shape functions in ``x``
+([`conservation_report`](@ref ParticleRemapping.conservation_report)):
+
+```@example projection-index
+conservation_report(small.markers, result.markers; grid = PeriodicGrid(2π, 12))
+```
+
+The total weight and the total momentum are kept to round-off. The kinetic energy, the grid charge
+and the grid current change: the map moves the markers and the target weights differ from the old
+weights. The [charge-conserving reweighting](@ref projection-charge) keeps the grid charge on its
+own spline basis.
 
 ## The pages of this chapter
 
@@ -112,16 +152,19 @@ nothing # hide
   charge exactly.
 - [Target weights from a dynamical low-rank density](@ref projection-lowrank): target weights from
   a low-rank solution of the Vlasov equation.
-- [Properties](@ref projection-properties): what the map keeps exactly and what approximately.
 - [Numerical experiments](@ref projection-experiments): the checks of every statement, the
   hole-filling experiment and the target weights after a push.
+- [Properties, limitations and higher dimensions](@ref projection-properties): what the map keeps
+  exactly and what approximately, what it cannot do, the known issues, the open questions, and the
+  sizes and costs in 3d3v.
 - [Library: Projection](@ref projection-library): the functions of the module.
 
 ## The code
 
 The module `ParticleRemapping.Projection` implements every construction of this chapter for
 ``d = 1`` (and the stages in any dimension). Three method types implement
-[`remap`](@ref ParticleRemapping.remap):
+[`remap`](@ref ParticleRemapping.remap), [`remap_states`](@ref ParticleRemapping.remap_states) and,
+for the first two, [`remap_frames`](@ref ParticleRemapping.remap_frames):
 
 - [`KickDriftRemap`](@ref ParticleRemapping.Projection.KickDriftRemap): the whole algorithm with
   the kick–drift map;
@@ -132,9 +175,12 @@ The module `ParticleRemapping.Projection` implements every construction of this 
 
 The experiments are functions with the parameters of this chapter as defaults:
 [`hole_filling_experiment`](@ref ParticleRemapping.Projection.hole_filling_experiment) and
-[`dlra_weights_experiment`](@ref ParticleRemapping.Projection.dlra_weights_experiment). The scripts
+[`dlra_weights_experiment`](@ref ParticleRemapping.Projection.dlra_weights_experiment);
+[`experiment_remap`](@ref ParticleRemapping.Projection.experiment_remap) gives the states and the
+frames of each map of the hole-filling experiment. The scripts
 `scripts/projection/hole_filling.jl`, `scripts/projection/dlra_weights.jl` and
 `scripts/projection/checks.jl` print every number of the
-[numerical experiments](@ref projection-experiments), and `scripts/projection/make_figures.jl`
-writes the figures and animations to `results/projection/`. The
-[verification](@ref projection-verification) lists every test file and script of the chapter.
+[numerical experiments](@ref projection-experiments), `scripts/projection/higher_dimensions.jl`
+prints the sizes of the [higher dimensions](@ref projection-higher-dimensions), and
+`scripts/projection/make_figures.jl` writes the figures and animations to `results/projection/`.
+The [verification](@ref projection-verification) lists every test file and script of the chapter.

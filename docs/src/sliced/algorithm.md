@@ -57,42 +57,49 @@ result = remap(SlicedQuantileRemap(), mk)
 The slices, orders and anchors depend on the state; steps 2, 4 and 6 are canonical for each
 frozen choice of them and of ``\mu`` ([theorem](@ref sliced-composed-map)).
 
-## The stages on a small example
+## [The stages coloured by slice](@id sliced-stages-by-slice)
 
-The figure follows 120 markers, pushed by the field of the [long-time
-experiment](@ref sliced-long-time) to ``T = 25``, through the stages with ``B_v = 5`` velocity and
-``B_x = 12`` position slices ([`sliced_stages_example`](@ref)). Momenta are in velocity units
-``p / (m w_{\mathrm{ref}})``.
+The figure follows the standard example of the [overview](@ref sliced-overview), 120 markers
+pushed by the field of the [long-time experiment](@ref sliced-long-time) to ``T = 25``, through
+the stages with ``B_v = 5`` velocity and ``B_x = 12`` position slices
+([`sliced_stages_example`](@ref)). Momenta are in velocity units ``p / (m w_{\mathrm{ref}})``, the
+same unit for every marker, and the markers of panels (a)–(c) are coloured by their slice, which
+is what these panels show; the overview draws the same stages at the old weights, coloured and
+sized by weight.
 
 ```@example sliced-algorithm
 using CairoMakie
+set_theme!(remap_theme())
 ex = sliced_stages_example()
 plot_sliced_stages(ex.before, ex.result)
 ```
 
-- **Input** (top left): the markers and the boundaries of the five velocity slices (dashed).
-- **``\Psi_q``** (top centre): each velocity slice (one colour) is spread over the 24 position
-  targets (ticks at the bottom). The momenta change by the cotangent part
-  ``(\nabla^2 S_1)^{-1}`` around the slice anchors.
-- **``\Psi_p``** (top right): the twelve position slices (between the dashed lines, one colour
-  each) have their momenta moved towards the ten momentum targets (grey lines).
-- **``T_\mu``** (bottom left): the squeeze scales the momenta by ``\mu_a`` and the position offsets
-  by ``1/\mu_a``; markers in slots with small ``\mu_a`` move far from their anchors.
-- **Multipliers** (bottom centre): ``\mu`` against the slot momentum. It follows the density ratio
-  of the input: about one in the bulk, small in the tails.
-- **``\mathcal{F}``** (bottom right): the output with the weights ``w_{\mathrm{ref}} \mu_a`` (colour
-  and size) and the velocities ``\bar{p}_a / (m \bar{w}_a)``.
+- **(a) Input**: the markers and the boundaries of the five velocity slices (dashed), one colour
+  per slice.
+- **(b) ``\Psi_q``**: each velocity slice is spread over the 24 position targets (ticks at the
+  bottom). The momenta change by the cotangent part ``(\nabla^2 S_1)^{-1}`` around the slice
+  anchors.
+- **(c) ``\Psi_p``**: the twelve position slices (between the dashed lines, one colour each,
+  the colours repeat after seven) have their momenta moved towards the ten momentum targets (grey
+  lines).
+- **(d) ``T_\mu``**: the squeeze scales the momenta by ``\mu_a`` and the position offsets by
+  ``1/\mu_a``; markers in slots with small ``\mu_a`` move far from their anchors (the positions are
+  not wrapped). Colour and size show the new weight ``w_{\mathrm{ref}} \mu_a``.
+- **(e) Multipliers**: ``\mu`` against the slot momentum. It follows the density ratio of the
+  input: about one in the bulk, small in the tails.
+- **(f) ``\mathcal{F}``**: the output with the weights ``w_{\mathrm{ref}} \mu_a`` (colour and size)
+  and the velocities ``\bar{p}_a / (m \bar{w}_a)``.
 
-The animation moves the markers through the stages one after the other (linear interpolation
-between consecutive stages; colour: velocity slice).
+The animation moves the markers through the same stages one after the other, by linear
+interpolation between consecutive stages in this plane, coloured by velocity slice.
 
 ```@example sliced-algorithm
-animate_sliced_stages("sliced-stages.mp4", ex.before, ex.result)
+animate_sliced_stages("sliced-slices.mp4", ex.before, ex.result)
 nothing # hide
 ```
 
 ```@raw html
-<video src="sliced-stages.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="sliced-slices.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 ## [Slices and quantile targets](@id sliced-slices)
@@ -171,7 +178,7 @@ axis (velocity slices by ``v_\ell``, position slices by ``\tilde{x}_\ell``), com
 multipliers with the product kernel in all ``2d`` coordinates, and squeezes every axis with these
 ``\mu``. [`per_axis_sliced_lift`](@ref) is the lift of each axis with given slices. Each lift
 sees the two-dimensional marginal ``(x_\ell, v_\ell)`` only: a hole in the correlation of two axes
-is not addressed.
+is not addressed ([higher dimensions](@ref sliced-higher-dimensions)).
 
 ```@example sliced-algorithm
 using Random: MersenneTwister
@@ -202,6 +209,7 @@ Each lift assembles the dense ``N \times N`` Hessian, ``O(\sum_b n_b^2)`` non-tr
 the rank-one term ``\beta_{\mathrm{mean}} \mathbf{1}\mathbf{1}^\top / N``, and solves with a dense
 LU factorisation, ``O(N^3)``. The Hessian is block diagonal plus this rank-one term, so the
 Sherman–Morrison formula would reduce the solve to ``O(\sum_b n_b^3)``; the package does not do
-this. The density ratio costs ``O(N^2)`` per pass. The long-time run with ``N = 900`` (500 time steps
+this (K7 of the [known issues](@ref sliced-known-issues)). The density ratio costs ``O(N^2)`` per
+pass. The [higher dimensions](@ref sliced-higher-dimensions) section counts the cost in 3d3v. The long-time run with ``N = 900`` (500 time steps
 and one remap) takes 0.6 s, compilation included, in
 `scripts/sliced/verify_sliced_redistribution.jl`.

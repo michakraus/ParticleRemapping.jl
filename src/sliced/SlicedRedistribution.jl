@@ -7,8 +7,7 @@ position slices, and the momentum-conserving canonical weight squeeze.
 module SlicedRedistribution
 
 using ..ParticleRemapping: ParticleRemapping, AbstractRemap, Markers, RemapResult,
-                           canonical_J,
-                           momentum
+                           RemapStage, canonical_J, momentum, remap_states
 import ..ParticleRemapping: remap
 
 using ForwardDiff: ForwardDiff
@@ -22,6 +21,7 @@ include("reweighting.jl")
 include("map.jl")
 include("peraxis.jl")
 include("diagnostics.jl")
+include("frames.jl")
 include("experiments.jl")
 include("plotting.jl")
 

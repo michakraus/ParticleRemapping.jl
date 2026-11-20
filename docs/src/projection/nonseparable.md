@@ -170,17 +170,17 @@ fail: the trapezoidal rule keeps ``P`` and has the defect ``7.5 \cdot 10^{-4}`` 
 ``|\Delta P| = 0.29`` and ``1.7``; the first-order determinant misses by at least ``0.315``, the
 determinant with ``(I - \tfrac12 \mathbb{J}K)^{-1}`` by at least ``0.475``.
 
-### One stage
+### The steps of the map
 
 The non-separable map of the [hole-filling experiment](@ref projection-hole-filling) at
-``x_h = \pi``, here with the fit stopped after 5 iterations: the markers near the hole before the
-map, after each of the two stages, after the reweighting and after the charge-conserving
-reweighting.
+``x_h = \pi``, here with the fit stopped after 5 iterations: the markers near the hole, coloured
+and sized by weight, before the map, after each of the two stages (at the old weights), after the
+reweighting and after the charge-conserving reweighting.
 
 ```@example nonseparable
 using Random
 Random.seed!(20261119)
 demo = hole_filling_experiment(; hole_x = π, variants = (:non_separable,), maxit = 5)
-plot_remap_stages(remap_stage_states(demo, :non_separable), demo.problem.hole; columns = 5,
-    size = (1100, 260))
+plot_hole_stages(remap_states(experiment_remap(demo, :non_separable)...), demo.problem.hole;
+    columns = 5)
 ```

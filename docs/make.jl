@@ -80,7 +80,7 @@ makedocs(;
     pagesonly = true,
     checkdocs = :exports,
     plugins = [BIB],
-    # the package is kept local, without a git remote, so no source or edit links
+    # the repository is private and the manual is built locally, so no source or edit links
     remotes = nothing,
     format = Documenter.HTML(;
         # plain URLs: an animation is written next to its page's HTML file and linked by its

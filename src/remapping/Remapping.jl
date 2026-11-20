@@ -8,10 +8,10 @@ canonical transport with current-quantile matching.
 module Remapping
 
 using ..ParticleRemapping: ParticleRemapping, AbstractRemap, Markers, PeriodicGrid,
-                           RemapResult,
-                           cellof, fd_jacobian, from_canonical, grid_moment, momentum,
-                           pullback_residual, shape
-import ..ParticleRemapping: remap
+                           RemapResult, RemapStage,
+                           cellof, fd_jacobian, from_canonical, grid_moment,
+                           interpolate_stages, momentum, pullback_residual, shape
+import ..ParticleRemapping: remap, remap_frames, remap_states
 using LinearAlgebra: Diagonal
 using Random: Xoshiro
 using SparseArrays: dropzeros!, sparse, spdiagm, spzeros
@@ -22,6 +22,7 @@ include("transport.jl")
 include("transport_examples.jl")
 include("experiments.jl")
 include("canonicity.jl")
+include("frames.jl")
 include("plotting.jl")
 
 # Construction 1: velocity rezoning by the gauge step
@@ -54,7 +55,7 @@ export frozen_weight_residual, symplectic_condition_checks
 
 # plotting (Makie extension)
 export plot_charge_example, animate_charge_fold, plot_eight_marker_example
-export animate_eight_marker_homotopy, plot_gauge_experiment, animate_gauge_homotopy
+export animate_eight_marker_homotopy, plot_gauge_experiment
 export plot_lift_example, animate_lift_matching, plot_matching_example
 export animate_matching_example, plot_kkt_structure, plot_gauge_orbits
 export plot_velocity_momentum_sheet

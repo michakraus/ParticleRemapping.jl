@@ -8,7 +8,7 @@ charge-conserving reweighting and target weights from a dynamical low-rank densi
 module Projection
 
 using ..ParticleRemapping: ParticleRemapping, AbstractRemap, Markers, RemapResult,
-                           UniformBasis,
+                           RemapStage, UniformBasis, interpolate_stages, remap_states,
                            canonical_J, eachnonzero, momentum, unpack, velocity
 import ..ParticleRemapping: remap
 
@@ -75,12 +75,12 @@ export EllipticHole, inside_hole, hole_outline, hole_fill, largest_empty_disk,
 export KickDriftRemap, NonSeparableRemap, remap_parametrisation
 export hole_filling_problem, hole_remap_method, hole_filling_experiment,
        projected_weight_errors, dlra_weights_experiment
-export remap_animation_frames, moser_flow_history, remap_stage_states, dlra_push_frames
+export experiment_remap, moser_flow_history, dlra_push_frames
 
 # plotting
 export plot_mean_field_step, plot_implicit_weight_fold, plot_pm_v_coupling,
        plot_hole_filling,
        plot_charge_correction, plot_dlra_weights, plot_lumped_projection, plot_target_flow,
-       plot_remap_stages, animate_remap, animate_moser_targets, animate_dlra
+       plot_hole_outline!, plot_hole_stages, animate_dlra
 
 end

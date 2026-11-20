@@ -74,7 +74,9 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
 - **`test/projection/parametrisation.jl`**: the parametrised maps on a small lattice: the
   parameter counts and the guard of an unknown variant; ``\theta = 0`` is the identity; for random
   ``\theta``, every parametrisation (weight-dependent, controls A, B and C, non-separable) moves
-  the markers, conserves ``P`` and is symplectic; the history of the kick–drift map; the
+  the markers, conserves ``P`` and is symplectic; the controls B and C move two coincident markers
+  of different weights to one point, one map of ``(x, v)``, which the weight-dependent and the
+  non-separable maps do not; the history of the kick–drift map; the
   sensitivities of the non-separable map against forward-mode derivatives, and a stage beyond the
   iteration limit returns `NaN`; the [fit](@ref projection-fit) lowers the objective. Case that
   must fail: the sensitivities without the terms of the centroid shift and the boost.
@@ -91,10 +93,21 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   default target weights from the lumped projection; the guards of nonpositive target weights, of
   an unknown variant and of markers that are not 1D-1V. Case that must fail: the target weights
   alone miss the grid charge.
-- **`test/projection/frames.jl`**: the data of the animations and of the pictures of the steps of
-  the map on small runs ([`remap_animation_frames`](@ref ParticleRemapping.Projection.remap_animation_frames),
-  [`remap_stage_states`](@ref ParticleRemapping.Projection.remap_stage_states),
-  [`dlra_push_frames`](@ref ParticleRemapping.Projection.dlra_push_frames)).
+- **`test/projection/frames.jl`**: the states and the frames of the remaps on small runs
+  ([`remap_states`](@ref ParticleRemapping.remap_states),
+  [`remap_frames`](@ref ParticleRemapping.remap_frames)) for the kick–drift map, the
+  non-separable map, a kick–drift map of three stages with the charge-conserving reweighting, and
+  [`ChargeConservingReweighting`](@ref ParticleRemapping.Projection.ChargeConservingReweighting)
+  alone: the labels; the first state is the input and the last one `result.markers`; every stage
+  of the canonical map keeps the old weights and ``P``, a kick keeps the positions and a drift the
+  velocities, and the stages end at the image of the fitted map; each gauge step keeps
+  ``(x, p)``; the frames pass through every state, keep the weights along the canonical stages and
+  ``(x, p)`` along the gauge steps. The remaps of the hole-filling experiment
+  ([`experiment_remap`](@ref ParticleRemapping.Projection.experiment_remap)) end at its velocities
+  and charge-conserving weights; the history of the density-interpolation flow and the frames of
+  the push ([`moser_flow_history`](@ref ParticleRemapping.Projection.moser_flow_history),
+  [`dlra_push_frames`](@ref ParticleRemapping.Projection.dlra_push_frames)). Case that must fail:
+  markers that are not the input of the remap.
 
 ## Test files of the group `slow`
 
@@ -127,8 +140,14 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   of the source note.
 - **`scripts/projection/dlra_weights.jl`** (about 3 minutes): prints the two tables of the target
   weights after a push and checks every number against the value of the source note.
-- **`scripts/projection/make_figures.jl`** (about seven minutes): writes the figures of the
-  chapter as PDF files and the four animations as MP4 files to `results/projection/`.
+- **`scripts/projection/higher_dimensions.jl`** (seconds): prints the numbers of parameters,
+  nodes and basis functions of the [higher dimensions](@ref projection-higher-dimensions) for
+  ``d = 1, 2, 3`` and checks the column ``d = 1`` against the code.
+- **`scripts/projection/make_figures.jl`** (about ten minutes): writes the figures of the chapter
+  as PDF files and the five animations as MP4 files to `results/projection/`, with the standard
+  pictures of the [example](@ref projection-example) (`projection-remap.pdf`,
+  `projection-stages.pdf`, `projection-stages.mp4`), and prints the changes of the conserved
+  quantities of the example.
 
 ## The numbers of the source note
 

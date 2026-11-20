@@ -13,6 +13,8 @@ Redistribution
 ```@docs
 SplineRedistribution
 remap(::SplineRedistribution, ::Markers)
+remap_states(::SplineRedistribution, ::Markers, ::RemapResult)
+remap_frames(::SplineRedistribution, ::Markers, ::RemapResult)
 redistribution_example
 ```
 
@@ -102,9 +104,7 @@ fixed_grid_closed_loop
 plot_velocity_momentum_fold
 plot_spline_projections
 plot_target_relaxation
-plot_redistribution_markers
 plot_newton_convergence
 plot_closed_loop_defect
-animate_redistribution
 animate_target_relaxation
 ```

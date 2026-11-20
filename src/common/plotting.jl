@@ -6,8 +6,8 @@
     plot_markers!(ax, markers; color = :weight, markersize = :weight, wref, colorrange)
 
 Scatter plot of 1D-1V markers in `(x, v)`, in the common style of the package: the colour shows
-the weight (`color = :weight`, colour map `viridis`, on a logarithmic scale when the weights span
-more than two decades) and the marker area is proportional to the weight
+the weight (`color = :weight`, colour map `viridis`, on a linear scale unless
+`colorscale = log10`) and the marker area is proportional to the weight
 (`markersize = :weight`), relative to the reference weight `wref` (default: the largest weight).
 A number for `color` or `markersize` fixes it. Needs a Makie backend.
 """
@@ -36,13 +36,15 @@ example the outline of a hole. Needs a Makie backend.
 function plot_stages end
 
 """
-    animate_stages(path, frames; framerate = 20, targets = nothing, window = nothing,
-        period = nothing, decorate! = nothing)
+    animate_stages(path, frames; framerate = 20, targets = nothing, target_frames,
+        window = nothing, period = nothing, decorate! = nothing)
 
 Writes an animation of the [`RemapStage`](@ref) frames to `path` (an `.mp4` file), with the
 markers coloured and sized by weight on one scale for all frames and the label of each frame as
-the title. [`interpolate_stages`](@ref) makes frames from the stages of a remap. The keywords are
-those of [`plot_stages`](@ref). Needs a Makie backend.
+the title. [`interpolate_stages`](@ref) makes frames from the stages of a remap. The targets show
+in the frames whose index is in `target_frames`, by default from the first frame with a label
+other than the first one on. The other keywords are those of [`plot_stages`](@ref). Needs a
+Makie backend.
 """
 function animate_stages end
 

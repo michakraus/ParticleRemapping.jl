@@ -450,68 +450,10 @@ animate_matching_example("remapping-ex4-matching.mp4", e); nothing # hide
 <video src="remapping-ex4-matching.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
-## [A numerical example](@id remap-transport-example)
+## The numerical example and the limits
 
-[`quantile_matching_setup`](@ref) samples ``N = 2 \times 10^5`` markers with equal weights from
-``f(x, v) = (1 + 0.4 \cos x) \, e^{-v^2/2} / \sqrt{2\pi}`` on ``[0, 2\pi)``, with ``16`` cells and
-``m = 1``; this is the density of the [closed-form example](@ref remap-lift-example). The
-admissible map is the cotangent lift with ``a = J_+^{-1/2}`` at ``t = 1.5``, which moves markers
-by up to ``1.85`` in ``x``. The inadmissible map is the cotangent lift with
-``a = 1 + 0.5 \cos x``. The error measure ([`binned_weight_error`](@ref)) is the relative ``L^1``
-difference between the binned weights and the exact bin integrals of ``f``, on ``16`` cells times
-``24`` velocity bins in ``[-4, 4]``. The table gives the results; the script
-`scripts/remapping/current_quantile_matching.jl` prints them, and
-`test/remapping/experiments.jl` checks them.
-
-| configuration                                  | binned ``L^1`` error | largest ``\lvert R_c^s \rvert`` |
-|:-----------------------------------------------|:---------------------|:--------------------|
-| original markers (sampling noise)              | 0.0273               | –                   |
-| ``\psi = \mathrm{id}``, then matching          | 0.0113               | 0.038               |
-| admissible ``\psi``, then matching             | 0.0117               | 0.035               |
-| admissible ``\psi``, old weights kept (``W = w``) | 0.2605            | –                   |
-| inadmissible ``\psi``, then matching           | 1.277                | 5.4                 |
-
-*Canonical transport with current-quantile matching.*
-
-After an admissible map, the matching restores the representation of ``f`` below the sampling
-noise of the original markers. The error falls below that noise because the matching places the
-velocities at the quantiles of the exact ``f``. Without the matching, the same map gives an error
-ten times the noise. After an inadmissible map, the residual ``R_c^s`` shows the violation, and
-the representation fails. The sampled marker counts and charges per cell after the admissible map
-follow the closed forms ``(J(x) J(X))^{1/2}`` and ``J(X)`` of the closed-form example.
-
-```@example transport
-setup = quantile_matching_setup()
-experiment = quantile_matching_experiment(setup)
-err(mk) = binned_weight_error(setup.target, setup.grid, mk.x, mk.v, mk.w)
-(original = err(experiment.original),
-    identity = (err(experiment.identity.markers), experiment.identity.info.max_residual),
-    admissible = (err(experiment.admissible.markers), experiment.admissible.info.max_residual),
-    kept = err(experiment.kept),
-    inadmissible = (err(experiment.inadmissible.markers),
-        experiment.inadmissible.info.max_residual))
-```
-
-```@example transport
-plot_lift_example(setup, experiment)
-```
-
-*The closed-form example and the numerical example. (a) Characteristics of the admissible lift
-``a = J^{-1/2}``. (b) At ``t = 1.5``: the represented density ``J(X)``, the marker density
-``(J(x)J(X))^{1/2}`` and the weight ratio ``1/\varphi'`` (lines), with the sampled marker counts
-(circles) and charges (triangles) per cell, normalised. (c) The discrete compatibility residual
-``R_c^s`` per cell for the admissible and the inadmissible lift. (d) The velocity marginal in
-cell 5: exact, after matching, with the old weights kept, and after the inadmissible lift.*
-
-The animation runs the admissible lift from ``t = 0`` to ``t = 1.5`` with the algorithm applied at
-every frame ([`lift_matching_frames`](@ref)): the markers move in ``x``, their weights change, and
-the represented charge per cell stays at ``J``.
-
-```@example transport
-frames = lift_matching_frames(setup)
-animate_lift_matching("remapping-ex3-lift.mp4", frames, setup); nothing # hide
-```
-
-```@raw html
-<video src="remapping-ex3-lift.mp4" controls loop muted playsinline style="width:100%"></video>
-```
+The [numerical experiments](@ref remap-transport-example) apply the algorithm to ``2 \times 10^5``
+markers sampled from the density of the [closed-form example](@ref remap-lift-example), after the
+identity, the admissible lift and an inadmissible lift. What the canonical transport cannot do,
+and why, is collected under [limitations](@ref remapping-limitations), and the matching along
+rays in ``d`` velocity dimensions under [higher dimensions](@ref remapping-higher-dimensions).

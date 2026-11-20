@@ -49,7 +49,15 @@ velocity–momentum fold, and parameters that depend on the state.
 4. [Sliced redistribution](@ref sliced-overview) ([`SlicedRedistribution`](@ref)): explicit
    sliced quantile cotangent lifts and a canonical weight squeeze.
 
-**Closing chapters.** [Comparison and open questions](comparison.md) sets the four side by side.
+Every chapter of a construction has the same shape: an overview with the algorithm in short and
+one example, shown by the same pictures in every chapter (the markers before and after the remap,
+the states of the remap stage by stage, an animation of the states, and the changes of the
+conserved quantities); the pages of the construction; its numerical experiments; and a page on its
+properties, limitations, known issues, open questions and the extension to higher dimensions.
+
+**Closing chapters.** [Comparison and open questions](comparison.md) sets the four side by side,
+including what binds first in 3d3v. [Figures and animations](@ref figures) states the common
+style and lists every figure and animation of the manual and of the notes.
 [Verification](@ref verification) lists every test and script, what each checks, and which
 numbers of the source notes the package reproduces. The [library](library.md) documents every
 function, one page per module.
@@ -114,7 +122,8 @@ The sliced redistribution of 900 markers after 500 time steps in a two-wave elec
 using CairoMakie
 mk = electric_wave_simulation(electric_wave_markers()).markers
 r = remap(SlicedQuantileRemap(), mk)
-plot_remap(mk, r.markers; titles = ("after 500 steps in the field", "after the sliced remap"))
+plot_remap(mk, r.markers; period = (-π, π),
+    titles = ("(a) after 500 steps in the field", "(b) after the sliced remap"))
 ```
 
 The plotting functions, such as [`plot_remap`](@ref), need a Makie backend: `using CairoMakie`

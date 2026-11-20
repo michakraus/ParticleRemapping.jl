@@ -1,4 +1,4 @@
-# [Experiments](@id sliced-experiments)
+# [Numerical experiments](@id sliced-experiments)
 
 ```@meta
 CurrentModule = ParticleRemapping.SlicedRedistribution
@@ -106,10 +106,12 @@ lifts. Within each velocity slice the positions lie on one side of ``x = 0``; ``
 them over ``[-1, 1]`` and so fills ``Q_2`` and ``Q_4``. The one-slice lifts see the uniform
 marginals and leave the markers in their quadrants. They also stretch the conjugate variables:
 without anchors the cotangent part ``(\nabla^2 S)^{-1}`` amplifies them by up to
-``1 / (1 - \beta_{\mathrm{intra}}) = 6.7`` where the Laplacian of the potential is weak.
+``1 / (1 - \beta_{\mathrm{intra}}) = 6.7`` where the Laplacian of the potential is weak. The
+markers have equal weights, so the figure colours each marker by the quadrant it comes from.
 
 ```@example sliced-experiments
 using ParticleRemapping, CairoMakie
+set_theme!(remap_theme())
 plot_checkerboard_filling(checkerboard_experiment())
 ```
 
@@ -198,8 +200,8 @@ plot_cell_count_history([h_plain, h_remap]; labels = ["no remap", "remap every 1
     remap_times = remapped.remap_times)
 ```
 
-The animations show the two runs (colour: weight; below: empty cells and ten times the relative
-standard deviation).
+The animations show the two runs (colour and size: weight; below: empty cells and ten times the
+relative standard deviation).
 
 ```@example sliced-experiments
 animate_long_time_run("long-time-run.mp4", remapped, h_remap)

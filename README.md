@@ -68,11 +68,15 @@ note and check them, and a `make_figures.jl` that writes figures and animations 
 
 `docs/make.jl` builds one manual into `docs/build/`. It starts with the foundations (the canonical
 structure of weighted markers, the factorisation lemma and the obstructions), has one chapter for
-each construction, and closes with a comparison of the four, the open questions, and a
-verification chapter. The verification chapter lists every test and script and the findings
+each construction, and closes with a comparison of the four, the open questions, a page on the
+figures and animations, and a verification chapter. Every chapter of a construction has the same
+pages: an overview with one example shown by the same pictures in every chapter, the theory, the
+numerical experiments, and the properties, limitations, known issues, open questions and the cost
+in higher dimensions. The verification chapter lists every test and script and the findings
 against the source notes.
 
 ## Status
 
-The package is local and is not registered. `KNOWN_ISSUES.md` lists the known defects and gaps.
+The package is not registered. Its repository is the private
+[michakraus/ParticleRemapping.jl](https://github.com/michakraus/ParticleRemapping.jl). `KNOWN_ISSUES.md` lists the known defects and gaps.
 `CHANGELOG.md` records the changes.

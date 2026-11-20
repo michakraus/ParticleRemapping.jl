@@ -53,10 +53,12 @@ Random.seed!(20261123)
         # the flow history starts at the markers and ends at the targets
         hist = moser_flow_history(prob; projection = hp)
         @test length(hist) == 41
-        @test hist[1][1] ≈ prob.x0 rtol = 8eps()
-        @test hist[1][2] ≈ prob.v0 rtol = 8eps()
-        @test hist[end][1] ≈ tg.x rtol = 8eps()
-        @test hist[end][2] ≈ tg.v rtol = 8eps()
+        @test hist[1].markers.x ≈ prob.x0 rtol = 8eps()
+        @test hist[1].markers.v ≈ prob.v0 rtol = 8eps()
+        @test hist[end].markers.x ≈ tg.x rtol = 8eps()
+        @test hist[end].markers.v ≈ tg.v rtol = 8eps()
+        @test all(h.markers.w == prob.w0 for h in hist)
+        @test hist[end].label == "density-interpolation flow, t = 1.0"
         # without a density the weights come from the lumped projection f_h
         wp = projection_target_weights(hp, prob.x0, prob.v0, prob.w0, tg.x, tg.v; prob.L,
             prob.V)
