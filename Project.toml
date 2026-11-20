@@ -1,0 +1,30 @@
+name = "ParticleRemapping"
+uuid = "bc5e8d23-0f33-4727-bb6f-677a426f140d"
+version = "0.1.0"
+authors = ["Michael Kraus"]
+
+[deps]
+# Jacobians of the remap maps (symplecticity defects) and of the fits through the implicit stages.
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+# The phase-space B-spline bases of the spline-projection redistribution.
+SimpleSplines = "ac480f6c-9a94-4d53-a283-9db69f109154"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+
+[weakdeps]
+Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+
+[extensions]
+ParticleRemappingMakieExt = "Makie"
+
+[compat]
+ForwardDiff = "1"
+LinearAlgebra = "1"
+Makie = "0.24"
+Printf = "1"
+Random = "1"
+SimpleSplines = "0.4"
+SparseArrays = "1"
+julia = "1.12"

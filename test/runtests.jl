@@ -1,0 +1,50 @@
+using SafeTestsets
+
+const GROUPS = isempty(ARGS) ? ["core", "slow"] : ARGS
+
+if "core" in GROUPS
+    @safetestset "Aqua" include("quality/aqua.jl")
+    @safetestset "Explicit imports" include("quality/explicit_imports.jl")
+    @safetestset "Markers" include("common/markers.jl")
+    @safetestset "Symplectic structure" include("common/symplectic.jl")
+    @safetestset "Grids" include("common/grids.jl")
+    @safetestset "B-splines" include("common/bsplines.jl")
+    @safetestset "Remap interface" include("common/interface.jl")
+    @safetestset "Remapping: symplecticity condition" include("remapping/canonicity.jl")
+    @safetestset "Remapping: gauge rezoning" include("remapping/gauge.jl")
+    @safetestset "Remapping: gauge worked examples" include("remapping/gauge_examples.jl")
+    @safetestset "Remapping: canonical transport" include("remapping/transport.jl")
+    @safetestset "Remapping: transport worked examples" include("remapping/transport_examples.jl")
+    @safetestset "Remapping: numerical examples" include("remapping/experiments.jl")
+    @safetestset "Projection: structure" include("projection/structure.jl")
+    @safetestset "Projection: stages" include("projection/stages.jl")
+    @safetestset "Projection: charge" include("projection/charge.jl")
+    @safetestset "Projection: low rank" include("projection/lowrank.jl")
+    @safetestset "Projection: targets" include("projection/targets.jl")
+    @safetestset "Projection: parametrisation" include("projection/parametrisation.jl")
+    @safetestset "Projection: diagnostics" include("projection/diagnostics.jl")
+    @safetestset "Projection: remap" include("projection/remap.jl")
+    @safetestset "Projection: frames" include("projection/frames.jl")
+    @safetestset "Redistribution: canonical structure" include("redistribution/canonical.jl")
+    @safetestset "Redistribution: spline projection" include("redistribution/projection.jl")
+    @safetestset "Redistribution: relaxation" include("redistribution/relaxation.jl")
+    @safetestset "Redistribution: Hamiltonians" include("redistribution/hamiltonians.jl")
+    @safetestset "Redistribution: solver" include("redistribution/solver.jl")
+    @safetestset "Redistribution: closed loop" include("redistribution/closedloop.jl")
+    @safetestset "Redistribution: method" include("redistribution/method.jl")
+    @safetestset "Sliced: binning" include("sliced/binning.jl")
+    @safetestset "Sliced: lift" include("sliced/lift.jl")
+    @safetestset "Sliced: squeeze" include("sliced/squeeze.jl")
+    @safetestset "Sliced: reweighting" include("sliced/reweighting.jl")
+    @safetestset "Sliced: diagnostics" include("sliced/diagnostics.jl")
+    @safetestset "Sliced: map" include("sliced/map.jl")
+    @safetestset "Sliced: per-axis" include("sliced/peraxis.jl")
+    @safetestset "Sliced: ForwardDiff against the script" include("sliced/forwarddiff.jl")
+    @safetestset "Sliced: experiments 1-5a and failures" include("sliced/experiments.jl")
+    @safetestset "Sliced: long-time run" include("sliced/experiments_long_time.jl")
+end
+
+if "slow" in GROUPS
+    @safetestset "Projection: hole filling" include("projection/experiments/hole_filling.jl")
+    @safetestset "Projection: DLRA weights" include("projection/experiments/dlra_weights.jl")
+end

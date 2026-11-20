@@ -1,0 +1,93 @@
+# The parametrised maps on a small lattice: θ = 0 is the identity, every θ gives a symplectic map
+# that conserves the total momentum, the controls B and C preserve the area in (x, v), and the
+# sensitivities of the non-separable map agree with forward-mode derivatives (and miss them
+# without the terms of the centroid shift and the boost).
+
+using ParticleRemapping
+using ForwardDiff
+using LinearAlgebra
+using Random
+using Test
+
+Random.seed!(20261124)
+
+prob = hole_filling_problem(; nL = 12, hole_a = 0.9, hole_b = 0.8)
+x, p, w, m = prob.x0, prob.p0, prob.w0, prob.m
+N = prob.N
+
+function map_of(par, θ)
+    z -> begin
+        X, P = remap_stages(par, θ, z[1:N], z[(N + 1):end], w; m)
+        vcat(X, P)
+    end
+end
+
+@testset "Parametrised maps" begin
+    kd = Dict(v => KickDriftParametrisation(w; variant = v, nξ = 8, nv = 10, nw = 4)
+    for v in (:weight_dependent, :control_A, :control_B))
+    ns = NonSeparableParametrisation(w; nξ = 6, nv = 7, nℓ = 3)
+    nsC = NonSeparableParametrisation(w; nξ = 6, nv = 7, nℓ = 3, weighted = false)
+
+    @testset "parameter counts" begin
+        @test remap_parameter_count(kd[:weight_dependent]) == 2 * (8 + 10) * 4
+        @test remap_parameter_count(kd[:control_A]) == 2 * (8 + 10)
+        @test remap_parameter_count(ns) == 2 * 6 * 7 * 3
+        @test_throws r"^ArgumentError: unknown kick–drift variant" KickDriftParametrisation(
+            w;
+            variant = :other)
+    end
+
+    for par in (values(kd)..., ns, nsC)
+        n = remap_parameter_count(par)
+        @testset "$(nameof(typeof(par))) $(par isa KickDriftParametrisation ? par.variant : par.weighted)" begin
+            X0, P0 = remap_stages(par, zeros(n), x, p, w; m)
+            @test X0 ≈ x rtol = 8eps()
+            @test P0 ≈ p atol = 8eps() * maximum(abs, p)
+            θ = 0.02 .* randn(n)
+            X, P = remap_stages(par, θ, x, p, w; m)
+            @test maximum(abs, X .- x) > 1e-3        # the map moves the markers
+            @test abs(sum(P) - sum(p)) < 1e-14 * sum(abs, p)
+            defect, nDR = symplecticity_defect(map_of(par, θ), vcat(x, p))
+            @test defect < 100 * eps() * max(1, nDR)^2
+        end
+    end
+
+    @testset "kick–drift history" begin
+        par = kd[:weight_dependent]
+        θ = 0.02 .* randn(remap_parameter_count(par))
+        history = Tuple{Vector{Float64}, Vector{Float64}}[]
+        X, P = kick_drift_map(par, θ, x, p, w; m, history)
+        @test length(history) == 4
+        @test history[1][1] == x                     # a kick keeps the positions
+        @test history[2][2] == history[1][2]         # a drift keeps the momenta
+        @test history[end] == (X, P)
+    end
+
+    @testset "non-separable sensitivities" begin
+        θ = 0.02 .* randn(remap_parameter_count(ns))
+        r = nonseparable_map(ns, θ, x, p, w; m, sensitivities = true)
+        @test r.iterations < ns.iteration_limit
+        err = nonseparable_sensitivity_error(ns, θ, x, p, w; m)
+        err_nc = nonseparable_sensitivity_error(ns, θ, x, p, w; m, centroid_terms = false)
+        @test err < 1e-10
+        @test err_nc > 1e-4                          # must fail
+        # a stage beyond the iteration limit returns NaN, which the fit rejects
+        big = nonseparable_map(ns, 50 .* θ, x, p, w; m, maxit = 5)
+        @test all(isnan, big.X) && big.sens === nothing
+    end
+
+    @testset "fit" begin
+        tg = projection_targets(HatProjection(12, 13), x, prob.v0, w; prob.L, prob.V,
+            density = (xs, vs) -> prob.density.(xs, vs))
+        for par in (kd[:weight_dependent], ns)
+            fr = fit_remap_parameters(par, x, p, w, tg.x, tg.v, tg.w; m, ℓx = prob.L / 12,
+                ℓv = 2prob.V / 12, maxit = 5)
+            @test fr.F < fr.F0
+            @test 1 <= fr.iterations <= 5
+            X, P = remap_stages(par, fr.θ, x, p, w; m)
+            r = vcat((X .- tg.x) ./ (prob.L / 12), (P ./ (m .* tg.w) .- tg.v) ./
+                                                   (2prob.V / 12))
+            @test fr.F ≈ 0.5 * dot(r, r) + 0.5e-3 * dot(fr.θ, fr.θ) rtol = 1e-12
+        end
+    end
+end
