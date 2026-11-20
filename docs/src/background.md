@@ -170,7 +170,8 @@ construction implements the common interface [`remap`](@ref)`(method, markers)`,
 The constructions come from four sets of research notes: *Hamiltonian remapping of weighted
 particles in 1D-1V*, *Hamiltonian particle projection: a symplectic redistribution of weighted
 markers*, *Symplectic redistribution of weighted particles in phase space*, and a derivation of
-the sliced redistribution that has no written note. The
+the sliced redistribution, whose note is written from the [sliced chapter](@ref sliced-overview).
+The
 [verification](@ref verification) chapter lists which number of each source the package
 reproduces.
 

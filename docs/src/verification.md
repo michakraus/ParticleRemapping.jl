@@ -84,8 +84,11 @@ numbers when the manual is built.
 
 ## [Findings against the sources](@id verification-findings)
 
-The package reproduces the sources where they are right and records where they are not. None of
-the findings below is corrected in the sources.
+The package reproduces the sources where they are right and records where they are not. The
+findings below are those against the notes and scripts as the package ported them. The notes now
+take their checks, numbers and figures from the package, quote the measured values, and no longer
+have scripts of their own; the fit section of the projection note (the third item below) is the
+one finding that is not corrected there.
 
 **Hamiltonian remapping of weighted particles in 1D-1V** (the note
 `Hamiltonian-Particle-Remapping.tex`). Every number reproduces. Two are rounded in the note: the
@@ -116,11 +119,9 @@ momentum defect ``0.215``, the 36-marker overshoot ``-0.140`` and the two symple
 Jacobian numbers do not reproduce with either relaxation
 ([verification of the redistribution](@ref rd-verification)).
 
-**Sliced redistribution** (the script
-`Particle Remapping/Sliced-Symplectic-Particle-Redistribution/scripts/verify_symplectic_redistribution.jl`;
-the
-construction has no written note, and the [sliced chapter](@ref sliced-overview) is its first
-write-up).
+**Sliced redistribution** (the verification script of the derivation; the construction had no
+written note, and the [sliced chapter](@ref sliced-overview) was its first write-up, from which
+the note `Sliced-Symplectic-Particle-Redistribution.tex` is written).
 
 - The script in the project does not parse: a `]` is missing at line 638. A working copy of the
   script passes its 23 checks in a cold process, and the package ports that copy
