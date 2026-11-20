@@ -176,17 +176,19 @@ round-off. The single symplectic Euler step converges as fast as the others, to 
 
 The animation shows the midpoint step in pseudo-time: the end points
 ``\Psi_{s\tau}^{\theta^*}(z)`` of the step with the artificial step ``s \tau``, ``s \in [0, 1]``
-([`pseudotime_path`](@ref)), in the plane ``(x, p / p_{\mathrm{scale}})``, move the markers onto
-the targets (red circles) at ``s = 1``.
+([`pseudotime_path`](@ref)), drawn in ``(x, v)`` at the old weights, ``v = p / (m w)``, and
+coloured and sized by weight. At ``s = 1`` the markers reach the targets (open circles) in
+``(x, p)``; the gauge step then assigns the KKT weights at fixed ``(x, p)`` and moves them onto
+the targets in ``(x, v)`` ([`remap_frames`](@ref ParticleRemapping.remap_frames)).
 
 ```@example rd-solver
-path = pseudotime_path(H, ImplicitMidpointStep(), q, p, θ; s = range(0, 1; length = 41))
-animate_redistribution("redistribution_step.mp4", path, z̄; p_scale = H.p_scale)
+animate_stages("redistribution-step.mp4", remap_frames(SplineRedistribution(), mk, res);
+    targets = (q̄, v̄), period = (0, ex.Lx))
 nothing # hide
 ```
 
 ```@raw html
-<video src="redistribution_step.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="redistribution-step.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 ### [Remark (caustics and the coarse-basis regime)](@id rd-coarse-basis)

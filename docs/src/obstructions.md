@@ -376,8 +376,8 @@ plot_velocity_momentum_fold(vs, velocity_fold_momentum.(f, vs; m = m, ΔΩ = Δ�
 ```
 
 The figure shows, for ``v_{\mathrm{th}} = 1.3``, ``m = 1.5`` and ``\Delta\Omega = 0.2``,
-(left) the momentum ``P(\bar{v})`` of a marker whose weight is tied to the Maxwellian, bounded by
-``\pm p_{\max}`` (dotted) and turning back on the thermal sphere (dashed), and (right) the
+(a) the momentum ``P(\bar{v})`` of a marker whose weight is tied to the Maxwellian, bounded by
+``\pm p_{\max}`` (dotted) and turning back on the thermal sphere (dashed), and (b) the
 determinant ``m \Delta\Omega (f_h + \bar{v} \partial_{\bar{v}} f_h)``, which vanishes there and is
 negative on the suprathermal velocities (shaded). The momentum of ``0.5 v_{\mathrm{th}}`` has a
 second, suprathermal velocity, which bisection on ``(v_{\mathrm{th}}, 10 v_{\mathrm{th}})`` finds:

@@ -8,8 +8,10 @@ The four constructions answer the same question with different choices of the ca
 ``\psi`` and of the new weights ([the constructions](@ref constructions)). This chapter sets them
 side by side: what each moves, what it keeps exactly, what it needs, and where it stops. It does
 not rank them; each table row states a condition or a property, and which one matters depends on
-the simulation that uses the redistribution. The open questions of all chapters close the
-chapter.
+the simulation that uses the redistribution. The overview page of each chapter shows its remap
+with the same pictures (the [standard pictures](@ref figures) S1, S2, A1 and T1), each on the
+example of its chapter. A section on higher dimensions and the open questions of all chapters
+close the chapter.
 
 ## What moves, and what is kept
 
@@ -38,27 +40,33 @@ chapter.
 
 ## Where each construction stops
 
-Each chapter derives its own limits; this list collects them.
+Each chapter derives its own limits on its page *Properties, limitations and higher dimensions*,
+with the known issues of its code and its open questions; this list collects the main limits.
 
 - **Gauge rezoning.** It moves the velocities along rays only and never moves a position, so it
   cannot fill a hole in ``x``. Its solution branch ends at a fold of the homotopy
-  ([one constraint in closed form](@ref remap-charge-example)).
+  ([one constraint in closed form](@ref remap-charge-example)). The package solves the Schur
+  complement as a dense matrix (K9). Details: [limitations](@ref remapping-limitations).
 - **Canonical transport.** A consistent weight field exists if and only if ``\psi`` preserves the
   sign-resolved current profile, and a smooth canonical map cannot, in general, make the marker
   distribution uniform ([the limit of equidistribution](@ref remap-limit)). A folded sheet is
-  treated one layer at a time ([the fold](@ref velocity-momentum-fold)).
+  treated one layer at a time ([the fold](@ref velocity-momentum-fold)). Details:
+  [limitations](@ref remapping-limitations).
 - **Hamiltonian particle projection.** The fit can reduce its residual only where the old weights
   vary ([weight-dependent Hamiltonians](@ref weight-dependent-hamiltonians)); with separable
   stages, a kick that compresses the markers at one velocity expands them at the opposite one,
   which the [non-separable stages](@ref projection-nonseparable) avoid. The target weights must be
-  positive, which fails for hats finer than the marker spacing.
+  positive, which fails for hats finer than the marker spacing. Details:
+  [limitations](@ref projection-limitations).
 - **Spline-projection redistribution.** The step reaches its targets on the identity-connected
   branch when the contraction condition holds; the verification case violates the sufficient
   bound and uses substeps ([the parameter solver](@ref rd-solver)). The defaults fit the
-  16-marker verification set-up; `KNOWN_ISSUES.md` records the failures outside it.
+  16-marker verification set-up; the [numerical experiments](@ref rd-experiments) show the
+  failures outside it (K2, K3). Details: [limitations](@ref redistribution-limitations).
 - **Sliced redistribution.** The map is canonical for frozen slices and multipliers, and the
-  multipliers come from the state. The squeeze can move markers far from their anchors, and each
-  lift solves a dense ``N \times N`` system ([cost](@ref sliced-algorithm)).
+  multipliers come from the state. The squeeze can move markers far from their anchors (K6), and
+  each lift solves a dense ``N \times N`` system (K7, [cost](@ref sliced-cost-3d3v)). Details:
+  [limitations](@ref sliced-limitations).
 
 Every construction computes something from the markers and is symplectic for its frozen value,
 except the gauge rezoning, whose gauge step is symplectic for any stretch
@@ -66,6 +74,21 @@ except the gauge rezoning, whose gauge step is symplectic for any stretch
 
 The two constructions of the first chapter also combine: the current-quantile matching gives
 targets for the gauge rezoning ([combining the two constructions](@ref remap-comparison)).
+
+## [Higher dimensions](@id comparison-higher-dimensions)
+
+The statements of every chapter hold in ``d`` dimensions; the code and the cost differ. Each
+chapter derives the counts on its page *Properties, limitations and higher dimensions*, from a
+script of the package that checks the counts for ``d = 1`` against the code. This table collects
+what binds first in 3d3v.
+
+| | in the package | the step that binds in 3d3v | a route the chapter derives |
+|:--|:--|:--|:--|
+| [gauge rezoning](@ref remapping-higher-dimensions) | 1D-1V | the Schur complement on ``n_K N_g^d`` multipliers, solved dense (K9): ``1.9 \cdot 10^{14}`` operations for ``N_g = 32``, ``n_K = 2`` | a sparse solve of the Schur complement (``27``-node stencil); the stretch per marker and the diagonal Hessian stay as in 1D; the stretch cannot change the direction of ``v`` |
+| [canonical transport](@ref remapping-higher-dimensions) | 1D-1V | the discrete matching: the continuum matching holds along rays, a discrete one does not exist | direction bins, the radial cumulative current, canonical maps that keep the direction-resolved current |
+| [Hamiltonian particle projection](@ref projection-higher-dimensions) | stages in any ``d``, the rest in 1D-1V | the grid in ``2d`` dimensions (``1.2 \cdot 10^9`` hat nodes), its Poisson problem (K10), and the parameters (``3.1 \cdot 10^6`` kick–drift, ``2.4 \cdot 10^8`` non-separable) with their normal equations | transform-based Poisson solver, low-rank target weights, adjoint gradients with L-BFGS or matrix-free Gauss–Newton, a sparse or low-rank parametrisation |
+| [spline-projection redistribution](@ref redistribution-higher-dimensions) | 1D-1V | the pairwise basis, ``N_\theta \approx 3 \cdot 10^9`` parameters, the ``O(N^2)`` pair sums and the dense ``2Nd \times 2Nd`` Newton matrix | the coarse collective (Fourier-moment) basis with the Tikhonov solve and the velocity recovery along the fold; a relaxation with a kernel cutoff |
+| [sliced redistribution](@ref sliced-higher-dimensions) | any ``d``, per axis | the dense ``N \times N`` lifts (K7), the ``O(N^2)`` density ratio whose kernel holds ``1.6 \cdot 10^{-4}`` markers at ``N = 900``, and the correlations between the axes that the per-axis lifts do not see | block-diagonal plus rank-one lift solves; kernel widths that grow with ``d``; lifts conditioned on chosen coordinates or in rotated frames |
 
 ## [Open questions](@id open-questions)
 
@@ -109,7 +132,8 @@ targets for the gauge rezoning ([combining the two constructions](@ref remap-com
 - The [non-separable stages](@ref projection-nonseparable) end at the iteration limit of their
   fixed-point solver, so the solvability of the midpoint equation limits the step; a Newton
   solver, more stages with smaller steps, or a composition with kicks and drifts may relax this.
-  A non-separable stage costs about 50 times as much as a kick and a drift in the experiment.
+  One application of the non-separable stages takes 0.16 to 0.19 s against 0.004 to 0.007 s for
+  the kicks and drifts in the run of the script.
 - The [coarse-basis regime](@ref rd-coarse-basis) of the spline-projection redistribution at
   large ``N``: with ``N_\theta \ll 2 N d - d`` the regularised parameter solve reaches the targets
   only approximately, and the velocities are recovered along the branch of the fold. The package
@@ -117,14 +141,25 @@ targets for the gauge rezoning ([combining the two constructions](@ref remap-com
 
 ### Higher dimensions
 
-- The extension of the current-quantile matching to several velocity dimensions, where the gauge
-  step acts only on the speed.
+- The current-quantile matching in several velocity dimensions: the matching holds along rays in
+  the continuum ([higher dimensions](@ref remapping-higher-dimensions)); a discrete matching with
+  direction bins, and the admissible canonical maps in ``d`` dimensions, are open.
+- A sparse solve of the Schur complement of the gauge rezoning on ``N_g^3`` nodes, and its
+  iteration count (K9).
 - The tensor product of the non-separable stages has ``n_\xi^d n_v^d n_\ell`` parameters per
   stage, which is too many for ``d = 3``; a sparse or low-rank parametrisation is needed there.
+- The Poisson problem of the density-interpolation flow lives on a grid in ``2d`` dimensions,
+  ``1.2 \cdot 10^9`` nodes in 3d3v with the hats of the experiment, and the package solves it with
+  a dense pseudo-inverse (K10) ([higher dimensions](@ref projection-higher-dimensions)).
 - [`SplineRedistribution`](@ref ParticleRemapping.Redistribution.SplineRedistribution)
-  implements ``d = 1`` only, while the statements of its chapter hold in ``d`` dimensions.
+  implements ``d = 1`` only, while the statements of its chapter hold in ``d`` dimensions; its
+  pairwise basis has ``N_\theta \approx 3 \cdot 10^9`` parameters in 3d3v with the defaults, so
+  the regime of exact targets is out of reach there, and the coarse collective basis is untested
+  at large ``N`` ([higher dimensions](@ref redistribution-higher-dimensions)).
 - Correlations between the axes: the per-axis sliced map sees the two-dimensional marginals
-  ``(x_\ell, v_\ell)`` only ([per-axis version](@ref sliced-per-axis)).
+  ``(x_\ell, v_\ell)`` only ([per-axis version](@ref sliced-per-axis)); lifts conditioned on a
+  few chosen coordinates or lifts in rotated frames lie between the per-axis map and a full
+  conditioning with ``B^{2d-1}`` slices ([higher dimensions](@ref sliced-higher-dimensions)).
 
 ### Tests
 

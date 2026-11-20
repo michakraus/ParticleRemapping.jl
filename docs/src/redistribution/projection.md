@@ -105,20 +105,21 @@ cv(h) = kernel_density_cv(mod.(h[1], ex.Lx), h[2]; Lx = ex.Lx, σx = ex.σx, σv
 plot_target_relaxation(relaxed.history; Lx = ex.Lx, cv = cv.(relaxed.history))
 ```
 
-The figure shows the paths of the 16 points during the ten relaxation steps (left; grey: start,
-black: targets) and the decrease of the coefficient of variation of the kernel density (right).
-The animation repeats the relaxation with ``40`` steps of size ``0.02``, where the motion is
-visible:
+The figure shows (a) the paths of the 16 points during the ten relaxation steps, from the start
+(dark grey dots) to the targets (open circles), and (b) the decrease of the coefficient of
+variation of the kernel density. The relaxation moves points, not weighted markers; the weights
+of the targets come from the KKT projection below. The animation repeats the relaxation with
+``40`` steps of size ``0.02``, where the motion is visible:
 
 ```@example rd-projection
 long = declustering_relaxation(x, v; Lx = ex.Lx, σx = ex.σx, σv = ex.σv, step = 0.02,
     iterations = 40)
-animate_target_relaxation("target_relaxation.mp4", long.history; Lx = ex.Lx)
+animate_target_relaxation("redistribution-relaxation.mp4", long.history; Lx = ex.Lx)
 nothing # hide
 ```
 
 ```@raw html
-<video src="target_relaxation.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="redistribution-relaxation.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 Since ``(\bar{x}_a, \bar{v}_a)`` is only *approximately* uniform, a rigid constant
@@ -248,11 +249,13 @@ plot_spline_projections(phase_space_spline_grid(ps, c_l2),
     phase_space_spline_grid(ps, kkt.coefficients); markers = mk, targets = (x̄, v̄))
 ```
 
-The figure shows (left) the ``L^2`` projection of the 16 clustered markers (black dots) with its
-zero contour; the red regions between the markers are its negative overshoot (Control D);
-(middle) the KKT projection on the same colour scale, with the targets (open circles); (right) the
-smallest value over ``x`` of each projection as a function of ``v``: the ``L^2`` projection is
-negative at almost every ``v``, the KKT projection is positive.
+The figure shows (a) the ``L^2`` projection of the 16 clustered markers (dark grey dots, the
+area proportional to the weight) with its zero contour; the blue regions between the markers are
+its negative overshoot (Control D); (b) the KKT projection on the same signed colour scale, with
+the targets (open circles); (c) the smallest value over ``x`` of each projection as a function of
+``v``: the ``L^2`` projection is negative at almost every ``v``, the KKT projection is positive.
+The colour shows the sign of the projected density here, so the markers carry no weight colour.
 
-The script `scripts/redistribution/make_figures.jl` writes these figures, the relaxation and the
-redistribution step to `results/redistribution/`.
+The script `scripts/redistribution/make_figures.jl` writes these figures and the relaxation to
+`results/redistribution/` (`redistribution-projections.pdf`, `redistribution-relaxation.pdf`,
+`redistribution-relaxation.mp4`).

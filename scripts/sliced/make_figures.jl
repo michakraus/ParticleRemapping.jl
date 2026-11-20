@@ -15,15 +15,29 @@ function results_directory(args)
 end
 
 function main(args)
+    set_theme!(remap_theme())
     dir = mkpath(results_directory(args))
     written = String[]
     save_pdf(name, fig) = (
         path = joinpath(dir, name); save(path, fig); push!(written, path))
 
-    stages = sliced_stages_example()
-    save_pdf("sliced-stages.pdf", plot_sliced_stages(stages.before, stages.result))
+    # the standard pictures S1, S2, A1 of the standard example
+    ex = sliced_stages_example()
+    method = SlicedQuantileRemap(; B_v = 5, B_x = 12)
+    period = (-π, π)
+    save_pdf("sliced-remap.pdf",
+        plot_remap(ex.before, ex.result.markers; period,
+            titles = ("(a) before", "(b) after the sliced remap")))
+    save_pdf("sliced-stages.pdf",
+        plot_stages(remap_states(method, ex.before, ex.result); columns = 3, period))
     push!(written,
-        animate_sliced_stages(joinpath(dir, "sliced-stages.mp4"), stages.before, stages.result))
+        animate_stages(joinpath(dir, "sliced-stages.mp4"),
+            remap_frames(method, ex.before, ex.result); period))
+
+    # the stages coloured by slice
+    save_pdf("sliced-slices.pdf", plot_sliced_stages(ex.before, ex.result))
+    push!(written,
+        animate_sliced_stages(joinpath(dir, "sliced-slices.mp4"), ex.before, ex.result))
 
     save_pdf("checkerboard.pdf", plot_checkerboard_filling(checkerboard_experiment()))
     save_pdf("wave-remap.pdf", plot_wave_remap(long_time_remap_experiment()))

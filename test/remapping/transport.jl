@@ -1,3 +1,5 @@
+using ForwardDiff
+using LinearAlgebra
 using ParticleRemapping
 using Random
 using Test
@@ -114,4 +116,39 @@ end
     H = binned_weights(grid, X, V, W, range(-4, 4; length = 9))
     @test sum(H) ≈ sum(W[-4 .≤ V .< 4]) rtol=1e-12
     @test binned_weight_error(target, grid, X, V, W) ≥ 0
+end
+
+@testset "the matching along rays in two velocity dimensions" begin
+    # In d velocity dimensions the gauge step keeps the direction, P = m W V, and the identity of
+    # the matching proposition holds along each ray V = r θ:
+    #     ∫_0^r f′(r′θ) r′^d dr′ = (1/m) ∫_0^{ρ(r)} ñ(ρ′θ) ρ′^d dρ′,  ρ(r) = m W(rθ) r,
+    # with f′ = ñ(m W V) |det ∂(m W V)/∂V| W. The determinant comes from ForwardDiff here, not
+    # from the closed form m^d W^{d−1} ∂_r(W r) of the derivation.
+    m, d = 1.3, 2
+    ñ(P) = exp(-(P[1]^2 + 2P[2]^2) / 2) * (1 + 0.2P[1] + 0.1P[1] * P[2])
+    W(V) = 1 + 0.2tanh(V[1]) + 0.1V[2]^2 / (1 + V[2]^2)
+    Pof(V) = m * W(V) .* V
+    detP(V) = abs(LinearAlgebra.det(ForwardDiff.jacobian(Pof, V)))
+    f′(V) = ñ(Pof(V)) * detP(V) * W(V)
+    ffrozen(V) = ñ(Pof(V)) * m^d * W(V)^d * W(V)
+    function ray_error(f, θ, r)
+        lhs = simpson_rule(s -> f(s .* θ) * s^d, 0.0, r)
+        ρ = m * W(r .* θ) * r
+        rhs = simpson_rule(s -> ñ(s .* θ) * s^d, 0.0, ρ) / m
+        abs(lhs - rhs) / abs(rhs)
+    end
+    θs = [[cos(t), sin(t)] for t in (0.3, 1.9, 4.0)]
+    errs = [ray_error(f′, θ, r) for θ in θs, r in (0.7, 2.5)]
+    errs_frozen = [ray_error(ffrozen, θ, r) for θ in θs, r in (0.7, 2.5)]
+    # Simpson with 4000 subintervals: error far below 1e-12
+    @test maximum(errs) < 1e-12
+    # control: the frozen-weight determinant m^d W^d misses the radial derivative of W
+    @test minimum(errs_frozen) > 1e-3
+    # the closed form of the determinant, m^d W^{d−1} ∂_r(W r)
+    V, h = [0.8, -0.6], 1e-6
+    θ = V ./ hypot(V...)
+    dWr = (W(V .+ h .* θ) * (1 + h / hypot(V...)) -
+           W(V .- h .* θ) * (1 - h / hypot(V...))) /
+          (2h / hypot(V...))
+    @test detP(V) ≈ m^d * W(V)^(d - 1) * dWr rtol = 1e-8
 end

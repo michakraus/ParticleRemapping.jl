@@ -1,18 +1,8 @@
 # [Combining the two constructions](@id remap-comparison)
 
 The gauge rezoning and the canonical transport differ in what they move and in what they keep
-exactly. The [comparison of all constructions](../comparison.md) sets them beside the other
-chapters.
-
-| property                        | [gauge rezoning](@ref remap-gauge)           | [transport and matching](@ref remap-transport)        |
-|:--------------------------------|:---------------------------------------------|:------------------------------------------------------|
-| symplectic for ``\omega_N``     | exactly, for any data dependence             | exactly, if ``\psi`` is canonical                     |
-| positions                       | unchanged                                    | moved by ``\psi``                                     |
-| momenta                         | unchanged                                    | moved by ``\psi``, then fixed                         |
-| grid current                    | exact                                        | set by ``\psi``                                       |
-| grid charge, kinetic energy     | exact (constraints)                          | consistent with ``\hat{f}``                           |
-| represented density             | preserved in the constrained moments         | preserved, up to quantile error                       |
-| redistribution                  | along velocity rays, limited by a fold       | limited by the [limit of equidistribution](@ref remap-limit) |
+exactly; the [properties](@ref remapping-properties) of the chapter list both side by side, and
+the [comparison of all constructions](../comparison.md) sets them beside the other chapters.
 
 The two constructions combine. The current-quantile matching gives velocities that are consistent
 with an estimate of ``f``; used as [targets](@ref remap-gauge-algorithm) for the gauge rezoning,

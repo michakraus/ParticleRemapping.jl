@@ -96,9 +96,21 @@ frozen_weight_residual
 symplectic_condition_checks
 ```
 
+## The states of a remap
+
+```@docs
+ParticleRemapping.remap_states(::GaugeRezoning, ::ParticleRemapping.Markers, ::ParticleRemapping.RemapResult)
+ParticleRemapping.remap_frames(::GaugeRezoning, ::ParticleRemapping.Markers, ::ParticleRemapping.RemapResult)
+ParticleRemapping.remap_states(::CurrentQuantileMatching, ::ParticleRemapping.Markers, ::ParticleRemapping.RemapResult)
+ParticleRemapping.remap_frames(::CurrentQuantileMatching, ::ParticleRemapping.Markers, ::ParticleRemapping.RemapResult)
+```
+
 ## Plotting
 
-The plotting functions need a Makie backend, for example `using CairoMakie`.
+The plotting functions need a Makie backend, for example `using CairoMakie`. The standard
+pictures of the two remaps are [`plot_remap`](@ref ParticleRemapping.plot_remap),
+[`plot_stages`](@ref ParticleRemapping.plot_stages) and
+[`animate_stages`](@ref ParticleRemapping.animate_stages) of the common layer.
 
 ```@docs
 plot_charge_example
@@ -107,7 +119,6 @@ plot_eight_marker_example
 animate_eight_marker_homotopy
 plot_kkt_structure
 plot_gauge_experiment
-animate_gauge_homotopy
 plot_lift_example
 animate_lift_matching
 plot_matching_example

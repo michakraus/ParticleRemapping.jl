@@ -49,8 +49,8 @@ The code uses ``32 \times 33`` bilinear hat functions in the scaled variables ``
 plot_lumped_projection(problem)
 ```
 
-The markers (area proportional to the weight), the lumped projection ``f_h`` of the represented
-density and the lumped marker density ``g_h``; the hole shows in both.
+(a) The markers, coloured and sized by weight, (b) the lumped projection ``f_h`` of the represented
+density and (c) the lumped marker density ``g_h``; the hole (dashed) shows in both.
 
 ## [Target points](@id projection-targets)
 
@@ -116,11 +116,13 @@ targets = projection_targets(HatProjection(32, 33), problem.x0, problem.v0, prob
 plot_target_flow(problem, targets; window = (problem.hole.x - 1.2, problem.hole.x + 1.2, 0, 2.4))
 ```
 
-Each marker (black) moves to its target (blue) along the segment; near the hole the markers flow
-into it.
+Each marker, coloured and sized by weight, moves to its target (open circle) along the segment;
+near the hole the markers flow into it.
 
 ```@example construction
-animate_moser_targets("moser-targets.mp4", moser_flow_history(problem), problem.hole)
+history = moser_flow_history(problem)
+animate_stages("moser-targets.mp4", [fill(history[1], 10); history; fill(history[end], 10)];
+    period = (0, 2π), decorate! = (ax, _) -> plot_hole_outline!(ax, problem.hole))
 nothing # hide
 ```
 
@@ -128,7 +130,9 @@ nothing # hide
 <video src="moser-targets.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
-The density-interpolation flow from ``t = 0`` to ``t = 1``.
+The density-interpolation flow from ``t = 0`` to ``t = 1``
+([`moser_flow_history`](@ref)), with the old weights; the flow moves the points ``(x, v)`` and
+changes volume, and it only provides the targets.
 
 ## [The remap Hamiltonian](@id projection-hamiltonian)
 
@@ -392,12 +396,12 @@ a projection of ``\ln f``.
 [`remap`](@ref) with a [`KickDriftRemap`](@ref) runs these steps for 1D-1V
 [`Markers`](@ref ParticleRemapping.Markers); [`NonSeparableRemap`](@ref) replaces the kicks and
 drifts by non-separable stages, and the option `charge` adds the [charge-conserving
-reweighting](@ref projection-charge). The example below runs the algorithm on a lattice of
-``24 \times 24`` markers with a hole at ``x_h = \pi/2``, with the target weights from the lumped
-projection (the default) on ``12 \times 13`` hats, coarser than the markers, and a fit stopped
-after 10 iterations, a reduced version of the [experiment](@ref projection-hole-filling). On hats
-finer than the marker spacing the lumped projection vanishes between the markers, and `remap`
-refuses the zero target weights.
+reweighting](@ref projection-charge). The [example](@ref projection-example) of the overview runs
+the algorithm on a lattice of ``24 \times 24`` markers with the target weights ``c f``. The example
+below runs it on the same markers with the target weights from the lumped projection (the
+default) on ``12 \times 13`` hats, coarser than the markers, and a fit stopped after 10
+iterations. On hats finer than the marker spacing the lumped projection vanishes between the
+markers, and `remap` refuses the zero target weights.
 
 ```@example construction
 small = hole_filling_problem(; hole_x = π / 2, nL = 24, hole_a = 0.9, hole_b = 0.8)
@@ -407,19 +411,25 @@ result = remap(KickDriftRemap(; projection = HatProjection(12, 13), maxit = 10),
 ```
 
 ```@example construction
-plot_remap(small.markers, result.markers; titles = ("before", "after the remap"))
+plot_remap(small.markers, result.markers;
+    titles = ("(a) before", "(b) after the remap, lumped projection"), period = (0, 2π))
 ```
+
+The errors of the lumped projection pass to the velocities through ``v' = p' / (m w^*)``
+([reweighting](@ref projection-final-reweighting)), and the markers of the tails scatter.
 
 ### The steps of the map
 
 The kick–drift map of the [hole-filling experiment](@ref projection-hole-filling) at
 ``x_h = \pi/2``, here with the fit stopped after 10 iterations: the markers near the hole after
 each kick and each drift (velocities ``p/(m w)`` with the old weights), after the reweighting with
-the target weights and after the charge-conserving reweighting.
+the target weights and after the charge-conserving reweighting
+([`experiment_remap`](@ref), [`remap_states`](@ref ParticleRemapping.remap_states),
+[`plot_hole_stages`](@ref)).
 
 ```@example construction
 demo = hole_filling_experiment(; hole_x = π / 2, variants = (:weight_dependent,), maxit = 10)
-plot_remap_stages(remap_stage_states(demo, :weight_dependent), demo.problem.hole)
+plot_hole_stages(remap_states(experiment_remap(demo, :weight_dependent)...), demo.problem.hole)
 ```
 
 A kick moves the markers only in ``v``, a drift only in ``x``; the reweighting changes the

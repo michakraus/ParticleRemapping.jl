@@ -250,9 +250,11 @@ e^{(k + l - 2)\mu_a}}{H_a} ,
 which vanish unless the nodes ``i`` and ``j`` share a cell, ``|i - j| \le 1`` modulo ``N_g``. The
 matrix is therefore periodic block-tridiagonal with blocks of size ``|\mathcal{K}|``. It is
 symmetric, and positive definite when every ``H_a > 0`` and ``\mathsf{G}`` has full row rank.
-Assembling it costs ``O(N)`` operations and solving it ``O(N_g)``; the step for ``\Delta\mu`` is
-then explicit per marker. Both solves are [`gauge_newton_step`](@ref), with
-`solver = :schur` or `solver = :kkt`.
+Assembling it costs ``O(N)`` operations, and a periodic block-tridiagonal solve costs
+``O(N_g)``; the step for ``\Delta\mu`` is then explicit per marker. Both solves are
+[`gauge_newton_step`](@ref), with `solver = :schur` or `solver = :kkt`; the package factorises
+the Schur complement as a dense matrix, at the cost ``O((|\mathcal{K}| N_g)^3)``
+([known issue K9](@ref remapping-known-issues)).
 
 The structure shows on 40 markers on 8 nodes, sorted by position: the KKT matrix has the
 diagonal block ``\operatorname{diag}(H)`` and the sparse blocks ``\mathsf{G}``, ``\mathsf{G}^T``;
@@ -541,91 +543,10 @@ animate_eight_marker_homotopy("remapping-ex2-homotopy.mp4", data); nothing # hid
 <video src="remapping-ex2-homotopy.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
-## [A numerical example](@id remap-gauge-example)
+## The numerical example and the limits
 
-[`gauge_rezoning_setup`](@ref) applies the algorithm to ``N = 6400`` markers on ``N_g = 16``
-nodes with ``L = 2\pi`` and ``m = 1``. It assembles and solves the full sparse KKT system, with
-``\Delta\tau_0 = 0.05`` and ``\Delta\tau_{\min} = 10^{-3}``. The positions are uniform; in each
-cell the velocities cluster around six random centres in ``[-4, 4]`` with a spread of ``0.08``,
-an extreme form of the clustering that a long simulation produces. The weights are
-``w_a \propto f(x_a, v_a) + \text{const}`` with a two-stream density ``f``
-([`two_stream_density`](@ref)). The measure of evenness is the mean, over the groups of cell and
-sign, of the ratio of the largest gap to the mean gap between consecutive sorted speeds
-([`mean_gap_ratio`](@ref)); it is ``1`` for an equispaced group. The table gives the results; the
-script `scripts/remapping/gauge_rezoning.jl` prints them, and `test/remapping/experiments.jl`
-checks them.
-
-|                                       | ``\mathcal{K} = \{0, 2\}`` | ``\mathcal{K} = \{0, 2, 3\}`` | unconstrained |
-|:--------------------------------------|:-------------------------|:----------------------------|:--------------|
-| homotopy parameter ``\tau`` reached   | 0.594                    | 0.402                       | 1             |
-| largest/mean gap (before: 77.5)       | 27.5                     | 39.2                        | 1.00          |
-| charge residual                       | ``2.6 \times 10^{-15}``  | ``2.6 \times 10^{-15}``     | 0.45          |
-| kinetic energy residual               | ``1.9 \times 10^{-15}``  | ``3.5 \times 10^{-15}``     | –             |
-| current residual                      | ``1.2 \times 10^{-16}``  | –                           | –             |
-| change of ``\mathcal{M}_i^{(3)}``     | 0.22                     | ``7.5 \times 10^{-16}``     | –             |
-| range of ``\lambda_a``                | ``[0.29, 8.1]``          | –                           | –             |
-
-*Velocity rezoning by the gauge step. Residuals are maxima over the nodes, relative to
-``\mathcal{M}_i^{(k)}[w, |v|]``. At the end of the ``\mathcal{K} = \{0, 2\}`` continuation the
-smallest value of ``H_a / w_a`` is ``8.5 \times 10^{-4}``, against ``s^{-2} = 1`` at the start.*
-
-The constrained remap reduces the gap ratio by a factor of almost three and meets every
-constraint to round-off. Every momentum ``p_a = m W_a V_a`` holds to a relative difference of
-``2 \times 10^{-16}``, and every sign of ``v`` is kept. The unconstrained targets give a perfect
-spread, but they change the grid charge by ``45\,\%``, which shows that the constraints are not
-optional. Each additional constraint reduces the reachable spread. Unlike the eight-marker
-example, the homotopy stops at a fold: with hundreds of markers per node and clusters far from the
-targets, some marker's curvature reaches zero first.
-
-```@example gauge
-setup = gauge_rezoning_setup()
-mk, grid = setup.markers, setup.grid
-result = remap(setup.method, mk)
-relres(after, k) = maximum(abs.(grid_moment(grid, after, k) .- grid_moment(grid, mk, k)) ./
-                           grid_moment(grid, mk.x, abs.(mk.v), mk.w, k))
-(τ = result.info.τ, min_curvature = result.info.min_curvature,
-    gap = (mean_gap_ratio(grid, mk.x, mk.v), mean_gap_ratio(grid, mk.x, result.markers.v)),
-    charge = relres(result.markers, 0), energy = relres(result.markers, 2),
-    current = relres(result.markers, 1), third_moment = relres(result.markers, 3),
-    λ = extrema(exp.(result.info.μ)))
-```
-
-```@example gauge
-plot_gauge_experiment(mk, result)
-```
-
-*The numerical example, ``\mathcal{K} = \{0, 2\}``. (a), (b) The markers in ``(x, v)`` before
-and after the remap, coloured by weight. (c) The distribution of the stretches ``\lambda_a``.
-(d) The ratio of the largest to the mean gap per group of cell and sign, before against after;
-the dashed line is the identity.*
-
-The animation shows the continuation up to the fold, with ``\Delta\tau_0 = 0.01``; it reaches
-the same ``\tau = 0.594`` in 61 accepted steps:
-
-```@example gauge
-fine = remap(gauge_rezoning_setup(; dτ0 = 0.01).method, mk)
-animate_gauge_homotopy("remapping-gauge-homotopy.mp4", mk, fine)
-(accepted = count(h -> h.accepted, fine.info.history) - 1, τ = fine.info.τ)
-```
-
-```@raw html
-<video src="remapping-gauge-homotopy.mp4" controls loop muted playsinline style="width:100%"></video>
-```
-
-## Limits and extensions
-
-- **Rays.** A marker moves only along its velocity ray. It cannot cross ``v = 0``, and it does
-  not move in ``x``. A hole that lies across ``v = 0``, or a hole in ``x``, needs a canonical map
-  in addition. A per-marker momentum translation ``p_a \mapsto p_a + \kappa_a`` is canonical for
-  fixed ``\kappa_a``; it keeps the grid current if ``\sum_a \kappa_a S_i(x_a) = 0`` for every
-  node, and the kinetic-energy constraint then includes the translation.
-- **Higher dimension.** In ``d`` velocity dimensions the gauge step scales the velocity vector,
-  ``V_a = \lambda_a v_a``, and keeps its direction. The moment identity and the constraints carry
-  over, with the tensor moments ``v^{\otimes k}``; filling holes in angle needs a canonical map.
-- **Global energy.** The local constraints ``c_i^{(2)} = 0`` can be replaced by the single global
-  constraint ``\sum_i c_i^{(2)} = 0``, which is enough for exact energy conservation and leaves
-  more freedom.
-- **Representation of ``f``.** The weight follows from the move: ``W_a = p_a / (m V_a)``. The
-  construction does not ensure that ``W_a`` is close to ``f(x_a, V_a)`` times the phase-space area
-  of the marker. Targets taken from an estimate of ``f``, for example those of the
-  [current-quantile matching](@ref remap-matching), combine the two aims.
+The [numerical experiments](@ref remap-gauge-example) apply the algorithm to 6400 clustered
+markers on 16 nodes, with two constraint sets and the unconstrained targets as a control, and
+follow the homotopy up to its fold. What the gauge rezoning cannot do, and why, is collected under
+[limitations](@ref remapping-limitations), and its form in ``d`` dimensions under
+[higher dimensions](@ref remapping-higher-dimensions).

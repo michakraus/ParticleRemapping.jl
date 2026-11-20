@@ -39,6 +39,26 @@ end
     @test info.plan[2].bins_v == sorted_slices(v[2, :], x[2, :], 3)
 end
 
+@testset "the per-axis lifts do not see correlations between axes" begin
+    # a checkerboard in (x₁, x₂) with velocities independent of the positions: every marginal
+    # (x_ℓ, v_ℓ) is even, so the per-axis lifts leave the quadrants Q2 and Q4 of (x₁, x₂)
+    # nearly empty; the checkerboard in (x₁, v₁) is the control, which the same lifts fill
+    rng = MersenneTwister(7)
+    N, h = 360, 180
+    xc = hcat(π .* rand(rng, 2, h), -π .* rand(rng, 2, h))
+    vc = 2 .* rand(rng, 2, N) .- 1
+    r = remap(SlicedQuantileRemap(; B_v = 6, B_x = 36), Markers(xc, vc, fill(1 / N, N)))
+    x1 = vcat(π .* rand(rng, h), -π .* rand(rng, h))
+    v1 = vcat(rand(rng, h), -rand(rng, h))
+    r1 = remap(SlicedQuantileRemap(; B_v = 6, B_x = 36, Vmax = 1.0),
+        Markers(x1, v1, fill(1 / N, N)))
+    @test all(all(>(N ÷ 5), phase_quadrant_counts(xc[ℓ, :], vc[ℓ, :])) for ℓ in 1:2)
+    @test phase_quadrant_counts(xc[1, :], xc[2, :]) == (h, 0, h, 0)
+    q = phase_quadrant_counts(r.info.q̂[1, :], r.info.q̂[2, :])
+    @test q[2] + q[4] < N ÷ 10
+    @test all(>(N ÷ 5), phase_quadrant_counts(r1.info.q̂, r1.info.p̂))
+end
+
 @testset "the frozen per-axis map is symplectic" begin
     q_anc = permutedims(reduce(hcat, [pl.q_anc for pl in info.plan]))
     function frozen(z)

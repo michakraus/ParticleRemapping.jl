@@ -146,9 +146,9 @@ pi1 = hole_filling_experiment(; hole_x = π, variants)
 plot_hole_filling(pi2)
 ```
 
-Hole filling at ``x_h = \pi/2``: markers near the hole (outline) in ``(x, v)``, with
-``v = p / (m w)`` for the weights of each panel. Panels (g) and (h) are (e) and (f) after the
-charge-conserving reweighting.
+Hole filling at ``x_h = \pi/2``: markers near the hole (dashed outline) in ``(x, v)``, coloured
+and sized by weight, with ``v = p / (m w)`` for the weights of each panel. Panels (g) and (h) are
+(e) and (f) after the charge-conserving reweighting.
 
 ```@example experiments
 plot_hole_filling(pi1)
@@ -164,15 +164,17 @@ Charge-conserving reweighting after the non-separable map. (a) Grid charge of th
 (lines) and of the corrected weights (dots) at the positions after the map, against the grid
 charge before the map. (b) The correction ``\ln (w' / w^*)`` per marker.
 
-The two stages of the map, each with its parameters scaled from zero to one, then the reweighting
-and the charge-conserving reweighting: the non-separable map at ``x_h = \pi`` and the kicks and
-drifts at ``x_h = \pi/2`` ([`remap_animation_frames`](@ref)).
+The stages of the map, each with its parameters scaled from zero to their fitted values, then the
+reweighting and the charge-conserving reweighting: the non-separable map at ``x_h = \pi`` and the
+kicks and drifts at ``x_h = \pi/2`` ([`experiment_remap`](@ref),
+[`remap_frames`](@ref ParticleRemapping.remap_frames)).
 
 ```@example experiments
-animate_remap("remap-non-separable-pi.mp4", remap_animation_frames(pi1, :non_separable),
-    pi1.problem.hole)
-animate_remap("remap-kick-drift-pi2.mp4", remap_animation_frames(pi2, :weight_dependent),
-    pi2.problem.hole)
+for (e, v, name) in ((pi1, :non_separable, "remap-non-separable-pi.mp4"),
+    (pi2, :weight_dependent, "remap-kick-drift-pi2.mp4"))
+    animate_stages(name, remap_frames(experiment_remap(e, v)...); period = (0, 2π),
+        decorate! = (ax, _) -> plot_hole_outline!(ax, e.problem.hole))
+end
 nothing # hide
 ```
 
@@ -262,7 +264,7 @@ plot_dlra_weights(push)
 
 Target weights after a push. (a) Pushed markers and the image of the hole. (b) The non-separable
 map with the weights of ``f_r`` at ``\vartheta = 10^{-6}``, after the charge-conserving
-reweighting. (c) ``f_r - f(T)`` at ``\vartheta = 10^{-4}``. (d) Numerical rank of ``f_r`` over
+reweighting; (a) and (b) are coloured and sized by weight on one scale. (c) ``f_r - f(T)`` at ``\vartheta = 10^{-4}``. (d) Numerical rank of ``f_r`` over
 time. (e) Relative error of the target weights against ``|v^*|``.
 
 ```@example experiments
@@ -277,5 +279,5 @@ nothing # hide
 The low-rank density at ``\vartheta = 10^{-4}`` and the markers along the push
 ([`dlra_push_frames`](@ref)).
 
-The script `scripts/projection/make_figures.jl` writes all figures as PDF files and the four
+The script `scripts/projection/make_figures.jl` writes all figures as PDF files and the five
 animations as MP4 files to `results/projection/`.

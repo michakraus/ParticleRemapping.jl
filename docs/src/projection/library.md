@@ -130,9 +130,8 @@ hole_remap_method
 hole_filling_experiment
 projected_weight_errors
 dlra_weights_experiment
-remap_animation_frames
+experiment_remap
 moser_flow_history
-remap_stage_states
 dlra_push_frames
 ```
 
@@ -149,8 +148,7 @@ plot_charge_correction
 plot_dlra_weights
 plot_lumped_projection
 plot_target_flow
-plot_remap_stages
-animate_remap
-animate_moser_targets
+plot_hole_outline!
+plot_hole_stages
 animate_dlra
 ```

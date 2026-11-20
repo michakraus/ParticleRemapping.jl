@@ -22,6 +22,21 @@
 - **kind:** upstream
 - **found:** 2026-11-20
 
+## Remapping
+
+### K9 · The Schur-complement step of the gauge rezoning solves a dense system
+
+- **location:** `src/remapping/gauge.jl:229`
+- **problem:** `gauge_newton_step` with `solver = :schur` converts the sparse, periodic
+  block-tridiagonal Schur complement `G diag(H)⁻¹ Gᵀ` to a dense `Matrix` and solves it by LU, at
+  the cost `O((|K| N_g)³)`; a block-tridiagonal solve costs `O(|K|³ N_g)`. In 3d3v with
+  `N_g = 32` per dimension and `K = {charge, energy}` the dense solve takes `1.9e14` operations and
+  `3.4e10` bytes.
+- **evidence:** `Matrix(gauge_schur_matrix(H, G)) \ (c .- G * (gJ ./ H))`;
+  `scripts/remapping/cost_3d3v.jl` prints the counts.
+- **kind:** found late
+- **found:** 2026-11-20
+
 ## Redistribution
 
 ### K2 · The relaxation step of `SplineRedistribution` does not scale with the number of markers
@@ -31,9 +46,10 @@
   and the default `relax_step = 0.006` fits the 16 markers of the verification; for more markers
   the targets leave the velocity box and `remap` fails in the KKT solve.
 - **evidence:** 900 markers with uniform positions on `[0, 2π)`, `v ~ N(0, 1)` and equal weights
-  (`MersenneTwister(1)`): the relaxed targets reach `|v̄| ≈ 6.1`, outside `Vmax = 3.5`, and
-  `remap(SplineRedistribution(), markers)` throws `ArgumentError: matrix contains Infs or NaNs`
-  from the solve in `kkt_spline_projection`.
+  (`MersenneTwister(1)`): 309 of the 900 relaxed targets leave the velocity box, up to
+  `|v̄| = 6.16`, outside `Vmax = 3.5`, and `remap(SplineRedistribution(), markers)` throws
+  `ArgumentError: matrix contains Infs or NaNs` from the solve in `kkt_spline_projection`;
+  `scripts/redistribution/failure_cases.jl` prints it.
 - **kind:** defect
 - **found:** 2026-11-20
 
@@ -44,17 +60,18 @@
   targets; only `info.target_error` shows it.
 - **evidence:** the 244 markers of `hole_filling_problem(; nL = 16, hole_a = 0.9, hole_b = 0.8)`
   with `SplineRedistribution(; Vmax = 4.0, relax_step = 0.006 * 16 / 256)`: `remap` returns after
-  46 s with `info.target_error = 1.98e8`, a change of the kinetic energy of 3394 and of the total
-  momentum of 0.17; the total weight is kept to round-off.
+  44 s with `info.target_error = 1.98e8`, the contraction number 4.85e8 and the Newton residual
+  3.96e8, a change of the kinetic energy of 3394 (of 2.933) and of the total momentum of 0.165;
+  the total weight is kept to 1.8e-15 (`scripts/redistribution/failure_cases.jl`).
 - **kind:** defect
 - **found:** 2026-11-20
 
 ### K4 · The verification case of the redistribution violates the contraction condition
 
 - **location:** `docs/src/redistribution/solver.md`
-- **problem:** The contraction number of the implicit midpoint step at the stage point is 2.27 in
+- **problem:** The contraction number of the implicit midpoint step at the stage point is 2.266 in
   the verification (2.01 with the second relaxation), above the sufficient bound 1, and one step of
-  symplectic Euler reaches another root (`‖∇_x ∇_p̄ H‖ = 1.39`); the verification uses two
+  symplectic Euler reaches another root (`‖∇_x ∇_p̄ H‖ = 1.391`); the verification uses two
   substeps for symplectic Euler, and the midpoint Newton solve still reaches the targets to
   round-off.
 - **evidence:** `test/redistribution/solver.jl`, and the table "symplectic Euler target error, two
@@ -64,16 +81,16 @@
 
 ## Projection
 
-### K8 · The header of the parametrisation test promises an area check that the file does not run
+### K10 · The density-interpolation flow solves its Poisson problem with a dense pseudo-inverse
 
-- **location:** `test/projection/parametrisation.jl:2`
-- **problem:** The header says that the controls B and C preserve the area in `(x, v)`, but no
-  test in the file computes an area or a Jacobian determinant of these controls; only the slow
-  test `test/projection/experiments/hole_filling.jl` checks the consequence, that they do not
-  shrink the hole beyond the reweighting alone.
-- **evidence:** `grep -n -i "area\|det" test/projection/parametrisation.jl` matches only the
-  header line.
-- **kind:** missing test
+- **location:** `src/projection/targets.jl:105`
+- **problem:** `moser_targets` forms the dense five-point Laplacian on the `nX × nV` nodes of the
+  hats and applies its pseudo-inverse, `O(M³)` operations on `M` nodes; this fits `d = 1`
+  (`M = 1056`) but not `d = 3` (`M = 1.2·10⁹`); a Fourier transform in `x` and a cosine transform
+  in `v` diagonalise the operator at `O(M log M)`.
+- **evidence:** `scripts/projection/higher_dimensions.jl`; the section *The cost in 3d3v* of the
+  manual's projection chapter.
+- **kind:** found late
 - **found:** 2026-11-20
 
 ## SlicedRedistribution

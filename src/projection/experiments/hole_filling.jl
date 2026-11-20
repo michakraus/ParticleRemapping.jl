@@ -77,8 +77,8 @@ momenta `P`, the velocities `v1 = P/(m w*)` and `vc = P/(m w′)`, the charge-co
 `wc`, the diagnostics with `w*` (`diagnostics`) and with `w′` (`diagnostics_charge`), the grid
 charge residuals `charge_res` of `w*` and `charge_res_c` of `w′`, `charge_ok`, `charge_its`,
 `dlnw = max |ln(w′/w*)|`, and for the maps `θ`, `ratio` (objective after the fit relative to
-`θ = 0`), `iterations`, `ΔP`, `Δw`, `fit_time`, `map_time`, `stage_iterations` and the
-`parametrisation`.
+`θ = 0`), `iterations`, `ΔP`, `Δw`, `fit_time`, `map_time`, `stage_iterations`, the
+`parametrisation` and the `method` ([`experiment_remap`](@ref)).
 """
 function hole_filling_experiment(; hole_x = π, weights::Symbol = :exact,
         variants = (:weight_dependent, :control_A, :control_B, :non_separable, :control_C),
@@ -111,7 +111,7 @@ function hole_filling_experiment(; hole_x = π, weights::Symbol = :exact,
         r = (;
             charge_conserving(i.X, i.P)..., i.θ, ratio = i.objective_ratio, i.iterations,
             ΔP = i.momentum_change, Δw = i.weight_change, i.fit_time, i.map_time,
-            i.stage_iterations, i.parametrisation)
+            i.stage_iterations, i.parametrisation, method)
         verbose &&
             @printf("  %-17s empty disk %5.2f, fill %4.2f, objective %.3f, %d its, %.0f s\n",
                 variant, r.diagnostics.empty, r.diagnostics.fill, r.ratio, r.iterations,

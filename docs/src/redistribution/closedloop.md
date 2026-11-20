@@ -95,10 +95,10 @@ J = canonical_J(4)
 plot_closed_loop_defect(lhs, rhs; variational = transpose(DΦ) * J * DΦ - J)
 ```
 
-The figure shows the ``8 \times 8`` matrices of the closed-loop defect of Control E (first
-panel) and of the right-hand side of the identity (second panel), the defect of the variational
-closure on the same colour scale (third panel, zero to round-off), and the difference of the
-first two on its own scale (fourth panel, of order ``10^{-16}``).
+The figure shows the ``8 \times 8`` matrices of the closed-loop defect of Control E (a) and of
+the right-hand side of the identity (b), the defect of the variational closure on the same signed
+colour scale (c, zero to round-off), and the difference of the first two on its own scale (d, of
+order ``10^{-16}``).
 
 The script `scripts/redistribution/verify_symplectic_redistribution.jl` gives a defect of
 ``0.396`` for Control E (the control requires more than ``10^{-3}``), a relative error of the

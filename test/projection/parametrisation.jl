@@ -1,5 +1,7 @@
 # The parametrised maps on a small lattice: θ = 0 is the identity, every θ gives a symplectic map
-# that conserves the total momentum, the controls B and C preserve the area in (x, v), and the
+# that conserves the total momentum, the controls B and C move every marker by one map of (x, v)
+# (two coincident markers of different weights stay coincident, which the weight-dependent maps
+# break; that this map preserves the area is the stage-Jacobian test of `stages.jl`), and the
 # sensitivities of the non-separable map agree with forward-mode derivatives (and miss them
 # without the terms of the centroid shift and the boost).
 
@@ -50,6 +52,27 @@ end
             defect, nDR = symplecticity_defect(map_of(par, θ), vcat(x, p))
             @test defect < 100 * eps() * max(1, nDR)^2
         end
+    end
+
+    @testset "one map of (x, v) for the controls B and C" begin
+        # two more markers at one point of (x, v), with two different weights of the lattice
+        xq, vq = 2.0, 0.7
+        wa, wb = w[findfirst(>(0.01), w)], w[findfirst(<(1e-3), w)]
+        x2, v2, w2 = [x; xq; xq], [prob.v0; vq; vq], [w; wa; wb]
+        p2 = m .* w2 .* v2
+        gap(par) = begin
+            θ = 0.02 .* randn(remap_parameter_count(par))
+            X, P = remap_stages(par, θ, x2, p2, w2; m)
+            V = P ./ (m .* w2)
+            max(abs(X[end] - X[end - 1]), abs(V[end] - V[end - 1]))
+        end
+        kd2(v) = KickDriftParametrisation(w2; variant = v, nξ = 8, nv = 10, nw = 4)
+        ns2(weighted) = NonSeparableParametrisation(w2; nξ = 6, nv = 7, nℓ = 3, weighted)
+        @test gap(kd2(:control_B)) < 1e-13
+        @test gap(ns2(false)) < 1e-13
+        # the maps that depend on the weight separate the two markers: must fail
+        @test gap(kd2(:weight_dependent)) > 1e-4
+        @test gap(ns2(true)) > 1e-4
     end
 
     @testset "kick–drift history" begin

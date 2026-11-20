@@ -40,13 +40,13 @@ A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:
 | part | test files | checks |
 |:--|--:|--:|
 | quality: Aqua, explicit imports | 2 | 13 |
-| common layer | 5 | 117 |
-| gauge rezoning and canonical transport | 6 | 436 |
-| Hamiltonian particle projection, group `core` | 9 | 310 |
+| common layer | 6 | 136 |
+| gauge rezoning and canonical transport | 7 | 512 |
+| Hamiltonian particle projection, group `core` | 9 | 494 |
 | Hamiltonian particle projection, group `slow` | 2 | 309 |
-| spline-projection redistribution | 7 | 157 |
-| sliced redistribution | 10 | 264 |
-| **total** | **41** | **1606** |
+| spline-projection redistribution | 8 | 190 |
+| sliced redistribution | 11 | 315 |
+| **total** | **45** | **1969** |
 
 ## The common layer and the foundations
 
@@ -69,6 +69,10 @@ A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:
   unity, four non-zero functions at each point).
 - **`test/common/interface.jl`**: [`conservation_report`](@ref) of a gauge step, which keeps the
   momenta and the grid current and changes the grid charge and the energy.
+- **`test/common/stages.jl`**: [`interpolate_stages`](@ref): the frames start and end on the
+  stages, a gauge step keeps ``(x, p)`` in every frame, periodic positions move by the shorter way
+  round (and cross the whole interval without a period, the control), and the guards for no
+  stages and for stages of different sizes.
 - **`test/quality/aqua.jl`** and **`test/quality/explicit_imports.jl`**: `Aqua.test_all`, and
   that no module relies on an implicit import.
 

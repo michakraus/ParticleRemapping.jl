@@ -7,8 +7,9 @@ linear inverse problem.
 """
 module Redistribution
 
-using ..ParticleRemapping: AbstractRemap, Markers, RemapResult, canonical_J, pack
-import ..ParticleRemapping: remap
+using ..ParticleRemapping: AbstractRemap, Markers, RemapResult, RemapStage, canonical_J,
+                           interpolate_stages, pack
+import ..ParticleRemapping: remap, remap_states, remap_frames
 using ForwardDiff: ForwardDiff
 using LinearAlgebra: Diagonal, I, dot, norm, opnorm
 using SimpleSplines: BSplineBasis, Free, Periodic, Spline, TensorProductQuadrature,
@@ -24,6 +25,7 @@ include("hamiltonians.jl")
 include("solver.jl")
 include("closedloop.jl")
 include("method.jl")
+include("frames.jl")
 include("plotting.jl")
 
 # canonical structure
@@ -57,7 +59,6 @@ export cotangent_lift_modes, variational_closed_loop, fixed_grid_closed_loop
 export redistribution_example, SplineRedistribution
 # plotting
 export plot_velocity_momentum_fold, plot_spline_projections, plot_target_relaxation
-export plot_redistribution_markers, plot_newton_convergence, plot_closed_loop_defect
-export animate_redistribution, animate_target_relaxation
+export plot_newton_convergence, plot_closed_loop_defect, animate_target_relaxation
 
 end
