@@ -83,8 +83,9 @@ plot_sliced_stages(ex.before, ex.result)
   the colours repeat after seven) have their momenta moved towards the ten momentum targets (grey
   lines).
 - **(d) ``T_\mu``**: the squeeze scales the momenta by ``\mu_a`` and the position offsets by
-  ``1/\mu_a``; markers in slots with small ``\mu_a`` move far from their anchors (the positions are
-  not wrapped). Colour and size show the new weight ``w_{\mathrm{ref}} \mu_a``.
+  ``1/\mu_a``; markers in slots with small ``\mu_a`` move far from their anchors, out of the box,
+  and the panel wraps their positions into it. Colour and size show the new weight
+  ``w_{\mathrm{ref}} \mu_a``.
 - **(e) Multipliers**: ``\mu`` against the slot momentum. It follows the density ratio of the
   input: about one in the bulk, small in the tails.
 - **(f) ``\mathcal{F}``**: the output with the weights ``w_{\mathrm{ref}} \mu_a`` (colour and size)

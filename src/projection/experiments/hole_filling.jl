@@ -77,8 +77,8 @@ momenta `P`, the velocities `v1 = P/(m w*)` and `vc = P/(m w′)`, the charge-co
 `wc`, the diagnostics with `w*` (`diagnostics`) and with `w′` (`diagnostics_charge`), the grid
 charge residuals `charge_res` of `w*` and `charge_res_c` of `w′`, `charge_ok`, `charge_its`,
 `dlnw = max |ln(w′/w*)|`, and for the maps `θ`, `ratio` (objective after the fit relative to
-`θ = 0`), `iterations`, `ΔP`, `Δw`, `fit_time`, `map_time`, `stage_iterations`, the `parametrisation` and the `method`
-([`experiment_remap`](@ref)).
+`θ = 0`), `iterations`, `ΔP`, `Δw`, `fit_time`, `map_time`, `stage_iterations`, the
+`parametrisation` and the `method` ([`experiment_remap`](@ref)).
 """
 function hole_filling_experiment(; hole_x = π, weights::Symbol = :exact,
         variants = (:weight_dependent, :control_A, :control_B, :non_separable, :control_C),

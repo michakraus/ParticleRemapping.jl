@@ -89,7 +89,7 @@ function ParticleRemapping.remap_frames(method::_ProjectionRemap, before::Marker
     θt = zero(i.θ)
     for (k, (r, label)) in enumerate(steps)
         for t in range(0, 1; length = frames_per_stage + 1)[2:end]
-            θt[r] .= t .* i.θ[r]
+            θt[r] .= t .* (@view i.θ[r])
             X, P = remap_stages(par, θt, before.x, p, w; m)
             push!(frames, RemapStage(_stage_markers(X, P, w, m, L), label))
         end

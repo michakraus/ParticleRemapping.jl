@@ -59,10 +59,11 @@ Makie backend.
 function plot_closed_loop_defect end
 
 """
-    animate_target_relaxation(path, history; Lx, framerate = 20)
+    animate_target_relaxation(path, history; Lx, framerate = 20, hold = 8)
 
 Record to `path` the de-clustering relaxation of the target points, one frame per step of the
-`history` of [`declustering_relaxation`](@ref), positions modulo `Lx`: the start points as dark
-grey dots, the moving points as open circles, the style of the targets. Needs a Makie backend.
+`history` of [`declustering_relaxation`](@ref), positions modulo `Lx`, with the first and the last
+step held for `hold` frames: the start points as dark grey dots, the moving points as open
+circles, the style of the targets. Needs a Makie backend.
 """
 function animate_target_relaxation end
