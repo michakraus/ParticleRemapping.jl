@@ -100,7 +100,7 @@ makedocs(;
         repo = "github.com/michakraus/ParticleRemapping.jl",
         devbranch = "main",
         description = "Symplectic remapping, projection and redistribution of weighted particle-in-cell markers",
-        # the manual is not deployed: one site, at the root of the build
+        # the manual is not deployed: one site, with no version subfolder
         deploy_decision = Documenter.DeployDecision(; all_ok = false, subfolder = "")
     )
 )

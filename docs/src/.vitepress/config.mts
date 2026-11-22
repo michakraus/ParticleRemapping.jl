@@ -64,7 +64,6 @@ export default defineConfig({
   themeConfig: {
     nav,
     sidebar: 'REPLACE_ME_DOCUMENTER_VITEPRESS',
-    sidebarDrawer: 'REPLACE_ME_DOCUMENTER_VITEPRESS_SIDEBAR_DRAWER',
     socialLinks: [
       { icon: 'github', link: 'REPLACE_ME_DOCUMENTER_VITEPRESS' }
     ],
