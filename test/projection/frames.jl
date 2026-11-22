@@ -22,8 +22,9 @@ end
     methods = (
         KickDriftRemap(; nξ = 8, nv = 10, nw = 4, projection = hp, maxit = 2),
         NonSeparableRemap(; nξ = 6, nv = 7, nℓ = 3, projection = hp, maxit = 2),
+        # 8 splines: on 16, the cubic B-splines at the 16 marker columns miss the alternating mode
         KickDriftRemap(; nξ = 8, nv = 10, nw = 4, projection = hp, maxit = 2, stages = 3,
-            charge = ChargeConservingReweighting(L, 16)))
+            charge = ChargeConservingReweighting(L, 8)))
     labels = (
         ["before", "kick 1", "drift 1", "kick 2", "drift 2", "gauge: target weights"],
         ["before", "midpoint stage 1", "midpoint stage 2", "gauge: target weights"],
@@ -64,7 +65,7 @@ end
             @test b.markers.w != a.markers.w
         end
         @test states[end - ngauge + 1].markers.w == i.targets.w
-        haskey(i, :wc) && @test states[end].markers.w == i.wc
+        haskey(i, :wc) && @test i.charge_converged && states[end].markers.w == i.wc
         # the case that must fail: markers that are not the input of the remap
         moved = Markers(mk.x .+ 0.1, mk.v, mk.w; m)
         @test_throws r"^ArgumentError: the markers are not the input of the remap" remap_states(

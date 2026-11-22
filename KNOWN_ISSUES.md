@@ -108,6 +108,24 @@
 - **kind:** defect
 - **found:** 2026-11-22
 
+### K12 · The charge-conserving reweighting fails for markers in the columns of its spline cells
+
+- **location:** `src/projection/charge.jl`
+- **problem:** with one marker column at the centre of each of the `n` spline cells, the cubic
+  B-splines at the markers do not see the alternating mode, so the Hessian `A diag(w) Aᵀ` of
+  `charge_reweight` is singular up to round-off; whether its Cholesky test passes depends on the
+  platform, and the iteration stops with `converged = false`, after no step or after one. Inside
+  `KickDriftRemap` and `NonSeparableRemap` the weights `wc` of such a run replace the target
+  weights with only `charge_converged = false` to show it, while `remap` of a
+  `ChargeConservingReweighting` throws.
+- **evidence:** `hole_filling_problem(; nL = 16, hole_a = 0.9, hole_b = 0.8)` with
+  `KickDriftRemap(; nξ = 8, nv = 10, nw = 4, projection = HatProjection(12, 13), maxit = 2,
+  stages = 3, charge = ChargeConservingReweighting(2π, 16))`: smallest eigenvalue of the Hessian
+  `4.4·10⁻¹⁷`, largest `0.49`; one Newton step on macOS with Julia 1.13, none with 1.14 and on
+  Linux. With 8 splines the eigenvalues are `0.034` and `0.91`, and the iteration converges.
+- **kind:** defect
+- **found:** PR 3
+
 ## SlicedRedistribution
 
 ### K5 · The long-time sliced remap is canonical only for frozen multipliers

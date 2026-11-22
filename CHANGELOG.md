@@ -84,12 +84,28 @@
 - Dependabot opens the weekly `[compat]` bumps of the root `Project.toml` and the GitHub Actions
   updates.
 - `codecov.yml` sets the project and patch checks to target `auto` with a 1 % threshold.
+- `KNOWN_ISSUES.md`: K12 (the charge-conserving reweighting does not converge for markers in the
+  columns of its spline cells: the Hessian is singular up to round-off).
+- Tests: the remap states (`test/projection/frames.jl`) use 8 instead of 16 charge splines, which
+  on 16 marker columns made the case of K12, and check that the charge step converged.
 
 ### Fixed
 
 - The kick–drift and the non-separable parametrisation of the projection evaluate to `NaN` for
   markers of equal weight: the spline basis in `ln w` had the spacing zero. It now spans
   `[ln w, ln w + 1]`, and the stages are the same map for every marker, as they must be.
+- `charge_reweight`, the Newton iteration of the charge-conserving reweighting, no longer stalls
+  short of its tolerance. Near the solution the decrease of Φ in a Newton step (about 1e-25 against
+  Φ ≈ 6) is far below the rounding error of Φ (one ulp, 8.9e-16), so whether the Armijo test
+  accepted the full step depended on how the sum rounded. Where Φ rounded up, the line search
+  halved the step to 1e-12 and the iteration stopped after 50 iterations at a residual near 1e-10
+  (`converged = false`, and `remap` of a `ChargeConservingReweighting` threw "no positive weights
+  reproduce the reference grid charge"). This happened on Linux with Julia 1.13 in the example of
+  the manual page on the charge-conserving reweighting and with Julia 1.14 in
+  `test/projection/charge.jl`. The Armijo test now allows the rounding error of Φ (8 eps of
+  Σw + |λᵀρ|), so the full step is taken near the solution. A start within 1e-11 of the grid charge
+  converges in one step, and 20 random starts converge (`test/projection/charge.jl`); before the
+  fix one of them stopped after 50 iterations and one took 29.
 
 ### Changed
 
