@@ -144,7 +144,7 @@ symplectic for any ``\lambda > 0``, even one that depends on the state of the wh
 [factorisation lemma](@ref factorisation-lemma) of the next chapter shows that *every* symplectic
 redistribution is a canonical map ``\psi`` of ``(x, p)`` followed by such a
 [gauge step](@ref gauge-step). The chapter after it,
-[What a symplectic redistribution can do](@ref obstructions), shows what this leaves possible: a
+[Symplectic redistribution](@ref obstructions), shows what this leaves possible: a
 smooth canonical map applied to every marker moves a hole but cannot shrink it
 ([Liouville](@ref liouville-holes)), so a redistribution that fills holes either changes the
 weights, or moves the markers with a map that depends on their weights or couples them.
@@ -153,13 +153,15 @@ The four constructions of the manual differ in how they choose ``\psi`` and the 
 
 | chapter | module | the canonical map ``\psi`` | the new weights | kept exactly |
 |:--|:--|:--|:--|:--|
-| [Gauge rezoning and canonical transport](@ref remap-overview) | [`Remapping`](@ref) | the identity (gauge rezoning), or a given canonical map (canonical transport) | stretches from a constrained optimisation; or current-quantile matching | ``\omega`` (the gauge rezoning for any state dependence), ``x``, ``p``, grid current; grid charge and kinetic energy by constraints |
 | [Hamiltonian particle projection](@ref projection-index) | [`Projection`](@ref) | kicks and drifts, or non-separable stages, of a weight-dependent Hamiltonian, fitted to target points | a projected density, or a charge-conserving reweighting | ``\omega`` for fixed parameters, ``P``, total weight; grid charge in the charge-conserving variant |
 | [Spline-projection redistribution](@ref redistribution-overview) | [`Redistribution`](@ref) | one symplectic step of a pairwise spline Hamiltonian, solved to reach relaxed targets | a positive spline projection with exact mass and momentum | ``\omega`` for fixed parameters, ``P``, total weight |
+| [Gauge rezoning and canonical transport](@ref remap-overview) | [`Remapping`](@ref) | the identity (gauge rezoning), or a given canonical map (canonical transport) | stretches from a constrained optimisation; or current-quantile matching | ``\omega`` (the gauge rezoning for any state dependence), ``x``, ``p``, grid current; grid charge and kinetic energy by constraints |
 | [Sliced redistribution](@ref sliced-overview) | [`SlicedRedistribution`](@ref) | sliced quantile cotangent lifts and a canonical weight squeeze, explicit | the squeeze multipliers | ``\omega`` for fixed slices and multipliers, ``P``, total weight |
 
-The order of the chapters follows the canonical map: from the identity and a given map, through a
-map fitted or solved for parameters, to an explicit map that couples the markers. Where the
+The first two chapters move the markers to target points with a map whose parameters are fitted
+or solved for. The third keeps the canonical map fixed, the identity or a given map, and chooses
+the new weights. The fourth builds an explicit map that couples the markers. Every chapter runs
+the same [standard experiments](@ref standard-experiments). Where the
 parameters, slices or multipliers are computed from the markers, the map is symplectic for their
 frozen values; [Parameters that depend on the state](@ref state-dependent-parameters) states what
 this means and when it can be closed. Each

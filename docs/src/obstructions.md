@@ -1,4 +1,4 @@
-# [What a symplectic redistribution can do](@id obstructions)
+# [Symplectic redistribution](@id obstructions)
 
 ```@meta
 CurrentModule = ParticleRemapping

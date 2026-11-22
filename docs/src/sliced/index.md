@@ -30,28 +30,45 @@ velocity and position slices, ``n_v = N / B_v`` and ``n_x = N / B_x`` their size
 the fields `q̃`, `p̃`, `q̂`, `p̂`, `q̄` and `p̄` of the result hold these values, and the field
 `q_anc` holds the position anchors ``x^{\mathrm{anc}}``.
 
-## The algorithm in short
+## The algorithm step by step
 
 The map is a composition of four stages,
 
 ```math
 \mathcal{R} = \mathcal{F} \circ T_\mu \circ \Psi_p \circ \Psi_q , \qquad
-\psi = T_\mu \circ \Psi_p \circ \Psi_q ,
+\psi = T_\mu \circ \Psi_p \circ \Psi_q .
 ```
 
-1. ``\Psi_q`` sorts the markers into ``B_v`` slices of equal velocity range and moves the
-   positions in each slice towards equispaced targets: the cotangent lift of the gradient of a
-   strictly convex potential;
-2. ``\Psi_p`` does the same with the roles exchanged: it sorts the markers into ``B_x`` slices of
-   equal position range and moves the momenta in each slice towards equispaced targets;
-3. ``T_\mu`` scales each momentum by a slot multiplier ``\mu_a`` and each position offset by
-   ``1/\mu_a``, a linear canonical map that keeps the total momentum; the multipliers follow the
-   density of the input markers;
-4. ``\mathcal{F}`` sets the weights ``\bar{w}_a = w_{\mathrm{ref}} \mu_a`` and the velocities
-   ``\bar{v}_a = \bar{p}_a / (m \bar{w}_a)``.
+The figures follow the stages on 40 markers after the long run of the
+[standard experiments](@ref standard-long-time), with 4 velocity slices and 8 position slices
+([`algorithm_svg`](@ref ParticleRemapping.algorithm_svg)).
 
-Stages 1–3 are canonical maps of ``(x, p)``; stage 4 is a [gauge step](@ref gauge-step), which
-any choice of weights keeps symplectic. The order of the two lifts is that of a Knothe–Rosenblatt
+1. **Velocity slices.** Sort the markers into ``B_v`` slices of equal size by velocity (panel 1,
+   the colour is the slice, the dashed lines separate the slices, the open circles are the
+   equispaced position targets of each slice).
+2. **``\Psi_q``.** In each slice, move the positions towards their targets: the cotangent lift of
+   the gradient of a strictly convex potential, which changes the momenta as well (panel 2).
+3. **Position slices.** Sort the markers into ``B_x`` slices of equal size by position (panel 3).
+4. **``\Psi_p``.** In each slice, move the momenta towards equispaced targets, with the roles of
+   ``x`` and ``p`` exchanged (panel 4).
+5. **``T_\mu``.** Scale each momentum by a slot multiplier ``\mu_a`` and each position offset by
+   ``1/\mu_a``, a linear canonical map that keeps the total momentum; the multipliers follow the
+   density of the input markers (panel 5, colour and size are the weight again).
+6. **``\mathcal{F}``.** Set the weights ``\bar{w}_a = w_{\mathrm{ref}} \mu_a`` and the velocities
+   ``\bar{v}_a = \bar{p}_a / (m \bar{w}_a)``, a [gauge step](@ref gauge-step) (panel 6).
+
+```@example sliced-steps
+using ParticleRemapping
+steps = algorithm_svg(:sliced)
+steps.panels
+```
+
+```@example sliced-steps
+steps.animation
+```
+
+Stages 1–3 of the map are canonical maps of ``(x, p)``; the last stage is a gauge step, which any
+choice of weights keeps symplectic. The order of the two lifts is that of a Knothe–Rosenblatt
 rearrangement [Villani:2009](@cite): first the positions conditional on the velocity, then the
 momenta conditional on the position. The [algorithm](@ref sliced-algorithm) page gives each stage
 in full.
@@ -123,10 +140,16 @@ long-time run of 900 markers.
   composition with a later flow step, with proofs.
 - [Algorithm](@ref sliced-algorithm): the four stages with their formulas, the stages of the
   standard example coloured by slice, the parameters and the cost.
-- [Numerical experiments](@ref sliced-experiments): the five verification suites, the hole
-  filling on a checkerboard and the long-time run of 900 markers in an electric field, with
-  tables, figures and animations.
-- [What does not work](@ref sliced-failures): the constructions that fail, with the reason and a
+- [Numerical experiments](@ref sliced-experiments): the standard experiments, which every
+  construction runs.
+- [Structural suites](@ref sliced-suites): the four verification suites of the symplecticity
+  condition and of the statements of the stages, with tables.
+- [Long-time run: variants and repeated remaps](@ref sliced-long-time-page): the remap after the
+  long-time run of 900 markers in an electric field, its variants and the run with repeated
+  remaps, with tables, figures and animations.
+- [Hole filling](@ref sliced-holes): the sliced lifts on a checkerboard and the control with one
+  slice for each lift.
+- [Constructions that fail](@ref sliced-failures): the constructions that fail, with the reason and a
   control that shows it.
 - [Properties, limitations and higher dimensions](@ref sliced-limitations-page): what the map
   keeps, what it cannot do, the known issues, the open questions, and the cost in 3d3v.

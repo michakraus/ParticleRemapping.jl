@@ -4,7 +4,7 @@
 CurrentModule = ParticleRemapping.Redistribution
 ```
 
-## Why single-particle Hamiltonians and ad-hoc force projection fail
+## Failure of single-particle Hamiltonians and ad-hoc force projection
 
 Before ``H_\theta(x, p)`` is specified, two natural simplifications are ruled out. An uncoupled
 map moves a hole but does not shrink it ([uncoupled maps](@ref uncoupled-maps)). Part (i) of the
@@ -190,9 +190,9 @@ D = ForwardDiff.jacobian(y -> vcat(ensemble_hamiltonian_gradient(C, y[1:N], y[(N
  asymmetry = norm(D - transpose(D)) / norm(D))
 ```
 
-### [Remark (why circular-mean centering is avoided on the torus)](@id rd-circular-mean)
+### [Remark (no circular-mean centering on the torus)](@id rd-circular-mean)
 
-!!! note "Remark (why circular-mean centering is avoided on the torus)"
+!!! note "Remark (no circular-mean centering on the torus)"
     On ``\mathbb{T}^1 = \mathbb{R} / L\mathbb{Z}``, replacing ``x_{\mathrm{c}}`` in the centroid
     frame by the circular mean
     ``\bar{\vartheta}(x) = \tfrac{L}{2\pi} \operatorname{atan2}\big(\sum_b \sin\tfrac{2\pi x_b}{L},

@@ -73,6 +73,23 @@ A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:
   stages, a gauge step keeps ``(x, p)`` in every frame, periodic positions move by the shorter way
   round (and cross the whole interval without a period, the control), and the guards for no
   stages and for stages of different sizes.
+- **`test/common/svg.jl`**: [`svg_stage_panels`](@ref) and [`svg_stage_animation`](@ref): the
+  number of markers, targets, clip paths and arrows, the position of a marker in pixels, the
+  category colours, the key times of the animation, the escaped titles, clip ids that differ
+  between two pictures, and the guard for states of different sizes.
+- **`test/algorithm_figures.jl`**: [`algorithm_svg`](@ref) for every construction: the panels,
+  the markers in every panel, an animated position per marker, no `NaN`, and the guard for an
+  unknown key.
+- **`test/standard.jl`** (group `slow`): the [standard experiments](@ref standard-experiments):
+  the densities (normalisation, constancy along the discrete characteristics, the cut of the
+  represented one), the quadrants kept by the gauge rezoning and the transport and filled by the
+  sliced remap, the failures of the projection with the represented density and of the
+  spline-projection redistribution at full size, the cell statistics of the long run, the loss
+  of weight of the transport with the positive density, and the repeated sliced remaps. The tables
+  of the chapter pages *Numerical experiments* and of the
+  [comparison](@ref comparison-standard) give the numbers of these runs; the test checks bounds,
+  and `scripts/standard/standard_experiments.jl` prints every number of the tables (about
+  15 minutes).
 - **`test/quality/aqua.jl`** and **`test/quality/explicit_imports.jl`**: `Aqua.test_all`, and
   that no module relies on an implicit import.
 

@@ -34,6 +34,7 @@ include("common/grids.jl")
 include("common/bsplines.jl")
 include("common/interface.jl")
 include("common/stages.jl")
+include("common/svg.jl")
 include("common/plotting.jl")
 
 # the four constructions, each in its own module
@@ -55,5 +56,9 @@ for mod in (Remapping, Projection, Redistribution, SlicedRedistribution)
 end
 
 export Remapping, Projection, Redistribution, SlicedRedistribution
+
+# the standard experiments, which every construction runs
+include("standard.jl")
+include("algorithm_figures.jl")
 
 end

@@ -13,45 +13,65 @@ with the same pictures (the [standard pictures](@ref figures) S1, S2, A1 and T1)
 example of its chapter. A section on higher dimensions and the open questions of all chapters
 close the chapter.
 
-## What moves, and what is kept
+## [Results of the standard experiments](@id comparison-standard)
 
-| | [gauge rezoning](@ref remap-gauge) | [canonical transport](@ref remap-transport) | [Hamiltonian particle projection](@ref projection-index) | [spline-projection redistribution](@ref redistribution-overview) | [sliced redistribution](@ref sliced-overview) |
+Every construction remaps the same markers ([standard experiments](@ref standard-experiments));
+the page *Numerical experiments* of each chapter gives the figures and the details. "fails" names
+the reason the construction stops; "rep." and "pos." are the represented and the positive density,
+which matter only for the projection and the transport.
+
+| | checkerboard: quadrants after (before ``200, 0, 200, 0``) | weight in ``Q_2 \cup Q_4`` (exact: 0 rep., 1/2 pos.) | long run: empty cells (before 14) | long run: relative std (before 0.598) | remaps every 100 steps: mean relative std, ``t \ge 5`` (no remap 0.587) |
+|:--|:--|--:|--:|--:|--:|
+| [kick–drift projection](@ref projection-experiments), rep. | fails: zero target weights | | fails | fails | |
+| kick–drift projection, pos. | ``131, 73, 130, 66`` | 0.348 | 0 | 0.475 | fails at ``t = 15``: markers outside the box |
+| non-separable projection, pos. | ``123, 76, 120, 81`` | 0.393 | 7 | 0.937 | fails |
+| [spline redistribution](@ref rd-experiments) | fails: relaxation leaves the box (K2) | | fails (K2) | fails (K2) | |
+| [gauge rezoning](@ref remap-experiments) | ``200, 0, 200, 0`` | 0 | 13 | 0.559 | 0.550 |
+| canonical transport, ``\psi = \mathrm{id}``, rep. | ``200, 0, 200, 0`` | 0 | 15 | 0.572 | 0.597 |
+| canonical transport, ``\psi = \mathrm{id}``, pos. | ``200, 0, 200, 0`` | 0 | 0 | 0.392 | 0.384 |
+| [sliced redistribution](@ref sliced-experiments) | ``134, 67, 128, 71`` | 0.205 | 0 | 0.367 | 0.365 |
+
+The rows follow the [obstructions](@ref obstructions). The gauge rezoning and the transport with
+the identity keep every position and every sign of ``v``, so the empty quadrants stay empty. The
+projection with equal weights moves every marker by one area-preserving map: it fills the
+quadrants by folding the occupied region, not by shrinking the empty one, and it needs a density
+that is positive on its whole box. The sliced redistribution couples the markers and fills the
+quadrants with any density, but its weights follow a kernel estimate of the input, not a given
+density. The spline-projection redistribution couples the markers too, but its relaxation and its
+step fit 16 markers; its reduced runs are on its [experiments page](@ref rd-experiments). With
+the positive density, the transport changes the total weight by ``-0.20`` on the long run, the
+weight of the tails that the markers never sampled.
+
+## Moved and kept quantities
+
+| | [Hamiltonian particle projection](@ref projection-index) | [spline-projection redistribution](@ref redistribution-overview) | [gauge rezoning](@ref remap-gauge) | [canonical transport](@ref remap-transport) | [sliced redistribution](@ref sliced-overview) |
 |:--|:--|:--|:--|:--|:--|
-| dimension in the package | 1D-1V | 1D-1V | 1D-1V (stages in any ``d``) | 1D-1V | any ``d``, per axis |
-| ``\psi`` | identity | a given canonical map | kicks and drifts, or non-separable stages, of a weight-dependent Hamiltonian | one step (or substeps) of a pairwise spline Hamiltonian | sliced quantile cotangent lifts and a linear weight squeeze |
-| positions | unchanged | moved by ``\psi`` | moved by ``\psi`` | moved by ``\psi`` | moved by ``\psi`` |
-| new weights | stretches ``\lambda_a`` from a constrained optimisation | current-quantile matching | target weights from a projected or low-rank density, or charge-conserving | weighted KKT spline projection at the targets | ``w_{\mathrm{ref}} \mu_a`` from the squeeze multipliers |
-| ``\omega`` | exactly, for any state dependence | exactly, for a fixed ``\psi`` | exactly, for fixed parameters | exactly, for fixed parameters | exactly, for frozen slices and multipliers |
-| total momentum ``P`` | exactly | exactly when ``\psi`` keeps it | exactly | exactly | exactly |
-| total weight | exactly (moment ``k = 0``) | up to the quantile error | exactly | exactly | exactly |
-| grid charge | exactly (constraint) | up to the quantile error | not kept; exactly with the charge-conserving reweighting | not kept | not kept |
-| kinetic energy | exactly (constraint) | up to the quantile error | not kept (the constraint of the fit is not implemented) | not kept | not kept |
-| represented density | in the constrained moments | consistent with the target density, up to the quantile error | consistent with ``f_h`` up to the fit residual | consistent with the KKT projection at the targets | through the multipliers, approximately |
+| dimension in the package | 1D-1V (stages in any ``d``) | 1D-1V | 1D-1V | 1D-1V | any ``d``, per axis |
+| ``\psi`` | kicks and drifts, or non-separable stages, of a weight-dependent Hamiltonian | one step (or substeps) of a pairwise spline Hamiltonian | identity | a given canonical map | sliced quantile cotangent lifts and a linear weight squeeze |
+| positions | moved by ``\psi`` | moved by ``\psi`` | unchanged | moved by ``\psi`` | moved by ``\psi`` |
+| new weights | target weights from a projected or low-rank density, or charge-conserving | weighted KKT spline projection at the targets | stretches ``\lambda_a`` from a constrained optimisation | current-quantile matching | ``w_{\mathrm{ref}} \mu_a`` from the squeeze multipliers |
+| ``\omega`` | exactly, for fixed parameters | exactly, for fixed parameters | exactly, for any state dependence | exactly, for a fixed ``\psi`` | exactly, for frozen slices and multipliers |
+| total momentum ``P`` | exactly | exactly | exactly | exactly when ``\psi`` keeps it | exactly |
+| total weight | exactly | exactly | exactly (moment ``k = 0``) | up to the quantile error | exactly |
+| grid charge | not kept; exactly with the charge-conserving reweighting | not kept | exactly (constraint) | up to the quantile error | not kept |
+| kinetic energy | not kept (the constraint of the fit is not implemented) | not kept | exactly (constraint) | up to the quantile error | not kept |
+| represented density | consistent with ``f_h`` up to the fit residual | consistent with the KKT projection at the targets | in the constrained moments | consistent with the target density, up to the quantile error | through the multipliers, approximately |
 
-## What each construction needs
+## Requirements of each construction
 
 | | needs | computed from the markers |
 |:--|:--|:--|
-| gauge rezoning | a grid, the set ``\mathcal{K}`` of constrained moments, target stretches | the stretches, by a Newton method with a homotopy |
-| canonical transport | a grid, an admissible canonical map, a target density | the cumulative currents and their quantiles per cell |
 | Hamiltonian particle projection | a box, a hat projection, a B-spline parametrisation of the stages, a regularisation | the target points (density-interpolation flow), the parameters (least-squares fit), the target weights |
 | spline-projection redistribution | a box, a phase-space spline basis, relaxation parameters, a pairwise spline basis | the relaxed targets, the KKT weights, the parameters (one linear solve per step) |
+| gauge rezoning | a grid, the set ``\mathcal{K}`` of constrained moments, target stretches | the stretches, by a Newton method with a homotopy |
+| canonical transport | a grid, an admissible canonical map, a target density | the cumulative currents and their quantiles per cell |
 | sliced redistribution | a box, the numbers of slices ``B_v`` and ``B_x`` (``N`` a multiple of both), the lift and kernel parameters | the slices and anchors, the multipliers (predictor–corrector loop) |
 
-## Where each construction stops
+## Limits of each construction
 
 Each chapter derives its own limits on its page *Properties, limitations and higher dimensions*,
 with the known issues of its code and its open questions; this list collects the main limits.
 
-- **Gauge rezoning.** It moves the velocities along rays only and never moves a position, so it
-  cannot fill a hole in ``x``. Its solution branch ends at a fold of the homotopy
-  ([one constraint in closed form](@ref remap-charge-example)). The package solves the Schur
-  complement as a dense matrix (K9). Details: [limitations](@ref remapping-limitations).
-- **Canonical transport.** A consistent weight field exists if and only if ``\psi`` preserves the
-  sign-resolved current profile, and a smooth canonical map cannot, in general, make the marker
-  distribution uniform ([the limit of equidistribution](@ref remap-limit)). A folded sheet is
-  treated one layer at a time ([the fold](@ref velocity-momentum-fold)). Details:
-  [limitations](@ref remapping-limitations).
 - **Hamiltonian particle projection.** The fit can reduce its residual only where the old weights
   vary ([weight-dependent Hamiltonians](@ref weight-dependent-hamiltonians)); with separable
   stages, a kick that compresses the markers at one velocity expands them at the opposite one,
@@ -61,8 +81,18 @@ with the known issues of its code and its open questions; this list collects the
 - **Spline-projection redistribution.** The step reaches its targets on the identity-connected
   branch when the contraction condition holds; the verification case violates the sufficient
   bound and uses substeps ([the parameter solver](@ref rd-solver)). The defaults fit the
-  16-marker verification set-up; the [numerical experiments](@ref rd-experiments) show the
+  16-marker verification set-up; the pages [the verification set-up](@ref rd-setup),
+  [hole filling](@ref rd-holes) and the [standard experiments](@ref rd-experiments) show the
   failures outside it (K2, K3). Details: [limitations](@ref redistribution-limitations).
+- **Gauge rezoning.** It moves the velocities along rays only and never moves a position, so it
+  cannot fill a hole in ``x``. Its solution branch ends at a fold of the homotopy
+  ([one constraint in closed form](@ref remap-charge-example)). The package solves the Schur
+  complement as a dense matrix (K9). Details: [limitations](@ref remapping-limitations).
+- **Canonical transport.** A consistent weight field exists if and only if ``\psi`` preserves the
+  sign-resolved current profile, and a smooth canonical map cannot, in general, make the marker
+  distribution uniform ([the limit of equidistribution](@ref remap-limit)). A folded sheet is
+  treated one layer at a time ([the fold](@ref velocity-momentum-fold)). Details:
+  [limitations](@ref remapping-limitations).
 - **Sliced redistribution.** The map is canonical for frozen slices and multipliers, and the
   multipliers come from the state. The squeeze can move markers far from their anchors (K6), and
   each lift solves a dense ``N \times N`` system (K7, [cost](@ref sliced-cost-3d3v)). Details:
@@ -72,7 +102,7 @@ Every construction computes something from the markers and is symplectic for its
 except the gauge rezoning, whose gauge step is symplectic for any stretch
 ([parameters that depend on the state](@ref state-dependent-parameters)).
 
-The two constructions of the first chapter also combine: the current-quantile matching gives
+The two constructions of the gauge-rezoning chapter also combine: the current-quantile matching gives
 targets for the gauge rezoning ([combining the two constructions](@ref remap-comparison)).
 
 ## [Higher dimensions](@id comparison-higher-dimensions)
@@ -84,10 +114,10 @@ what binds first in 3d3v.
 
 | | in the package | the step that binds in 3d3v | a route the chapter derives |
 |:--|:--|:--|:--|
-| [gauge rezoning](@ref remapping-higher-dimensions) | 1D-1V | the Schur complement on ``n_K N_g^d`` multipliers, solved dense (K9): ``1.9 \cdot 10^{14}`` operations for ``N_g = 32``, ``n_K = 2`` | a sparse solve of the Schur complement (``27``-node stencil); the stretch per marker and the diagonal Hessian stay as in 1D; the stretch cannot change the direction of ``v`` |
-| [canonical transport](@ref remapping-higher-dimensions) | 1D-1V | the discrete matching: the continuum matching holds along rays, a discrete one does not exist | direction bins, the radial cumulative current, canonical maps that keep the direction-resolved current |
 | [Hamiltonian particle projection](@ref projection-higher-dimensions) | stages in any ``d``, the rest in 1D-1V | the grid in ``2d`` dimensions (``1.2 \cdot 10^9`` hat nodes), its Poisson problem (K10), and the parameters (``3.1 \cdot 10^6`` kick–drift, ``2.4 \cdot 10^8`` non-separable) with their normal equations | transform-based Poisson solver, low-rank target weights, adjoint gradients with L-BFGS or matrix-free Gauss–Newton, a sparse or low-rank parametrisation |
 | [spline-projection redistribution](@ref redistribution-higher-dimensions) | 1D-1V | the pairwise basis, ``N_\theta \approx 3 \cdot 10^9`` parameters, the ``O(N^2)`` pair sums and the dense ``2Nd \times 2Nd`` Newton matrix | the coarse collective (Fourier-moment) basis with the Tikhonov solve and the velocity recovery along the fold; a relaxation with a kernel cutoff |
+| [gauge rezoning](@ref remapping-higher-dimensions) | 1D-1V | the Schur complement on ``n_K N_g^d`` multipliers, solved dense (K9): ``1.9 \cdot 10^{14}`` operations for ``N_g = 32``, ``n_K = 2`` | a sparse solve of the Schur complement (``27``-node stencil); the stretch per marker and the diagonal Hessian stay as in 1D; the stretch cannot change the direction of ``v`` |
+| [canonical transport](@ref remapping-higher-dimensions) | 1D-1V | the discrete matching: the continuum matching holds along rays, a discrete one does not exist | direction bins, the radial cumulative current, canonical maps that keep the direction-resolved current |
 | [sliced redistribution](@ref sliced-higher-dimensions) | any ``d``, per axis | the dense ``N \times N`` lifts (K7), the ``O(N^2)`` density ratio whose kernel holds ``1.6 \cdot 10^{-4}`` markers at ``N = 900``, and the correlations between the axes that the per-axis lifts do not see | block-diagonal plus rank-one lift solves; kernel widths that grow with ``d``; lifts conditioned on chosen coordinates or in rotated frames |
 
 ## [Open questions](@id open-questions)

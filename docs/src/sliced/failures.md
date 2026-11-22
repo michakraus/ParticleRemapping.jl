@@ -1,4 +1,4 @@
-# [What does not work](@id sliced-failures)
+# [Constructions that fail](@id sliced-failures)
 
 ```@meta
 CurrentModule = ParticleRemapping.SlicedRedistribution

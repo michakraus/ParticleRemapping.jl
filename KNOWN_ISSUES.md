@@ -93,6 +93,21 @@
 - **kind:** found late
 - **found:** 2026-11-20
 
+### K11 · The target points of markers outside the velocity box of the projection diverge
+
+- **location:** `src/projection/targets.jl`
+- **problem:** for a marker with `|v| > V`, the density-interpolation flow of `projection_targets`
+  is not defined, and its target moves far out of the box; in a run with repeated remaps the
+  speeds that the gauge step gives grow from remap to remap until the density underflows at a
+  target and `remap` stops with a zero target weight.
+- **evidence:** `standard_remap_history(:projection; variant = :positive)` (the long run of the
+  standard experiments, box `V = 3`): after the first remap at `t = 5` the largest speed is 6.48;
+  the largest target speed is 2.94 at `t = 5`, 12.3 at `t = 10` and `7.5·10²⁹` at `t = 15`, where
+  `remap` throws `DomainError with 0.0: the target weights must be positive`. The same holds for
+  `:nonseparable`.
+- **kind:** defect
+- **found:** 2026-11-22
+
 ## SlicedRedistribution
 
 ### K5 · The long-time sliced remap is canonical only for frozen multipliers

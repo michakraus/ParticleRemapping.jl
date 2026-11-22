@@ -69,6 +69,7 @@ factorisation_pullback_experiment
 pseudo_time_flow_experiment
 autonomous_map_experiment
 composition_defect_experiment
+checkerboard_markers
 checkerboard_experiment
 electric_wave_markers
 electric_wave_simulation

@@ -36,7 +36,7 @@ export charge_multiplier_limit, charge_stationary_point, charge_fold
 export eight_marker_example, eight_marker_homotopy
 
 # Construction 2: canonical transport with consistent weights
-export CurrentQuantileMatching, SeparableMaxwellianTarget
+export CurrentQuantileMatching, SeparableMaxwellianTarget, DensityTarget
 export simpson_rule, represented_density, cumulative_current_error
 export cotangent_lift_flow, cotangent_lift, lift_compatibility_residual
 export maxwellian_current, maxwellian_current_inverse
