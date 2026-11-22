@@ -114,7 +114,7 @@
 - **problem:** with one marker column at the centre of each of the `n` spline cells, the cubic
   B-splines at the markers do not see the alternating mode, so the Hessian `A diag(w) Aᵀ` of
   `charge_reweight` is singular up to round-off; whether its Cholesky test passes depends on the
-  platform, and the iteration stops with `converged = false`, after no step or after one. Inside
+  platform, and the iteration stops with `converged = false`, after no step or after one; inside
   `KickDriftRemap` and `NonSeparableRemap` the weights `wc` of such a run replace the target
   weights with only `charge_converged = false` to show it, while `remap` of a
   `ChargeConservingReweighting` throws.

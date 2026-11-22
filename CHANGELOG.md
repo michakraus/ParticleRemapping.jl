@@ -102,10 +102,11 @@
   (`converged = false`, and `remap` of a `ChargeConservingReweighting` threw "no positive weights
   reproduce the reference grid charge"). This happened on Linux with Julia 1.13 in the example of
   the manual page on the charge-conserving reweighting and with Julia 1.14 in
-  `test/projection/charge.jl`. The Armijo test now allows the rounding error of Φ (8 eps of
-  Σw + |λᵀρ|), so the full step is taken near the solution. A start within 1e-11 of the grid charge
-  converges in one step, and 20 random starts converge (`test/projection/charge.jl`); before the
-  fix one of them stopped after 50 iterations and one took 29.
+  `test/projection/charge.jl`. The line search now evaluates the change of Φ along the step,
+  `Σ w (exp(s Aᵀδ) − 1) − s δᵀρ` with `expm1`, instead of the difference of two values of Φ, so
+  its rounding error stays below the decrease of the step. Each of 20 starts within 1e-11 of the
+  grid charge converges in one step (`test/projection/charge.jl`); before the fix one of them
+  stopped after 50 iterations and one took 29.
 
 ### Changed
 

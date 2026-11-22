@@ -35,16 +35,17 @@ end
 The weights `w_k = w*_k exp(Σ_i λ_i Λ_i(x_k))` with the grid charge `A w = ρ`
 ([`spline_charge_matrix`](@ref)). The multipliers `λ` minimise the convex dual
 `Φ(λ) = Σ_k w_k(λ) − λᵀρ`; Newton's method with a backtracking (Armijo) line search on `Φ` solves
-for them. The line search accepts a step whose change of `Φ` lies within the rounding error of
-`Φ`, so that the full Newton step is taken near the solution. The iteration stops when `|A w − ρ| < tol max(ρ)`, and reports `converged = false` when
-the Hessian `A diag(w) Aᵀ` is not positive definite (a shape function without markers) or the
-iteration does not converge in `maxit` iterations.
+for them. The line search evaluates the change `Σ_k w_k (e^{s (Aᵀδ)_k} − 1) − s δᵀρ` of `Φ` along
+the step `sδ` directly, so that its rounding error stays below the decrease of a Newton step near
+the solution. The iteration stops when
+`|A w − ρ| < tol max(ρ)`, and reports `converged = false` when the Hessian `A diag(w) Aᵀ` is not
+positive definite (a shape function without markers) or the iteration does not converge in `maxit`
+iterations.
 """
 function charge_reweight(b::UniformBasis, x, wstar, ρ; tol = 1e-13, maxit = 50)
     A = spline_charge_matrix(b, x)
     λ = zeros(b.n)
     weights(λ) = wstar .* exp.(A' * λ)
-    Φ(λ) = sum(weights(λ)) - dot(λ, ρ)
     for it in 1:maxit
         w = weights(λ)
         F = A * w - ρ
@@ -53,10 +54,13 @@ function charge_reweight(b::UniformBasis, x, wstar, ρ; tol = 1e-13, maxit = 50)
         H = Symmetric(A * Diagonal(w) * A')
         isposdef(H) || return (; w, λ, iterations = it - 1, converged = false)
         δ = -(H \ F)
-        s, Φ0 = 1.0, Φ(λ)
-        # the rounding error of Φ: near the solution the decrease of a Newton step falls below it
-        ε = 8 * eps(sum(w) + abs(dot(λ, ρ)))
-        while Φ(λ .+ s .* δ) > Φ0 + 1e-4 * s * dot(F, δ) + ε && s > 1e-12
+        # Φ(λ + sδ) − Φ(λ) without the difference of two values of size Φ, whose rounding error
+        # exceeds the decrease of a Newton step near the solution; a NaN (an underflowed weight
+        # times an overflowed factor) rejects the step
+        Aδ, δρ, Fδ = A' * δ, dot(δ, ρ), dot(F, δ)
+        ΔΦ(s) = sum(w .* expm1.(s .* Aδ)) - s * δρ
+        s = 1.0
+        while !(ΔΦ(s) <= 1e-4 * s * Fδ) && s > 1e-12
             s /= 2
         end
         λ = λ .+ s .* δ
