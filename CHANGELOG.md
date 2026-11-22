@@ -56,6 +56,14 @@
   (`test/projection/parametrisation.jl`, which closes K8).
 - `KNOWN_ISSUES.md`: K9 (the dense Schur solve of the gauge rezoning) and K10 (the dense
   pseudo-inverse of the density-interpolation flow).
+- Continuous integration, the same generated workflows as the other repositories of the tree. The
+  tests run the groups `core` and `slow` on Julia `min` and `1` on Ubuntu, and on fewer events on
+  macOS and Windows; a pinned doctest job runs next to them. The manual is built on every change; nothing is published,
+  because there is no `deploydocs`.
+- An advisory `Downgrade` job tests the `[compat]` lower bounds; its failure does not fail the run.
+- Dependabot opens the weekly `[compat]` bumps of the root `Project.toml` and the GitHub Actions
+  updates.
+- `codecov.yml` sets the project and patch checks to target `auto` with a 1 % threshold.
 
 ### Changed
 
