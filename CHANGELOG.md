@@ -56,6 +56,32 @@
   (`test/projection/parametrisation.jl`, which closes K8).
 - `KNOWN_ISSUES.md`: K9 (the dense Schur solve of the gauge rezoning) and K10 (the dense
   pseudo-inverse of the density-interpolation flow).
+- Standard experiments that every construction runs with the same markers and measures
+  (`src/standard.jl`): the checkerboard of suite 5a and the long run in a two-wave field of suite
+  5b, each with the density the markers represent and a positive density
+  (`checkerboard_density`, `electric_wave_density`, the latter exact by the inverse of the
+  drift–kick–drift steps); `standard_method`, `standard_checkerboard`, `standard_long_time`,
+  `standard_remap_history`, `standard_wave_markers`, `STANDARD_METHODS` and `ShiftedRemap`, which
+  applies a construction on `[0, L)` to markers on `[−L/2, L/2)`. A construction that fails on a
+  marker set reports the message instead of throwing.
+- `DensityTarget`: a target of the current-quantile matching for any density function, tabulated
+  per cell and branch.
+- `checkerboard_markers` (the markers of suite 5a), and `electric_wave_simulation` takes a
+  `remap_method` that is a function of the remap time.
+- SVG pictures that need no plotting package: `svg_stage_panels` (one panel per state),
+  `svg_stage_animation` (SMIL, no script), the overlays `svg_line`, `svg_rect`, `svg_text`,
+  `svg_arrow`, `svg_category_colors` and `SVGFigure`; `algorithm_svg(key)` draws the steps of each
+  algorithm on a small example for the overview pages.
+- Tests: `test/standard.jl` (group `slow`), `test/common/svg.jl`, `test/algorithm_figures.jl`,
+  `DensityTarget` against `SeparableMaxwellianTarget`, and the parametrisations with equal weights.
+- `KNOWN_ISSUES.md`: K11 (the target points of markers outside the velocity box of the projection
+  diverge, which stops the repeated remaps of the long run).
+
+### Fixed
+
+- The kick–drift and the non-separable parametrisation of the projection evaluate to `NaN` for
+  markers of equal weight: the spline basis in `ln w` had the spacing zero. It now spans
+  `[ln w, ln w + 1]`, and the stages are the same map for every marker, as they must be.
 
 ### Changed
 
@@ -65,6 +91,17 @@
 - The numerical examples of the gauge rezoning and of the canonical transport move to the page
   *Numerical experiments* of their chapter; the properties table of *Combining the two
   constructions* moves to the new limitations page.
+- The manual has one structure per chapter: an overview with the algorithm step by step in SVG
+  figures and an animation, the pages of the construction, an *Algorithm* page, *Numerical
+  experiments* with the standard experiments, the additional experiments (with a page *Hole
+  filling* where the construction has a hole experiment), and the limitations. The chapters run
+  projection, spline-projection redistribution, gauge rezoning and canonical transport, sliced
+  redistribution; *Figures and animations* follows *Library*. The page *Standard experiments*
+  closes the foundations, and the comparison gives the results of all constructions side by side.
+  Headings are no questions: *Symplectic redistribution*, *Constructions that fail*, and others.
+  The numerical examples of the gauge rezoning and the canonical transport are now on the page
+  *Clustered markers and a separable density*, and *Combining the two constructions* is a section
+  of the *Algorithm* page.
 - The evidence of K2, K3 and K4 is re-measured by `scripts/redistribution/failure_cases.jl` on
   the same machine and code: K3 returns after 44 s instead of 46 s (timing noise), with the
   momentum change 0.165.

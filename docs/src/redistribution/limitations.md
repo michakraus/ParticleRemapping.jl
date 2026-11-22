@@ -10,12 +10,12 @@ CurrentModule = ParticleRemapping.Redistribution
 |:--|:--|
 | symplectic form ``\omega`` | exact for the frozen parameters: each step of the implicit midpoint or the symplectic Euler method with fixed ``\theta`` is symplectic, and so is the composition of substeps, followed by the gauge step ([parameter solver](@ref rd-linear-parameter-solver), [factorisation lemma](@ref factorisation-lemma)); the closed loop ``\theta = \Theta(z)`` of target matching is not symplectic (defect ``0.396`` in [Control E](@ref rd-closed-loop)) |
 | total weight | exact: the KKT projection constrains ``\sum_a \bar{w}_a`` ([KKT projection](@ref rd-kkt-projection), [example](@ref rd-experiments-standard)) |
-| total momentum ``P`` | exact when the step converges: Noether's identity holds for every ``\theta``, and the KKT projection makes the targets compatible ([KKT projection](@ref rd-kkt-projection), [schemes](@ref rd-experiments-schemes)); not kept when the forward Newton solve fails (``0.165`` in [K3](@ref rd-experiments-failures)) |
+| total momentum ``P`` | exact when the step converges: Noether's identity holds for every ``\theta``, and the KKT projection makes the targets compatible ([KKT projection](@ref rd-kkt-projection), [schemes](@ref rd-experiments-schemes)); not kept when the forward Newton solve fails (``0.165`` in [K3](@ref rd-holes)) |
 | kinetic energy | not kept: no constraint holds it; ``0.1323`` of ``1.0812`` in the [example](@ref rd-experiments-standard) |
 | grid charge | not kept: no constraint holds it |
 | grid current | not kept: no constraint holds it |
 | represented density (consistency) | the new weights are ``\bar{w}_a = \Delta\bar{\Omega}_a f_h^{\mathrm{KKT}}(\bar{x}_a, \bar{v}_a)``: the positive spline projection of the markers, corrected to the discrete mass and momentum, sampled at the targets with the volumes of their number density ([KKT projection](@ref rd-kkt-projection)); the markers sit at the targets only when the step reaches them |
-| equidistribution and hole filling | the relaxation lowers the clustering (kernel-density CV ``0.2199 \to 0.1939``) on 16 markers ([projection](@ref rd-projection)); the step does not fill the hole of the 244-marker [hole-filling case](@ref rd-experiments-failures) (K3) |
+| equidistribution and hole filling | the relaxation lowers the clustering (kernel-density CV ``0.2199 \to 0.1939``) on 16 markers ([projection](@ref rd-projection)); the step does not fill the hole of the 244-marker [hole-filling case](@ref rd-holes) (K3) |
 | parameters computed from the state | yes: the targets, the weights, ``p_{\mathrm{scale}}`` and ``\theta`` come from the markers; the map is symplectic for their frozen values (open loop, [closed loops](@ref rd-closed-loop)) |
 | cost of one remap | relaxation ``O(I_r N^2 d)``; projection and KKT weights ``O(N (k+1)^{2d} + \lvert\mathcal{I}\rvert)``; assembly of ``G`` ``O(N^2 (k_x+1)^d (k_p+1)^{2d})`` into a dense ``2Nd \times N_\theta`` matrix; the minimum-norm solve ``O((2Nd)^2 N_\theta)``; each Newton iterate ``O(N^2 (k+1)^{3d} + (2Nd)^3)``; 0.04 s for ``N = 16``, 44 s for ``N = 244`` ([higher dimensions](@ref redistribution-higher-dimensions)) |
 | dimensions implemented in the package | ``d = 1`` (1D-1V); `remap` rejects other markers (`test/redistribution/method.jl`) |
@@ -69,7 +69,7 @@ entry for it.
   ([experiment](@ref rd-experiments-failures)).
 - **K3**: `remap` with `SplineRedistribution` does not report a step that misses its targets; on
   the 244 markers of the hole-filling problem the target error is ``1.98 \cdot 10^{8}``
-  ([experiment](@ref rd-experiments-failures)).
+  ([experiment](@ref rd-holes)).
 - **K4**: the verification case violates the contraction condition (``2.266`` for the midpoint
   step, ``1.391`` for one symplectic Euler step), which is sufficient, not necessary
   ([schemes and substeps](@ref rd-experiments-schemes)).
@@ -103,7 +103,7 @@ entry for it.
 
 ## [Higher dimensions](@id redistribution-higher-dimensions)
 
-### What holds in ``d`` dimensions
+### Statements in ``d`` dimensions
 
 Every statement of the chapter is written for ``x \in \mathbb{T}^d`` and
 ``v \in \Omega_v = [-V_{\max}, V_{\max}]^d``: the pull-back of ``\omega`` and the factorisation,
@@ -116,7 +116,7 @@ bases, the linear system for ``\theta`` on the subspace ``\mathcal{M}_0`` of dim
 ``2 N d - d``, the contraction condition, and the closed-loop identity, which does not depend on
 ``d``.
 
-### What the package implements
+### Implementation in the package
 
 ``d = 1``: [`PhaseSpaceSplines`](@ref) is a 1D-1V basis, [`PairwiseSplineHamiltonian`](@ref)
 takes scalar positions and momenta, [`declustering_relaxation`](@ref) works in ``(x, v)`` with one

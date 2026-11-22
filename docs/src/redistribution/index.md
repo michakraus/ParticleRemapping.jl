@@ -38,32 +38,37 @@ Hats denote the end point of a step that does not reach the targets exactly. ``\
 ``N_\theta`` parameters of the Hamiltonian, and ``p_{\mathrm{scale}}`` its momentum scale. The
 statements hold in ``d`` dimensions; the code implements ``d = 1``.
 
-## The algorithm in short
+## The algorithm step by step
 
-The method [`SplineRedistribution`](@ref) runs the whole redistribution of 1D-1V markers,
-through [`remap`](@ref ParticleRemapping.remap):
+The figures follow the steps on the 16 markers of the standard example below
+([`algorithm_svg`](@ref ParticleRemapping.algorithm_svg)). The markers are coloured and sized by
+weight; open circles are the relaxed targets.
 
-1. Project the markers onto a tensor-product B-spline basis, periodic in ``x`` and clamped in
-   ``v``, by the positive lumped projection ``c^{\mathrm{pos}}`` ([`lumped_spline_projection`](@ref)).
-2. Relax the points ``(x_a, v_a)`` by a few damped steps of repulsive gradient descent to targets
-   ``(\bar{x}_a, \bar{v}_a)`` ([`declustering_relaxation`](@ref)).
-3. Weigh the targets by the weighted KKT projection, ``\bar{w}_a = \Delta\bar{\Omega}_a
-   f_h^{\mathrm{KKT}}(\bar{x}_a, \bar{v}_a)``, with local volumes ``\Delta\bar{\Omega}_a`` from the
-   number density of the targets, so that ``\bar{p}_a = m \bar{w}_a \bar{v}_a`` conserves the
-   discrete mass and momentum ([`kkt_redistribution_weights`](@ref)).
-4. Solve the linear system ``G(z_{\mathrm{stage}}) \theta = \bar{z} - z``, with
-   ``z = (x, p)``, for the parameters of a pairwise spline Hamiltonian
-   ([`solve_redistribution_parameters`](@ref)), and advance ``(x, p)`` by one step of the implicit
-   midpoint or the symplectic Euler method, or by a few substeps
-   ([`forward_redistribution_step`](@ref), [`redistribution_substeps`](@ref)). This is the
-   canonical map ``\psi``.
-5. Assign the weights ``\bar{w}_a`` to the end point of the step, and the velocities
-   ``p_a / (m \bar{w}_a)`` with the momenta ``p_a`` of the end point: the gauge step. By the
-   [factorisation lemma](@ref factorisation-lemma), every positive split of the momenta keeps
-   ``\omega``.
+1. **Project.** Project the markers onto a tensor-product B-spline basis, periodic in ``x`` and
+   clamped in ``v``, by the positive lumped projection (panel 1, the dashed lines are the knots).
+2. **Relax.** A few damped steps of repulsive gradient descent move the points ``(x_a, v_a)`` to
+   targets ``(\bar{x}_a, \bar{v}_a)`` (panel 2, arrows from the markers to their targets).
+3. **Weigh.** The weighted KKT projection gives the target weights
+   ``\bar{w}_a = \Delta\bar{\Omega}_a f_h^{\mathrm{KKT}}(\bar{x}_a, \bar{v}_a)``, which keep the
+   discrete mass and momentum (panel 3 draws the targets with these weights).
+4. **Step.** One linear solve gives the parameters of a pairwise spline Hamiltonian whose
+   symplectic step moves ``(x, p)`` to ``(\bar{x}, \bar{p})``; at the old weights the end point
+   lies on the targets in ``(x, p)`` but not in ``(x, v)`` (panel 4).
+5. **Gauge step.** The end point gets the weights ``\bar{w}_a`` at fixed ``(x, p)`` (panel 5).
 
-The [positive projection](@ref rd-projection), the [Hamiltonians](@ref rd-hamiltonians) and the
-[parameter solver](@ref rd-solver) give each step in full.
+```@example rd-steps
+using ParticleRemapping
+steps = algorithm_svg(:spline)
+steps.panels
+```
+
+The animation runs through steps 1, 2, 4 and 5 (step 3 moves no marker):
+
+```@example rd-steps
+steps.animation
+```
+
+The [algorithm](@ref rd-algorithm) page gives the steps with the functions of the package.
 
 ## Example
 
@@ -120,8 +125,9 @@ the end point of the step from the targets:
 
 The total weight and the total momentum are kept to round-off. The kinetic energy is not a
 constraint of the construction and changes by ``0.1323`` of ``1.0812``
-(`scripts/redistribution/failure_cases.jl`). The [numerical experiments](@ref rd-experiments)
-give the example in more detail and show where the method fails.
+(`scripts/redistribution/failure_cases.jl`). The [verification set-up](@ref rd-setup) gives the
+example in more detail and shows where the relaxation fails; [hole filling](@ref rd-holes) shows
+where the symplectic step fails.
 
 ## The pages of this chapter
 
@@ -142,8 +148,14 @@ give the example in more detail and show where the method fails.
 - [Closed loops](@ref rd-closed-loop): the [closed-loop identity](@ref closed-loop-identity)
   evaluated on the parameter maps of this chapter, the fixed-grid rule, the closed-loop cotangent
   lifts and the two closed loops of the verification.
-- [Numerical experiments](@ref rd-experiments): the standard example in detail, the schemes and
-  substeps, and the failures outside the verification set-up.
+- [Algorithm](@ref rd-algorithm): the five steps of [`SplineRedistribution`](@ref), from the
+  positive projection to the gauge step.
+- [Numerical experiments](@ref rd-experiments): the standard experiments, which every
+  construction runs.
+- [The verification set-up](@ref rd-setup): the standard example in detail, the schemes and
+  substeps, and the relaxation outside the verification set-up (K2).
+- [Hole filling](@ref rd-holes): on a marker set with a hole, the symplectic step misses its
+  targets and `remap` does not report it (K3).
 - [Properties, limitations and higher dimensions](@ref rd-limitations-page): what the map keeps,
   what it cannot do, the known issues, the open questions, and the cost in 3d3v.
 - [Library: Redistribution](@ref rd-library): the functions of the module.
@@ -165,7 +177,7 @@ closed loops ([`closed_loop_defect`](@ref)).
 
 The script `scripts/redistribution/verify_symplectic_redistribution.jl` checks every statement of
 the note and prints its numbers; `scripts/redistribution/failure_cases.jl` prints the numbers of
-the [numerical experiments](@ref rd-experiments) and of the
+the [verification set-up](@ref rd-setup), of [hole filling](@ref rd-holes) and of the
 [limitations](@ref rd-limitations-page); `scripts/redistribution/make_figures.jl` writes the
 figures and the animations to `results/redistribution/`. The
 [verification](@ref rd-verification) lists every test file and script of the chapter.

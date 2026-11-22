@@ -4,162 +4,92 @@
 CurrentModule = ParticleRemapping.Remapping
 ```
 
-The two numerical examples of the chapter, each with its table, the figure of its experiment and
-an animation. The first is the standard example of the gauge rezoning on the
-[overview page](@ref remap-overview); the second takes the standard example of the canonical
-transport to ``2 \times 10^5`` markers and adds the identity and an inadmissible map. The scripts
-`scripts/remapping/gauge_rezoning.jl` and `scripts/remapping/current_quantile_matching.jl` print
-the numbers of the tables, and `test/remapping/experiments.jl` checks them.
+The [standard experiments](@ref standard-experiments) with the gauge rezoning (`:gauge`) and the
+canonical transport with the identity map (`:transport`) of
+[`standard_method`](@ref ParticleRemapping.standard_method). The
+[comparison](@ref comparison-standard) sets the results beside those of the other constructions.
+The two numerical examples of the chapter are on the page
+[clustered markers and a separable density](@ref remap-examples).
 
-## [The gauge rezoning of clustered markers](@id remap-gauge-example)
+Both constructions keep every position: the gauge rezoning by construction, the transport because
+its canonical map is the identity. Both keep every momentum and every sign of ``v``. They can
+spread the velocities of the markers in a cell, but they cannot move a marker into another cell
+of ``x`` or across ``v = 0``.
 
-[`gauge_rezoning_setup`](@ref) applies the [algorithm](@ref remap-gauge-algorithm) to
-``N = 6400`` markers on ``N_g = 16`` nodes with ``L = 2\pi`` and ``m = 1``. It assembles and solves
-the full sparse KKT system, with ``\Delta\tau_0 = 0.05`` and ``\Delta\tau_{\min} = 10^{-3}``. The
-positions are uniform; in each cell the velocities cluster around six random centres in
-``[-4, 4]`` with a spread of ``0.08``, an extreme form of the clustering that a long simulation
-produces. The weights are ``w_a \propto f(x_a, v_a) + \text{const}`` with a two-stream density
-``f`` ([`two_stream_density`](@ref)). The measure of evenness is the mean, over the groups of
-cell and sign, of the ratio of the largest gap to the mean gap between consecutive sorted speeds
-([`mean_gap_ratio`](@ref)); it is ``1`` for an equispaced group.
+## The checkerboard
 
-|                                       | ``\mathcal{K} = \{0, 2\}`` | ``\mathcal{K} = \{0, 2, 3\}`` | unconstrained |
-|:--------------------------------------|:-------------------------|:----------------------------|:--------------|
-| homotopy parameter ``\tau`` reached   | 0.594                    | 0.402                       | 1             |
-| largest/mean gap (before: 77.5)       | 27.5                     | 39.2                        | 1.00          |
-| charge residual                       | ``2.6 \times 10^{-15}``  | ``2.6 \times 10^{-15}``     | 0.45          |
-| kinetic energy residual               | ``1.9 \times 10^{-15}``  | ``3.5 \times 10^{-15}``     | –             |
-| current residual                      | ``1.2 \times 10^{-16}``  | –                           | –             |
-| change of ``\mathcal{M}_i^{(3)}``     | 0.22                     | ``7.5 \times 10^{-16}``     | –             |
-| range of ``\lambda_a``                | ``[0.29, 8.1]``          | –                           | –             |
+| construction | quadrants after | weight in ``Q_2 \cup Q_4`` | change of the total weight |
+|:--|:--|--:|--:|
+| gauge rezoning | ``(200, 0, 200, 0)`` | 0 | ``-2 \cdot 10^{-16}`` |
+| transport, represented density | ``(200, 0, 200, 0)`` | 0 | ``1.6 \cdot 10^{-2}`` |
+| transport, positive density | ``(200, 0, 200, 0)`` | 0 | ``1.6 \cdot 10^{-2}`` |
 
-*Velocity rezoning by the gauge step. Residuals are maxima over the nodes, relative to
-``\mathcal{M}_i^{(k)}[w, |v|]``. At the end of the ``\mathcal{K} = \{0, 2\}`` continuation the
-smallest value of ``H_a / w_a`` is ``8.5 \times 10^{-4}``, against ``s^{-2} = 1`` at the start.*
+The empty quadrants stay empty for both densities. In a cell with ``x \ge 0`` every marker has
+``v \ge 0``, so the transport matches only the branch ``v \ge 0`` of the target density there,
+whatever weight the target puts on the other branch. The gauge rezoning keeps the total weight,
+the total momentum and the kinetic energy to round-off, and the grid charge by its constraint.
+The transport keeps every momentum; its weights follow the quantiles of the target, and the total
+weight changes by the quantile error of 50 markers per cell and branch.
 
-The constrained remap reduces the gap ratio by a factor of almost three and meets every
-constraint to round-off. Every momentum ``p_a = m W_a V_a`` holds to a relative difference of
-``2 \times 10^{-16}``, and every sign of ``v`` is kept. The unconstrained targets give a perfect
-spread, but they change the grid charge by ``45\,\%``, which shows that the constraints are not
-optional. Each additional constraint reduces the reachable spread. Unlike the
-[eight-marker example](@ref remap-eight-example), the homotopy stops at a fold: with hundreds of
-markers per node and clusters far from the targets, some marker's curvature reaches zero first.
-
-```@example experiments
+```@example remap-standard
 using ParticleRemapping, CairoMakie
 set_theme!(remap_theme())
-setup = gauge_rezoning_setup()
-mk, grid = setup.markers, setup.grid
-result = remap(setup.method, mk)
-relres(after, k) = maximum(abs.(grid_moment(grid, after, k) .- grid_moment(grid, mk, k)) ./
-                           grid_moment(grid, mk.x, abs.(mk.v), mk.w, k))
-(τ = result.info.τ, min_curvature = result.info.min_curvature,
-    gap = (mean_gap_ratio(grid, mk.x, mk.v), mean_gap_ratio(grid, mk.x, result.markers.v)),
-    charge = relres(result.markers, 0), energy = relres(result.markers, 2),
-    current = relres(result.markers, 1), third_moment = relres(result.markers, 3),
-    λ = extrema(exp.(result.info.μ)))
+gauge = standard_checkerboard(:gauge)
+transport = standard_checkerboard(:transport; variant = :positive)
+(gauge = (gauge.quadrants_after, gauge.report),
+    transport = (transport.quadrants_after, transport.report))
 ```
 
-The accepted points of the homotopy and the attempts that it rejected; the last rejections halve
-``\Delta\tau`` until it falls below ``\Delta\tau_{\min}``:
-
-```@example experiments
-h = result.info.history
-(accepted = [round(e.τ; digits = 3) for e in h if e.accepted],
-    rejected = [round(e.τ; digits = 4) for e in h if !e.accepted])
+```@example remap-standard
+plot_remap(gauge.after, transport.after;
+    titles = ("(a) after the gauge rezoning", "(b) after the transport, positive density"))
 ```
 
-```@example experiments
-plot_gauge_experiment(mk, result)
+## The long run
+
+| construction | empty cells (before: 14) | relative std (before: 0.598) | ``L^2`` difference | change of the total weight |
+|:--|--:|--:|--:|--:|
+| gauge rezoning | 13 | 0.559 | 0.069 | ``6 \cdot 10^{-15}`` |
+| transport, represented density | 15 | 0.572 | 0.066 | ``7.5 \cdot 10^{-3}`` |
+| transport, positive density | 0 | 0.392 | 0.328 | ``-0.20`` |
+
+The gauge rezoning spreads the speeds in each cell and sign towards an even spacing, as far as the
+homotopy reaches under the constraints of the grid charge and the kinetic energy; the number of
+empty cells falls from 14 to 13. The transport with the represented density gives each marker the velocity at
+its quantile of the exact density of the run; the result stays close to the markers before.
+With the positive density the quantiles reach into the tails of ``f_0``, which the markers never
+sampled, so the velocities spread over the whole box and every cell holds a marker. The closure
+of the quantiles then puts the weight of the unsampled tails nowhere: the total weight falls by
+``0.20``.
+
+```@example remap-standard
+long_gauge = standard_long_time(:gauge)
+long_transport = standard_long_time(:transport; variant = :positive)
+(gauge = long_gauge.stats_after[(:empty, :rstd)], gauge_l2 = long_gauge.l2_difference,
+    transport = long_transport.stats_after[(:empty, :rstd)],
+    transport_weight = long_transport.report.weight)
 ```
 
-*The gauge rezoning of clustered markers, ``\mathcal{K} = \{0, 2\}``. (a), (b) The markers in
-``(x, v)`` before and after the remap, coloured and sized by weight. (c) The distribution of the
-stretches ``\lambda_a``. (d) The ratio of the largest to the mean gap per group of cell and sign,
-before against after; the dashed line is the identity.*
-
-The animation shows the first two cells along the continuation up to the fold, with
-``\Delta\tau_0 = 0.01``, which reaches the same ``\tau = 0.594`` in 61 accepted steps. Each frame
-is a gauge step of the markers ([`remap_frames`](@ref ParticleRemapping.remap_frames)), so the
-markers move along their rays at fixed ``x``; a marker that speeds up loses weight, and one that
-slows down gains weight:
-
-```@example experiments
-fine = remap(gauge_rezoning_setup(; dτ0 = 0.01).method, mk)
-sel = findall(<(2grid.Δx), mk.x)
-zoom = [RemapStage(Markers(f.markers.x[sel], f.markers.v[sel], f.markers.w[sel]; m = mk.m),
-            "cells 1 and 2, " * f.label)
-        for f in remap_frames(setup.method, mk, fine; frames_per_step = 2)]
-vl = 1.05maximum(abs, fine.markers.v[sel])
-animate_stages("remapping-gauge-homotopy.mp4", zoom; window = (0, 2grid.Δx, -vl, vl))
-(accepted = count(h -> h.accepted, fine.info.history) - 1, τ = fine.info.τ)
+```@example remap-standard
+plot_remap(long_gauge.after, long_transport.after; period = (-π, π),
+    titles = ("(a) after the gauge rezoning", "(b) after the transport, positive density"))
 ```
 
-```@raw html
-<video src="remapping-gauge-homotopy.mp4" controls loop muted playsinline style="width:100%"></video>
-```
+## Remaps during the run
 
-## [The canonical transport of a separable density](@id remap-transport-example)
+A remap after every 100 steps; the mean relative standard deviation of the cell counts for
+``t \ge 5`` is ``0.587`` without remaps.
 
-[`quantile_matching_setup`](@ref) samples ``N = 2 \times 10^5`` markers with equal weights from
-``f(x, v) = (1 + 0.4 \cos x) \, e^{-v^2/2} / \sqrt{2\pi}`` on ``[0, 2\pi)``, with ``16`` cells and
-``m = 1``; this is the density of the [closed-form example](@ref remap-lift-example). The
-admissible map is the cotangent lift with ``a = J_+^{-1/2}`` at ``t = 1.5``, which moves markers
-by up to ``1.85`` in ``x``. The inadmissible map is the cotangent lift with
-``a = 1 + 0.5 \cos x``. The error measure ([`binned_weight_error`](@ref)) is the relative ``L^1``
-difference between the binned weights and the exact bin integrals of ``f``, on ``16`` cells times
-``24`` velocity bins in ``[-4, 4]``.
+| construction | mean relative std, ``t \ge 5`` | empty cells at ``t = 0``, ``12.5``, ``25`` |
+|:--|--:|:--|
+| gauge rezoning | 0.550 | 20, 10, 8 |
+| transport, represented density | 0.597 | 20, 12, 15 |
+| transport, positive density | 0.384 | 20, 0, 0 |
 
-| configuration                                  | binned ``L^1`` error | largest ``\lvert R_c^s \rvert`` |
-|:-----------------------------------------------|:---------------------|:--------------------|
-| original markers (sampling noise)              | 0.0273               | –                   |
-| ``\psi = \mathrm{id}``, then matching          | 0.0113               | 0.038               |
-| admissible ``\psi``, then matching             | 0.0117               | 0.035               |
-| admissible ``\psi``, old weights kept (``W = w``) | 0.2605            | –                   |
-| inadmissible ``\psi``, then matching           | 1.277                | 5.4                 |
-
-*Canonical transport with current-quantile matching.*
-
-After an admissible map, the matching restores the representation of ``f`` below the sampling
-noise of the original markers. The error falls below that noise because the matching places the
-velocities at the quantiles of the exact ``f``. Without the matching, the same map gives an error
-ten times the noise. After an inadmissible map, the residual ``R_c^s`` shows the violation, and
-the representation fails. The sampled marker counts and charges per cell after the admissible map
-follow the closed forms ``(J(x) J(X))^{1/2}`` and ``J(X)`` of the closed-form example.
-
-```@example experiments
-transport = quantile_matching_setup()
-experiment = quantile_matching_experiment(transport)
-err(m) = binned_weight_error(transport.target, transport.grid, m.x, m.v, m.w)
-(original = err(experiment.original),
-    identity = (err(experiment.identity.markers), experiment.identity.info.max_residual),
-    admissible = (err(experiment.admissible.markers), experiment.admissible.info.max_residual),
-    kept = err(experiment.kept),
-    inadmissible = (err(experiment.inadmissible.markers),
-        experiment.inadmissible.info.max_residual))
-```
-
-```@example experiments
-plot_lift_example(transport, experiment)
-```
-
-*The closed-form example and the numerical example. (a) Characteristics of the admissible lift
-``a = J^{-1/2}``. (b) At ``t = 1.5``: the represented density ``J(X)``, the marker density
-``(J(x)J(X))^{1/2}`` and the weight ratio ``1/\varphi'`` (lines), with the sampled marker counts
-(circles) and charges (triangles) per cell, normalised. (c) The discrete compatibility residual
-``R_c^s`` per cell for the admissible and the inadmissible lift. (d) The velocity marginal in
-cell 5: exact, after matching, with the old weights kept, and after the inadmissible lift.*
-
-The animation runs the admissible lift from ``t = 0`` to ``t = 1.5`` with the algorithm applied at
-every frame ([`lift_matching_frames`](@ref)), and shows every 50th marker, coloured and sized by
-weight: the markers move in ``x``, their weights change, and the represented charge per cell stays
-at ``J``.
-
-```@example experiments
-frames = lift_matching_frames(transport)
-animate_lift_matching("remapping-ex3-lift.mp4", frames, transport); nothing # hide
-```
-
-```@raw html
-<video src="remapping-ex3-lift.mp4" controls loop muted playsinline style="width:100%"></video>
+```@example remap-standard
+h_gauge = standard_remap_history(:gauge)
+h_transport = standard_remap_history(:transport; variant = :positive)
+plot_cell_count_history([h_gauge.h_plain, h_gauge.h_remap, h_transport.h_remap];
+    labels = ["no remap", "gauge rezoning", "transport, positive density"],
+    remap_times = h_gauge.remapped.remap_times)
 ```

@@ -105,7 +105,7 @@ No entry of the notes' `KNOWN_ISSUES.md` concerns this chapter.
 
 ## [Higher dimensions](@id remapping-higher-dimensions)
 
-### What holds in d dimensions
+### Statements in d dimensions
 
 Let ``x_a, v_a \in \mathbb{R}^d`` and ``p_a = m w_a v_a``. The form
 ``\omega_N = \sum_a m (w_a \, \mathrm{d} x_a \wedge \mathrm{d} v_a + \mathrm{d} x_a \wedge v_a
@@ -161,7 +161,7 @@ with ``\partial_r (f r) > 0`` in place of ``\partial_V (f V) > 0``. The test
 determinant from automatic differentiation, to ``10^{-12}``; the frozen-weight determinant
 ``m^d W^d`` fails it by more than ``10^{-3}``.
 
-### What the package implements
+### Implementation in the package
 
 Both constructions in 1D-1V only: [`PeriodicGrid`](@ref ParticleRemapping.PeriodicGrid) is
 one-dimensional with linear hat functions, [`GaugeRezoningProblem`](@ref) and

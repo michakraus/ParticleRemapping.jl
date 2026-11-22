@@ -8,7 +8,7 @@ CurrentModule = ParticleRemapping.Projection
 
 | quantity | status |
 |:--|:--|
-| symplectic form ``\omega`` | exact for every fixed ``\theta``; ``\theta`` comes from a fit to the state ([parameters that depend on the state](@ref state-dependent-parameters), [structural statements](@ref projection-experiments)) |
+| symplectic form ``\omega`` | exact for every fixed ``\theta``; ``\theta`` comes from a fit to the state ([parameters that depend on the state](@ref state-dependent-parameters), [structural statements](@ref projection-checks)) |
 | total weight | exact, by the normalisation ``c`` of the [target weights](@ref projection-targets); the charge-conserving weights keep it by the partition of unity ([charge-conserving reweighting](@ref projection-charge)); [example](@ref projection-example) |
 | total momentum ``P`` | exact: the centroid shift of the [kicks](@ref projection-hamiltonian) and of the [non-separable stages](@ref projection-nonseparable), and the [gauge step](@ref gauge-step); [example](@ref projection-example), [hole filling](@ref projection-hole-filling) |
 | kinetic energy | not kept: the gauge step changes it from ``\sum_a \lvert p_a\rvert^2 / (2 m w_a)`` to ``\sum_a \lvert p_a\rvert^2 / (2 m w^*_a)``, and the energy constraint of [the fit](@ref projection-fit) is not implemented; [example](@ref projection-example) |
@@ -123,7 +123,7 @@ The entries of `KNOWN_ISSUES.md` of the package that concern this chapter:
 
 ## [Higher dimensions](@id projection-higher-dimensions)
 
-### What holds in d dimensions
+### Statements in d dimensions
 
 The structural facts hold in ``d`` dimensions: the [compressibility
 bracket](@ref weight-dependent-hamiltonians), the [fold](@ref velocity-momentum-fold) of the
@@ -148,7 +148,7 @@ change; the [proposition](@ref projection-charge) on the charge-conserving weigh
 functions on ``\mathbb{T}^d``. The low-rank density factors into functions of ``x \in \mathbb{T}^d``
 and of ``v \in \mathbb{R}^d``.
 
-### [What the package implements](@id projection-implemented)
+### [Implementation in the package](@id projection-implemented)
 
 The stages act on ``d \times N`` arrays: [`centroid_kick`](@ref), [`velocity_drift`](@ref) and
 [`nonseparable_stage`](@ref), with their symplecticity, ``P`` and the non-separable Jacobian

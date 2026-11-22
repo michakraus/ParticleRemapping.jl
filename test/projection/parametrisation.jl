@@ -114,3 +114,19 @@ end
         end
     end
 end
+
+@testset "equal weights" begin
+    # equal weights give the ln w basis a unit span, not a zero spacing, which would make every
+    # evaluation NaN; the map is then the same area-preserving map for every marker
+    we = fill(0.01, N)
+    pe = p .* (we ./ w)
+    for par in (KickDriftParametrisation(we; nξ = 8, nv = 10, nw = 4),
+        NonSeparableParametrisation(we; nξ = 6, nv = 7, nℓ = 3))
+        θp = 0.05 .* randn(remap_parameter_count(par))
+        X, P = remap_stages(par, θp, x, pe, we; m)
+        @test all(isfinite, X) && all(isfinite, P)
+        @test X != x
+        Φ = z -> vcat(remap_stages(par, θp, z[1:N], z[(N + 1):end], we; m)...)
+        @test ParticleRemapping.symplecticity_defect(Φ, vcat(x, pe))[1] < 1e-10
+    end
+end

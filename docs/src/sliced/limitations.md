@@ -89,7 +89,7 @@ particle-in-cell project list none for it.
 
 ## [Higher dimensions](@id sliced-higher-dimensions)
 
-### What holds in d dimensions
+### Statements in d dimensions
 
 The canonical pairs ``(x_{a\ell}, p_{a\ell})``, ``\ell = 1, \dots, d``, are independent: the form
 is ``\omega = \sum_\ell \sum_a \mathrm{d}x_{a\ell} \wedge \mathrm{d}p_{a\ell}``. The proposition on
@@ -105,7 +105,7 @@ multipliers. The common ``\mu`` is needed because each marker has one weight: th
 axis ``\ell`` with other multipliers ``\mu'`` would scale the velocities of that axis by
 ``\mu'_a / \mu_a``.
 
-### What the package implements
+### Implementation in the package
 
 For ``d \times N`` markers, [`remap`](@ref ParticleRemapping.remap) with a
 [`SlicedQuantileRemap`](@ref) applies ``\Psi_q`` and ``\Psi_p`` to each pair: velocity slices by

@@ -1,8 +1,9 @@
 # [Verification: Hamiltonian particle projection](@id projection-verification)
 
 Every statement of the [Hamiltonian particle projection](@ref projection-index) has a test under
-`test/projection/`, and each test runs the case that must fail. The page
-[Numerical experiments](@ref projection-experiments) holds the tables of the measured numbers:
+`test/projection/`, and each test runs the case that must fail. The pages
+[Structural statements and target weights after a push](@ref projection-checks) and
+[Hole filling](@ref projection-hole-filling) hold the tables of the measured numbers:
 the structural statements, the hole-filling experiment and the target weights after a push. This
 section says which file checks what. Run a test file with
 
@@ -22,7 +23,7 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
 ## Test files of the group `core`
 
 - **`test/projection/structure.jl`**: the statements of
-  [What a symplectic redistribution can do](@ref obstructions) that this package computes. The
+  [Symplectic redistribution](@ref obstructions) that this package computes. The
   divergence of the effective velocity field against the
   [compressibility bracket](@ref weight-dependent-hamiltonians) for random ``\Psi(x, p, w)`` and
   ``W(x, p)`` in ``d = 1, 2, 3``; the determinant of the implicit weight map against the
@@ -152,7 +153,9 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
 ## The numbers of the source note
 
 The numbers of the note *Hamiltonian particle projection: a symplectic redistribution of weighted
-markers* are the numbers of the tables on [Numerical experiments](@ref projection-experiments).
+markers* are the numbers of the tables on
+[Structural statements and target weights after a push](@ref projection-checks) and
+[Hole filling](@ref projection-hole-filling).
 The two experiment scripts hold them in their tables `NOTE_*` and `NOTE`, and the two experiment
 tests in `TABLES`, `WEIGHT_TABLE` and `REMAP_TABLE`; a measured number agrees with a quoted one
 when it lies within half a unit of the last quoted digit. The experiment tests check every number
@@ -160,7 +163,7 @@ of the tables in this way. Three points differ in form, not in value:
 
 - The note quotes the relative error of the projected target weights at ``x_h = \pi`` only. At
   ``x_h = \pi/2`` the bands ``[1, 2)`` and ``[3, 4)`` differ in the second digit (``0.18`` and
-  ``0.22`` against ``0.17`` and ``0.21``); the experiments page gives both.
+  ``0.22`` against ``0.17`` and ``0.21``); the [hole-filling page](@ref projection-hole-filling) gives both.
 - The tests assert bounds where the note quotes a measured value: ``|\Delta P|`` below
   ``10^{-12}`` (the note quotes ``1.1 \cdot 10^{-17}`` and ``3.5 \cdot 10^{-17}`` relative), the
   error of the sensitivities below ``10^{-10}`` (the note quotes ``2.8 \cdot 10^{-13}``), and the

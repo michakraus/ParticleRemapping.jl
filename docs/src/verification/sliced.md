@@ -7,8 +7,9 @@ verification script of the construction, `verify_symplectic_redistribution.jl` o
 construction in the particle-in-cell project; the package replaces it there, and the project's
 note `Sliced-Symplectic-Particle-Redistribution.tex` is written from this chapter. The derivation
 that produced the script is the source of the observations marked *derivation* on the page
-[What does not work](@ref sliced-failures).
-The tables of the suites are on the [experiments](@ref sliced-experiments) page.
+[Constructions that fail](@ref sliced-failures).
+The tables of the suites are on the [structural suites](@ref sliced-suites),
+[hole filling](@ref sliced-holes) and [long-time run](@ref sliced-long-time-page) pages.
 
 ## Tests
 
@@ -25,7 +26,7 @@ All eleven files run in the `core` group of `test/runtests.jl`.
 | `test/sliced/peraxis.jl` | [`per_axis_sliced_lift`](@ref ParticleRemapping.SlicedRedistribution.per_axis_sliced_lift) equals the lift of each axis; the remap of 36 markers in 2D-2V (``B_v = 3``, ``B_x = 6``) keeps the total weight and the total momentum, has positive weights and slices each axis by its own velocity component; the frozen per-axis map is symplectic; on a checkerboard in ``(x_1, x_2)`` with even marginals ``(x_\ell, v_\ell)`` (360 markers) the per-axis lifts leave fewer than 36 markers in the empty quadrants ([higher dimensions](@ref sliced-higher-dimensions)) | a slice list of the wrong length throws a `DimensionMismatch`; the same lifts fill the checkerboard in ``(x_1, v_1)``, more than 72 markers in every quadrant |
 | `test/sliced/frames.jl` | [`remap_states`](@ref ParticleRemapping.remap_states) of the standard example: the five labels, the first state is the input, the last the result with its positions in ``[-\pi, \pi)``; the canonical stages keep the old weights, carry the momenta `p̃`, `p̂`, `p̄` and the total momentum; the gauge step keeps ``(x, p)`` and sets ``w_{\mathrm{ref}} \mu``. [`remap_frames`](@ref ParticleRemapping.remap_frames): the number of frames, every state held and reached exactly, the frame halfway through ``\Psi_q`` is the lift with halved ``\beta``, every canonical frame keeps the old weights and the total momentum, the gauge frames keep ``(\bar{x}, \bar{p})`` and move the weights linearly; the states and frames of 2D-2V markers | the velocities after the squeeze at the old weights differ from the output by more than 0.1; the straight line between two states misses the frame of the lift; a result of another number of markers throws a `DimensionMismatch` |
 | `test/sliced/forwarddiff.jl` | the port against the source script; see below | |
-| `test/sliced/experiments.jl` | suites 1–5a of the [experiments](@ref sliced-experiments) with the thresholds of the source script (in suite 5a also the total momentum and the unchanged weights), and the probes of [What does not work](@ref sliced-failures): the fold of the repulsion with a wall (first ``\lambda_{\min} < 0`` at pass 3, frame 1; first non-finite Jacobian at pass 4, frame 3; no fold for ``k_w = 0``), the rotated-frame lift (quadrants ``(198, 2, 200, 0)``), the checkerboard reweighted at fixed momenta (smallest weight ratio below 0.2, largest speed above 5, against at most 1.05 after the sliced lifts) | every control of suites 1–4 (see below); the one-slice lifts of suite 5a keep the quadrants ``(200, 0, 200, 0)``; an unconverged midpoint step (3 fixed-point sweeps) has the defect ``> 10^{-6}`` |
+| `test/sliced/experiments.jl` | suites 1–5a of the [structural suites](@ref sliced-suites) and [hole filling](@ref sliced-holes) pages with the thresholds of the source script (in suite 5a also the total momentum and the unchanged weights), and the probes of [Constructions that fail](@ref sliced-failures): the fold of the repulsion with a wall (first ``\lambda_{\min} < 0`` at pass 3, frame 1; first non-finite Jacobian at pass 4, frame 3; no fold for ``k_w = 0``), the rotated-frame lift (quadrants ``(198, 2, 200, 0)``), the checkerboard reweighted at fixed momenta (smallest weight ratio below 0.2, largest speed above 5, against at most 1.05 after the sliced lifts) | every control of suites 1–4 (see below); the one-slice lifts of suite 5a keep the quadrants ``(200, 0, 200, 0)``; an unconverged midpoint step (3 fixed-point sweeps) has the defect ``> 10^{-6}`` |
 | `test/sliced/experiments_long_time.jl` | suite 5b: the thresholds of the source script, the cell counts before and after, the relative standard deviations and the ``L^2`` difference to round-off, the Hessian bounds ``1 - \max\beta`` | without the squeeze, cells empty again, the relative standard deviation exceeds that before the remap and the ``L^2`` difference triples; with ``\beta_{\mathrm{mean}} = \beta_{\mathrm{intra}} = 0.88`` both Hessians have the smallest eigenvalue 0.12; with ``\varepsilon`` = 0.1 target spacings the largest ``\lvert\hat{x} - x^{\mathrm{anc}}\rvert`` exceeds 1.4 times that of the defaults |
 
 ## Scripts
@@ -38,7 +39,8 @@ All eleven files run in the `core` group of `test/runtests.jl`.
 
 ## Controls that must fail
 
-The tables of the [experiments](@ref sliced-experiments) give the values; each control must
+The tables of the [structural suites](@ref sliced-suites), [hole filling](@ref sliced-holes) and
+[long-time run](@ref sliced-long-time-page) pages give the values; each control must
 exceed its threshold.
 
 - Suite 1: the velocity split without the recoil, ``\bar{v} = \bar{p}/(m w)`` (``> 10^{-1}``),
@@ -96,4 +98,4 @@ gives the quadrant counts ``(198, 2, 200, 0)`` that the derivation reports, and
 [`repulsion_wall_probe`](@ref ParticleRemapping.SlicedRedistribution.repulsion_wall_probe) runs with
 the derivation's parameters into a fold and then into non-finite numbers, where the derivation's
 run stops with a linear solve on non-finite entries. The other observations marked *derivation*
-on [What does not work](@ref sliced-failures) have no reproduction in the package.
+on [Constructions that fail](@ref sliced-failures) have no reproduction in the package.

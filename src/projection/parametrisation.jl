@@ -11,13 +11,22 @@ A family of symplectic maps `R_θ` of 1D-1V markers with a parameter vector `θ`
 """
 abstract type AbstractRemapParametrisation end
 
+# The `n` cubic splines on `[min ln w, max ln w]`; for equal weights on an interval of unit length
+# from `ln w`, so that the stages are the same for every marker.
+function _log_weight_basis(w, n)
+    lw = log.(w)
+    lo, hi = extrema(lw)
+    UniformBasis(lo, (hi > lo ? hi - lo : one(hi)) / (n - 1), n, false)
+end
+
 """
     KickDriftParametrisation(w; variant = :weight_dependent, L = 2π, V = 4, nξ = 32, nv = 40,
         nw = 16, stages = 2)
 
 The kick–drift map `R_θ = D_S ∘ K_S ∘ … ∘ D_1 ∘ K_1` of `stages` stages for markers with the
 weights `w`, with `nξ` periodic cubic splines `B_i` on `[0, L)`, `nv` cubic splines `B̂_j` on
-`[−V, V]` and `nw` cubic splines `C_l` on `[min ln w, max ln w]`. The `variant` selects the
+`[−V, V]` and `nw` cubic splines `C_l` on `[min ln w, max ln w]` (for equal weights on
+`[ln w, ln w + 1]`). The `variant` selects the
 generating functions:
 
 - `:weight_dependent`: `κ = w Σ λ_il B_i(ξ) C_l(ln w)`, `η = w Σ μ_jl B̂_j(v) C_l(ln w)`;
@@ -40,8 +49,7 @@ function KickDriftParametrisation(w::AbstractVector; variant::Symbol = :weight_d
         L = 2π, V = 4.0, nξ = 32, nv = 40, nw = 16, stages = 2)
     variant in (:weight_dependent, :control_A, :control_B) ||
         throw(ArgumentError("unknown kick–drift variant $variant"))
-    lw = log.(w)
-    Bl = UniformBasis(minimum(lw), (maximum(lw) - minimum(lw)) / (nw - 1), nw, false)
+    Bl = _log_weight_basis(w, nw)
     KickDriftParametrisation(variant, UniformBasis(0.0, L / nξ, nξ, true),
         UniformBasis(-V, 2V / (nv - 1), nv, false), Bl, float(sum(w) / length(w)), Int(stages))
 end
@@ -120,7 +128,8 @@ end
 
 The map of `stages` non-separable implicit-midpoint stages for markers with the weights `w`, with
 `φ_s(ξ, v, ℓ) = Σ λ^s_ijl B_i(ξ) B̂_j(v) C_l(ℓ) / m`, `ℓ = ln w`, so that `ψ_s = m w φ_s`; `nξ`
-periodic cubic splines on `[0, L)`, `nv` on `[−V, V]` and `nℓ` on `[min ln w, max ln w]`. With
+periodic cubic splines on `[0, L)`, `nv` on `[−V, V]` and `nℓ` on `[min ln w, max ln w]` (for
+equal weights on `[ln w, ln w + 1]`). With
 `weighted = false` (control C) every marker evaluates `φ_s` at the mean of `ln w`, which makes the
 map one area-preserving map of `(x, v)`. A stage whose fixed-point iteration needs more than
 `iteration_limit` iterations makes the map return `NaN` positions, so that a fit rejects such
@@ -138,8 +147,7 @@ end
 
 function NonSeparableParametrisation(w::AbstractVector; L = 2π, V = 4.0, nξ = 16, nv = 17,
         nℓ = 6, stages = 2, weighted::Bool = true, iteration_limit = 50)
-    lw = log.(w)
-    Bℓ = UniformBasis(minimum(lw), (maximum(lw) - minimum(lw)) / (nℓ - 1), nℓ, false)
+    Bℓ = _log_weight_basis(w, nℓ)
     NonSeparableParametrisation(UniformBasis(0.0, L / nξ, nξ, true),
         UniformBasis(-V, 2V / (nv - 1), nv, false), Bℓ, Int(stages), weighted,
         Int(iteration_limit))

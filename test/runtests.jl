@@ -11,6 +11,8 @@ if "core" in GROUPS
     @safetestset "B-splines" include("common/bsplines.jl")
     @safetestset "Remap interface" include("common/interface.jl")
     @safetestset "Remap stages" include("common/stages.jl")
+    @safetestset "SVG pictures" include("common/svg.jl")
+    @safetestset "Algorithm figures" include("algorithm_figures.jl")
     @safetestset "Remapping: symplecticity condition" include("remapping/canonicity.jl")
     @safetestset "Remapping: gauge rezoning" include("remapping/gauge.jl")
     @safetestset "Remapping: gauge worked examples" include("remapping/gauge_examples.jl")
@@ -51,4 +53,5 @@ end
 if "slow" in GROUPS
     @safetestset "Projection: hole filling" include("projection/experiments/hole_filling.jl")
     @safetestset "Projection: DLRA weights" include("projection/experiments/dlra_weights.jl")
+    @safetestset "Standard experiments" include("standard.jl")
 end
