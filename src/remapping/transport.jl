@@ -164,6 +164,54 @@ function cell_current_inverse(t::SeparableMaxwellianTarget, c::Integer, s::Integ
 end
 
 """
+    DensityTarget(grid::PeriodicGrid, f; vmax, nx = 8, nv = 400)
+
+The density `f(x, v)` to be preserved by the current-quantile matching, for any non-negative
+function `f`, periodic in `x` with the period `grid.L`. The cell-averaged cumulative currents
+`F̂_c(sV) = (1/Δx) ∫_{C_c} ∫_0^{V} f(x, s v') v' dv' dx` are tabulated on `nv + 1` equidistant
+speeds in `[0, vmax]` (the trapezoidal rule in `v`, the midpoint rule on `nx` points per cell in
+`x`); `f` is taken to vanish for `|v| > vmax`. The inverse interpolates the table linearly and
+returns the smallest speed at which the current reaches its value.
+"""
+struct DensityTarget{T <: Real}
+    V::Vector{T}
+    F::Array{T, 3}
+end
+
+function DensityTarget(
+        grid::PeriodicGrid, f; vmax::Real, nx::Integer = 8, nv::Integer = 400)
+    V = collect(range(0, float(vmax); length = nv + 1))
+    h = V[2] - V[1]
+    F = zeros(eltype(V), nv + 1, grid.Ng, 2)
+    for c in 1:(grid.Ng), s in (1, -1)
+
+        xs = ((c - 1) .+ ((1:nx) .- 0.5) ./ nx) .* grid.Δx
+        j = [sum(f(x, s * v) for x in xs) / nx * v for v in V]
+        F[2:end, c, _branch(s)] = cumsum((j[1:(end - 1)] .+ j[2:end]) ./ 2 .* h)
+    end
+    DensityTarget(V, F)
+end
+
+_branch(s::Integer) = s > 0 ? 1 : 2
+
+function cell_cumulative_current(t::DensityTarget, c::Integer, V::Real)
+    s, aV = V >= 0 ? 1 : -1, abs(V)
+    aV >= t.V[end] && return t.F[end, c, _branch(s)]
+    i = searchsortedlast(t.V, aV)
+    θ = (aV - t.V[i]) / (t.V[i + 1] - t.V[i])
+    (1 - θ) * t.F[i, c, _branch(s)] + θ * t.F[i + 1, c, _branch(s)]
+end
+
+cell_current_total(t::DensityTarget, c::Integer, s::Integer) = t.F[end, c, _branch(s)]
+
+function cell_current_inverse(t::DensityTarget, c::Integer, s::Integer, y::Real)
+    F = view(t.F, :, c, _branch(s))
+    i = clamp(searchsortedfirst(F, y), 2, length(F))
+    θ = (y - F[i - 1]) / (F[i] - F[i - 1])
+    (1 - θ) * t.V[i - 1] + θ * t.V[i]
+end
+
+"""
     branch_quantile_matching(aP, total, inverse; m = 1, Δx = 1)
 
 Steps 3–5 of the algorithm *current-quantile matching* on one branch of one cell, for the sorted

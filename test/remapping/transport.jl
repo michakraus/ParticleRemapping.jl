@@ -152,3 +152,28 @@ end
           (2h / hypot(V...))
     @test detP(V) ≈ m^d * W(V)^(d - 1) * dWr rtol = 1e-8
 end
+
+@testset "DensityTarget against the separable target" begin
+    grid = PeriodicGrid(2π, 8)
+    sep = SeparableMaxwellianTarget(grid, 0.4)
+    # the midpoint rule on 64 points per cell and the trapezoidal rule with h = 0.002 in v are
+    # accurate to about 1e-6 here; the tolerances sit above that and below a wrong branch or cell
+    tab = DensityTarget(grid, (x, v) -> (1 + 0.4cos(x)) * exp(-v^2 / 2) / sqrt(2π);
+        vmax = 8.0, nx = 64, nv = 4000)
+    for c in (1, 4, 8), s in (1, -1)
+
+        @test isapprox(cell_current_total(tab, c, s), cell_current_total(sep, c, s);
+            rtol = 1e-4)
+        y = 0.6 * cell_current_total(sep, c, s)
+        @test isapprox(
+            cell_current_inverse(tab, c, s, y), cell_current_inverse(sep, c, s, y);
+            rtol = 1e-3)
+    end
+    @test isapprox(
+        cell_cumulative_current(tab, 3, -1.2), cell_cumulative_current(sep, 3, 1.2);
+        rtol = 1e-4)
+    # an asymmetric density: the two branches differ
+    skew = DensityTarget(grid, (x, v) -> v > 0 ? 2exp(-v^2 / 2) : exp(-v^2 / 2); vmax = 8.0)
+    @test isapprox(cell_current_total(skew, 2, 1), 2cell_current_total(skew, 2, -1);
+        rtol = 1e-6)
+end

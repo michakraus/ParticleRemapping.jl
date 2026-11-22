@@ -51,6 +51,7 @@ eight_marker_homotopy
 CurrentQuantileMatching
 remap(::CurrentQuantileMatching, ::ParticleRemapping.Markers)
 SeparableMaxwellianTarget
+DensityTarget
 cell_cumulative_current
 cell_current_total
 cell_current_inverse

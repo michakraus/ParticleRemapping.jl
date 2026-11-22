@@ -91,3 +91,36 @@ plot_remap
 plot_stages
 animate_stages
 ```
+
+## SVG pictures of the steps
+
+The overview page of each construction introduces its algorithm with SVG pictures, which need no
+plotting package: one panel per step and an animation through the steps (SMIL, no script).
+
+```@docs
+SVGFigure
+svg_stage_panels
+svg_stage_animation
+svg_line
+svg_rect
+svg_text
+svg_arrow
+svg_category_colors
+algorithm_svg
+```
+
+## Standard experiments
+
+The [standard experiments](@ref standard-experiments), which every construction runs.
+
+```@docs
+STANDARD_METHODS
+standard_method
+ShiftedRemap
+checkerboard_density
+electric_wave_density
+standard_wave_markers
+standard_checkerboard
+standard_long_time
+standard_remap_history
+```

@@ -31,28 +31,58 @@ or ``V^*_a``. The log-stretch is ``\mu_a = \ln \lambda_a``, the constrained grid
 ``\mathcal{M}_i^{(k)} = \sum_a w_a S_i(x_a) v_a^k`` for ``k \in \mathcal{K}``, and the
 cumulative current of ``f`` at ``X`` is ``F_X(V) = \int_0^V f(X, V') V' \, \mathrm{d} V'``.
 
-## The algorithm in short
+## The algorithm step by step
 
-**Gauge rezoning** ([`GaugeRezoning`](@ref)):
+**Gauge rezoning** ([`GaugeRezoning`](@ref)). The figures follow the steps on the eight markers
+on two nodes of the [worked example](@ref remap-eight-example)
+([`algorithm_svg`](@ref ParticleRemapping.algorithm_svg)); the vertical grey lines are the rays
+along which the markers move, the black lines the cell boundaries, the open circles the target
+speeds.
 
-1. In each cell and for each sign of ``v``, set targets ``\mu^*_a`` that spread the speeds evenly.
-2. Minimise the weighted distance ``\sum_a w_a (\mu_a - \mu^*_a)^2`` subject to unchanged grid
-   charge and grid kinetic energy, by a Newton method on the KKT system, and follow the
-   minimiser by a homotopy from ``\mu^* = 0`` to the full targets. The homotopy stops early where
-   the solution branch has a fold.
-3. Gauge step: set ``W_a = w_a e^{-\mu_a}`` and ``V_a = p_a / (m W_a)``.
+1. **Targets.** In each cell and for each sign of ``v``, set targets ``\mu^*_a`` that spread the
+   speeds evenly (panel 2).
+2. **Homotopy.** Minimise the weighted distance ``\sum_a w_a (\mu_a - \mu^*_a)^2`` subject to
+   unchanged grid charge and grid kinetic energy, by a Newton method on the KKT system, and follow
+   the minimiser by a homotopy from ``\mu^* = 0`` to the full targets (panels 3 and 4). The
+   homotopy stops early where the solution branch has a fold.
+3. **Gauge step.** Set ``W_a = w_a e^{-\mu_a}`` and ``V_a = p_a / (m W_a)`` (panel 5). A marker
+   that speeds up loses weight.
 
-**Canonical transport** ([`CurrentQuantileMatching`](@ref)):
+```@example remap-steps
+using ParticleRemapping
+gauge_steps = algorithm_svg(:gauge)
+gauge_steps.panels
+```
 
-1. Canonical map: ``(X_a, P_a) = \psi(x_a, p_a)``.
-2. In each cell and for each sign of ``P``, sort the markers by ``|P_a|`` and form the cumulative
-   momenta.
-3. Gauge step: give each marker the velocity ``V_a`` at the same quantile of the cumulative
-   current of ``f``, and the weight ``W_a = P_a / (m V_a)``.
+```@example remap-steps
+gauge_steps.animation
+```
 
-Steps 2 and 3 of the transport are a gauge step. The velocities they give can serve as targets for
-the gauge rezoning, which then makes the grid charge and the kinetic energy exact
-([combining the two constructions](@ref remap-comparison)).
+**Canonical transport** ([`CurrentQuantileMatching`](@ref)). The figures follow the steps on 48
+markers in two cells with the admissible cotangent lift of the
+[closed-form example](@ref remap-lift-example).
+
+1. **Canonical map.** ``(X_a, P_a) = \psi(x_a, p_a)``, at the old weights (panel 2, arrows from
+   the markers before).
+2. **Groups.** In each cell and for each sign of ``P``, sort the markers by ``|P_a|`` and form
+   the cumulative momenta (panel 3, the colour is the group).
+3. **Gauge step.** Give each marker the velocity ``V_a`` at the same quantile of the cumulative
+   current of ``f``, and the weight ``W_a = P_a / (m V_a)`` (panel 4, each marker moves along
+   ``v \propto 1/w`` at fixed ``x``).
+
+```@example remap-steps
+transport_steps = algorithm_svg(:transport)
+transport_steps.panels
+```
+
+```@example remap-steps
+transport_steps.animation
+```
+
+Steps 2 and 3 of the transport are a gauge step. The velocities they give can serve as targets
+for the gauge rezoning, which then makes the grid charge and the kinetic energy exact
+([combining the two constructions](@ref remap-comparison)). The [algorithm](@ref remap-algorithm)
+page gives both in full, each with a worked example.
 
 ## Example
 
@@ -163,15 +193,17 @@ markers.
 ## The pages of this chapter
 
 - [Velocity rezoning by the gauge step](@ref remap-gauge): the map and its exact properties, the
-  constrained optimisation, its optimality conditions, the Newton step and the homotopy, and two
-  worked examples, one in closed form with the fold of the solution branch.
+  constrained optimisation, its optimality conditions, the Newton step, and a worked example in
+  closed form with the fold of the solution branch.
 - [Canonical transport with consistent weights](@ref remap-transport): the matching proposition,
-  the compatibility condition, the limit of equidistribution, admissible canonical maps, the
-  discrete algorithm, and two worked examples.
-- [Numerical experiments](@ref remap-experiments): the two standard examples in detail, with the
-  homotopy up to its fold and the admissible and inadmissible lifts.
-- [Combining the two constructions](@ref remap-comparison): the matched velocities as targets of
-  the gauge rezoning.
+  the compatibility condition, the limit of equidistribution, admissible canonical maps, and a
+  worked example in closed form.
+- [Algorithm](@ref remap-algorithm): the gauge rezoning and the current-quantile matching step by
+  step, with worked examples, and their combination.
+- [Numerical experiments](@ref remap-experiments): the standard experiments, which every
+  construction runs.
+- [Clustered markers and a separable density](@ref remap-examples): the two standard examples in
+  detail, with the homotopy up to its fold and the admissible and inadmissible lifts.
 - [Properties, limitations and higher dimensions](@ref remap-limitations-page): what each
   construction keeps, what it cannot do, the open questions, and the cost in 3d3v.
 - [Library: Remapping](library.md): the docstrings of the module [`Remapping`](@ref).

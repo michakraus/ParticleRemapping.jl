@@ -301,7 +301,7 @@ a flow in a pseudo-time ``\tau``.
 The second form is the one that the constructions use when they compute ``\psi`` from the
 markers at fixed weights; the [state-dependent parameters](@ref state-dependent-parameters) of the
 next chapter say what this means for the map on the full space. The suites 1 and 2 of the
-[sliced experiments](@ref sliced-experiments) check all three forms with ForwardDiff Jacobians and
+[structural suites](@ref sliced-suites) of the sliced chapter check all three forms with ForwardDiff Jacobians and
 controls that drop the recoil or read ``w`` at fixed ``(x, p)``.
 
 ## [The gauge step](@id gauge-step)

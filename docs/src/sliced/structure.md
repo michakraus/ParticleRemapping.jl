@@ -8,7 +8,7 @@ The foundations state when a redistribution of weighted markers is symplectic, i
 [three forms of the condition](@ref symplecticity-conditions) (full space, leaf of constant
 weights, pseudo-time flow), and why a map that moves each marker on its own keeps every hole
 ([uncoupled maps](@ref uncoupled-maps)). Suites 1 and 2 of the
-[experiments](@ref sliced-experiments) check the three forms with ForwardDiff Jacobians and with
+[structural suites](@ref sliced-suites) check the three forms with ForwardDiff Jacobians and with
 controls that drop the recoil or read ``w`` at fixed ``(x, p)``. This page adds what the stages of
 the sliced map do: coupling the markers is not enough to fill a hole, the sliced lift is a global
 symplectic diffeomorphism, the weight squeeze is a linear canonical map that keeps the total

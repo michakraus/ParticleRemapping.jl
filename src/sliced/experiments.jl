@@ -287,6 +287,19 @@ function composition_defect_experiment(; m::Real = 1.4, Δt::Real = 0.7,
 end
 
 """
+    checkerboard_markers(; seed = 505, N = 400, m = 1.0)
+
+The markers of the checkerboard: `N` markers of weight `1/N`, the first `N/2` uniform in
+`Q1 = [0, 1)²`, the others uniform in `Q3 = [−1, 0)²` of `[−1, 1]²`; `Q2` and `Q4` are empty.
+"""
+function checkerboard_markers(; seed::Integer = 505, N::Integer = 400, m::Real = 1.0)
+    rng = MersenneTwister(seed)
+    x = vcat(rand(rng, N ÷ 2), -rand(rng, N ÷ 2))
+    v = vcat(rand(rng, N ÷ 2), -rand(rng, N ÷ 2))
+    Markers(x, v, fill(1.0 / N, N); m = m)
+end
+
+"""
     checkerboard_experiment(; seed = 505, N = 400, m = 1.0, B_v = 10, B_x = 20, β_mean = 0.8,
                             β_intra = 0.85, ε_x = 0.15, ε_v = 0.15, ε_control = 0.05)
 
@@ -304,10 +317,8 @@ Returns the markers `before`, `sliced`, `marginal`, their quadrant counts and th
 function checkerboard_experiment(; seed::Integer = 505, N::Integer = 400, m::Real = 1.0,
         B_v::Integer = 10, B_x::Integer = 20, β_mean::Real = 0.8, β_intra::Real = 0.85,
         ε_x::Real = 0.15, ε_v::Real = 0.15, ε_control::Real = 0.05)
-    rng = MersenneTwister(seed)
-    qc = vcat(rand(rng, N ÷ 2), -rand(rng, N ÷ 2))
-    vc = vcat(rand(rng, N ÷ 2), -rand(rng, N ÷ 2))
-    wc = fill(1.0 / N, N)
+    before = checkerboard_markers(; seed, N, m)
+    qc, vc, wc = before.x, before.v, before.w
     pc = wc .* m .* vc
     w_ref = 1.0 / N
     # the control: one slice in each lift, targets on all N markers
@@ -321,7 +332,6 @@ function checkerboard_experiment(; seed::Integer = 505, N::Integer = 400, m::Rea
         B_x = B_x, β_mean_q = β_mean, β_intra_q = β_intra, ε_q = ε_x, β_mean_p = β_mean,
         β_intra_p = β_intra, ε_p = ε_v / N)
     st = apply_sliced_lift(plan, qc, pc)
-    before = Markers(qc, vc, wc; m = m)
     sliced = Markers(st.q̂, st.p̂ ./ (m .* wc), wc; m = m)
     marginal = Markers(qm2, pm2 ./ (m .* wc), wc; m = m)
     (; before, sliced, marginal, quadrants_before = phase_quadrant_counts(qc, vc),
@@ -354,6 +364,9 @@ function electric_wave_markers(; Nx::Integer = 30, Nv::Integer = 30, m::Real = 1
     Markers(x, v, w; m = m)
 end
 
+# the two-wave field of the long-time run
+_electric_wave_field(t, x) = -0.85 * sin(x) - 0.75 * sin(2x - 1.3 * t)
+
 """
     electric_wave_simulation(markers; Lx = π, Δt = 0.05, steps = 500, record_every = 0,
                              remap_method = nothing, remap_every = 0)
@@ -361,14 +374,16 @@ end
 The markers pushed through the two-wave field `E(t, x) = −0.85 sin x − 0.75 sin(2x − 1.3 t)` by
 `steps` drift–kick–drift steps of size `Δt` (positions wrapped into `[−Lx, Lx)`, weights
 unchanged). With `remap_method` and `remap_every > 0`, the markers are remapped by
-`remap(remap_method, ·)` after every `remap_every` steps. With `record_every > 0` the states after
+`remap(remap_method, ·)` after every `remap_every` steps; a `remap_method` that is not an
+`AbstractRemap` is called with the time `t` of the remap and returns the method for that remap.
+With `record_every > 0` the states after
 every `record_every` steps are recorded. Returns `(; markers, times, snapshots, remap_times)`, with
 `snapshots` a vector of `Markers` (the initial state first).
 """
 function electric_wave_simulation(markers::Markers; Lx::Real = Float64(π), Δt::Real = 0.05,
         steps::Integer = 500, record_every::Integer = 0, remap_method = nothing,
         remap_every::Integer = 0)
-    E(t, xx) = -0.85 * sin(xx) - 0.75 * sin(2xx - 1.3 * t)
+    E = _electric_wave_field
     m = markers.m
     x, v, w = copy(markers.x), copy(markers.v), copy(markers.w)
     times, snapshots, remap_times = [0.0], [Markers(copy(x), copy(v), copy(w); m = m)],
@@ -383,8 +398,11 @@ function electric_wave_simulation(markers::Markers; Lx::Real = Float64(π), Δt:
         end
         if remap_method !== nothing && remap_every > 0 && step % remap_every == 0 &&
            step < steps
-            r = remap(remap_method, Markers(x, v, w; m = m)).markers
-            x, v, w = periodic_wrap.(r.x, Lx), copy(r.v), copy(r.w)
+            method = remap_method isa AbstractRemap ? remap_method : remap_method(step * Δt)
+            r = remap(method, Markers(x, v, w; m = m)).markers
+            x .= periodic_wrap.(r.x, Lx)
+            v .= r.v
+            w .= r.w
             push!(remap_times, step * Δt)
         end
         if record_every > 0 && step % record_every == 0

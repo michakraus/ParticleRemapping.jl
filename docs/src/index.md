@@ -27,40 +27,49 @@ canonical map and of the weights.
 [Background](background.md) states the problem and the requirements on a redistribution.
 [Canonical structure of weighted markers](symplectic.md) derives the canonical coordinates, the
 presymplectic form on positions, velocities and weights, the factorisation lemma and the gauge
-step. [What a symplectic redistribution can do](@ref obstructions) derives the obstructions that
+step. [Symplectic redistribution](@ref obstructions) derives the obstructions that
 shape every construction: Liouville's theorem for holes, weight-dependent Hamiltonians, the
 velocity–momentum fold, and parameters that depend on the state.
 
 **Constructions.**
 
-1. [Gauge rezoning and canonical transport](@ref remap-overview) ([`Remapping`](@ref)): the two
+1. [Hamiltonian particle projection](@ref projection-index) ([`Projection`](@ref)): kicks and
+   drifts, or non-separable stages, of a weight-dependent Hamiltonian, fitted to target points
+   of a density-interpolation flow; with a charge-conserving reweighting and target weights from
+   a dynamical low-rank density.
+2. [Spline-projection redistribution](@ref redistribution-overview)
+   ([`Redistribution`](@ref)): one symplectic step of a translation- and permutation-invariant
+   pairwise spline Hamiltonian, whose parameters solve a linear system, with weights from a
+   positive, moment-compatible spline projection.
+3. [Gauge rezoning and canonical transport](@ref remap-overview) ([`Remapping`](@ref)): the two
    extreme cases of the factorisation, in 1D-1V. The gauge rezoning keeps positions and momenta
    and sets the velocities by a constrained optimisation that keeps the grid charge and the
    kinetic energy. The canonical transport moves the markers by a given canonical map and sets
    weights that reproduce the density exactly.
-2. [Hamiltonian particle projection](@ref projection-index) ([`Projection`](@ref)): kicks and
-   drifts, or non-separable stages, of a weight-dependent Hamiltonian, fitted to target points
-   of a density-interpolation flow; with a charge-conserving reweighting and target weights from
-   a dynamical low-rank density.
-3. [Spline-projection redistribution](@ref redistribution-overview)
-   ([`Redistribution`](@ref)): one symplectic step of a translation- and permutation-invariant
-   pairwise spline Hamiltonian, whose parameters solve a linear system, with weights from a
-   positive, moment-compatible spline projection.
 4. [Sliced redistribution](@ref sliced-overview) ([`SlicedRedistribution`](@ref)): explicit
    sliced quantile cotangent lifts and a canonical weight squeeze.
 
-Every chapter of a construction has the same shape: an overview with the algorithm in short and
-one example, shown by the same pictures in every chapter (the markers before and after the remap,
-the states of the remap stage by stage, an animation of the states, and the changes of the
-conserved quantities); the pages of the construction; its numerical experiments; and a page on its
-properties, limitations, known issues, open questions and the extension to higher dimensions.
+Every chapter of a construction has the same shape:
 
-**Closing chapters.** [Comparison and open questions](comparison.md) sets the four side by side,
-including what binds first in 3d3v. [Figures and animations](@ref figures) states the common
-style and lists every figure and animation of the manual and of the notes.
-[Verification](@ref verification) lists every test and script, what each checks, and which
+- an **overview**: the algorithm step by step, with one SVG figure for each step and an animation
+  of the steps on a small example, and one example shown by the same pictures in every chapter
+  (the markers before and after the remap, the states of the remap stage by stage, an animation
+  of the states, and the changes of the conserved quantities);
+- the pages of the construction;
+- the **algorithm** in full;
+- the **numerical experiments**: the [standard experiments](@ref standard-experiments), which
+  every construction runs with the same markers and the same measures;
+- the additional experiments of the construction, with the hole-filling experiments on a page of
+  their own;
+- a page on its **properties, limitations and higher dimensions**, with the known issues and the
+  open questions.
+
+**Closing chapters.** [Comparison and open questions](comparison.md) sets the four side by side:
+the results of the standard experiments, what each keeps and needs, and what binds first in
+3d3v. [Verification](@ref verification) lists every test and script, what each checks, and which
 numbers of the source notes the package reproduces. The [library](library.md) documents every
-function, one page per module.
+function, one page per module. [Figures and animations](@ref figures) states the common style
+and lists every figure and animation of the manual and of the notes.
 
 ## Quick start
 
@@ -77,24 +86,6 @@ Every construction is a method type that [`remap`](@ref) applies to a marker set
 a [`RemapResult`](@ref) with the new markers and the diagnostics of the method, and
 [`conservation_report`](@ref) gives the changes of the conserved quantities (with a grid, also of
 the grid charge, current and energy). Each call below uses the example of its chapter.
-
-The gauge rezoning of 6400 clustered markers, with constraints on the grid charge and the kinetic
-energy:
-
-```@example home
-s = gauge_rezoning_setup()
-r = remap(s.method, s.markers)
-conservation_report(s.markers, r.markers; grid = s.grid)
-```
-
-The current-quantile matching after the identity map, for 20000 markers sampled from a perturbed
-Maxwellian; the weights match the target density up to the quantile error:
-
-```@example home
-q = quantile_matching_setup(; N = 20_000)
-r = remap(q.identity, q.markers)
-conservation_report(q.markers, r.markers; grid = q.grid)
-```
 
 The Hamiltonian particle projection with non-separable stages, on a lattice with an elliptic
 hole; `objective_ratio` is the fit objective after the fit relative to the identity:
@@ -114,6 +105,24 @@ distance of the end point from the relaxed targets:
 ex = redistribution_example()
 r = remap(SplineRedistribution(), ex.markers)
 (target_error = r.info.target_error, report = conservation_report(ex.markers, r.markers))
+```
+
+The gauge rezoning of 6400 clustered markers, with constraints on the grid charge and the kinetic
+energy:
+
+```@example home
+s = gauge_rezoning_setup()
+r = remap(s.method, s.markers)
+conservation_report(s.markers, r.markers; grid = s.grid)
+```
+
+The current-quantile matching after the identity map, for 20000 markers sampled from a perturbed
+Maxwellian; the weights match the target density up to the quantile error:
+
+```@example home
+q = quantile_matching_setup(; N = 20_000)
+r = remap(q.identity, q.markers)
+conservation_report(q.markers, r.markers; grid = q.grid)
 ```
 
 The sliced redistribution of 900 markers after 500 time steps in a two-wave electric field:

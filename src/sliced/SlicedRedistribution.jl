@@ -35,7 +35,8 @@ export per_axis_sliced_lift
 export periodic_wrap, phase_quadrant_counts, phase_cell_statistics, cell_count_history,
        smoothed_density_difference
 export factorisation_pullback_experiment, pseudo_time_flow_experiment,
-       autonomous_map_experiment, composition_defect_experiment, checkerboard_experiment,
+       autonomous_map_experiment, composition_defect_experiment, checkerboard_markers,
+       checkerboard_experiment,
        electric_wave_markers, electric_wave_simulation, long_time_remap_experiment,
        sliced_stages_example
 export repulsion_wall_probe, rotated_frame_lift_probe, checkerboard_reweighting_control
