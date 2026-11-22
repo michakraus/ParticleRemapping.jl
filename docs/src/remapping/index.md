@@ -123,7 +123,7 @@ nothing # hide
 ```
 
 ```@raw html
-<video src="remapping-gauge-stages.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./remapping-gauge-stages.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 The changes of the conserved quantities
@@ -168,7 +168,7 @@ nothing # hide
 ```
 
 ```@raw html
-<video src="remapping-transport-stages.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./remapping-transport-stages.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 The changes of the conserved quantities, the largest compatibility residual ``|R_c^s|`` of the

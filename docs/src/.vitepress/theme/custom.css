@@ -1,0 +1,157 @@
+/* ==========================================================================
+   RCM House Palette & Academic Design System (from Books/RCM/style/rcm.tex),
+   the styling of the VitePress tutorial on the Kolmogorov n-width
+   ========================================================================== */
+
+:root {
+  --rcm-blue: #1F4E79;
+  --rcm-blue-soft: #2e6da4;
+  --rcm-teal: #1B7A78;
+  --rcm-orange: #C8553D;
+  --rcm-gold: #D9A441;
+  --rcm-gold-text: #8a6414; /* gold for text on white: contrast 5.4:1 (--rcm-gold has 2.2:1) */
+  --rcm-grey: #5F6B73;
+  --rcm-light: #EEF3F8;
+  --rcm-teal-bg: #eef7f6;
+  --rcm-orange-bg: #fdf2ef;
+  --rcm-sand: #FBF6EE;
+
+  --rcm-card-bg: #ffffff;
+  --rcm-card-alt: #f7f9fc;
+  --rcm-border: #d8e1ea;
+  --rcm-grid: #e3eaf2;
+  --rcm-axis: #7a8894;
+  --rcm-ink: #1a2430;
+  --rcm-muted: #556270;
+  --rcm-green: #2a7f4f;
+
+  /* Map into VitePress brand colors */
+  --vp-c-brand-1: #1F4E79;
+  --vp-c-brand-2: #1B7A78;
+  --vp-c-brand-3: #163a5c;
+  --vp-c-brand-soft: rgba(31, 78, 121, 0.12);
+}
+
+.dark {
+  --rcm-blue: #6cb0f0;
+  --rcm-blue-soft: #8cc2f5;
+  --rcm-teal: #49c5c2;
+  --rcm-orange: #f07d63;
+  --rcm-gold: #f0be59;
+  --rcm-gold-text: #f0be59;
+  --rcm-grey: #9aa7b2;
+  --rcm-light: rgba(108, 176, 240, 0.11);
+  --rcm-teal-bg: rgba(73, 197, 194, 0.10);
+  --rcm-orange-bg: rgba(240, 125, 99, 0.11);
+  --rcm-sand: rgba(240, 190, 89, 0.10);
+
+  --rcm-card-bg: #161b22;
+  --rcm-card-alt: #1d242e;
+  --rcm-border: #2d3744;
+  --rcm-grid: #252f3b;
+  --rcm-axis: #768390;
+  --rcm-ink: #e6edf3;
+  --rcm-muted: #9aa7b2;
+  --rcm-green: #4cc782;
+
+  --vp-c-brand-1: #6cb0f0;
+  --vp-c-brand-2: #49c5c2;
+  --vp-c-brand-3: #8cc2f5;
+  --vp-c-brand-soft: rgba(108, 176, 240, 0.16);
+}
+
+/* Wider content container so side-by-side figures and animations breathe comfortably */
+.VPDoc.has-aside .content-container {
+  max-width: 860px !important;
+}
+
+/* ==========================================================================
+   Book-style Mathematical Callout Boxes (matching tcolorbox in rcm.tex)
+   ========================================================================== */
+
+.rcm-box {
+  margin: 1.35rem 0;
+  padding: 0.95rem 1.2rem;
+  border-left: 3.5px solid var(--rcm-blue);
+  background: var(--rcm-light);
+  border-radius: 0 6px 6px 0;
+  font-size: 0.97rem;
+  line-height: 1.65;
+}
+
+.rcm-box > p:first-child {
+  margin-top: 0;
+}
+
+.rcm-box > p:last-child {
+  margin-bottom: 0;
+}
+
+.rcm-box-title {
+  font-weight: 700;
+  color: var(--rcm-blue);
+  margin-bottom: 0.35rem;
+  font-size: 0.98rem;
+  letter-spacing: 0.01em;
+}
+
+.rcm-definition {
+  border-left-color: var(--rcm-teal);
+  background: var(--rcm-teal-bg);
+}
+.rcm-definition .rcm-box-title {
+  color: var(--rcm-teal);
+}
+
+.rcm-keyidea {
+  border-left-color: var(--rcm-orange);
+  background: var(--rcm-orange-bg);
+}
+.rcm-keyidea .rcm-box-title {
+  color: var(--rcm-orange);
+}
+
+.rcm-example {
+  border-left-color: var(--rcm-gold);
+  background: var(--rcm-sand);
+}
+.rcm-example .rcm-box-title {
+  color: #9e7118;
+}
+.dark .rcm-example .rcm-box-title {
+  color: var(--rcm-gold);
+}
+
+/* Chapter abstract banner (matching chapterabstract in rcm.tex) */
+.rcm-abstract {
+  margin: 1rem 0 1.75rem;
+  padding: 1rem 1.25rem;
+  background: var(--rcm-light);
+  border-top: 2.5px solid var(--rcm-orange);
+  border-radius: 0 0 6px 6px;
+  font-size: 0.94rem;
+}
+
+.rcm-abstract h4 {
+  margin: 0 0 0.45rem 0;
+  color: var(--rcm-blue);
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rcm-abstract ul {
+  margin: 0.25rem 0 0.5rem 0;
+  padding-left: 1.2rem;
+}
+
+.rcm-abstract li {
+  margin: 0.2rem 0;
+}
+
+/* The nav bar would list the eleven top-level entries of the manual, which run past the right
+   edge at any screen width and push the appearance switch out of view. The sidebar lists every
+   page, so the nav bar shows only the title, the search box and the switches. */
+.VPNavBar .VPNavBarMenu {
+  display: none;
+}

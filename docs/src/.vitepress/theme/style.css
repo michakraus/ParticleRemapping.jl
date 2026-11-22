@@ -1,0 +1,109 @@
+/* The parts of DocumenterVitepress's default style.css that serve the content Documenter writes:
+   the code font, MathJax, the output blocks and the REPL prompts. Its colours, fonts, home page
+   and sidebar drawer are left out; the colours come from custom.css. */
+
+/* Code font: JuliaMono has the Unicode symbols of Julia code */
+@font-face {
+  font-family: JuliaMono-Regular;
+  src: url("https://cdn.jsdelivr.net/gh/cormullion/juliamono/webfonts/JuliaMono-Regular.woff2");
+}
+
+:root {
+  scroll-behavior: smooth;
+  --vp-font-family-mono: JuliaMono-Regular, monospace;
+}
+
+/* Disable contextual alternates, which turn `|>` and `/>` into arrows */
+pre, code {
+  font-family: "JuliaMono-Regular", monospace;
+  font-feature-settings: "calt" off;
+}
+
+/* Code in the text colour; the brand colour would make it look like a link */
+:root {
+  --vp-code-color: var(--vp-c-text-1);
+}
+
+.custom-block.tip code {
+  color: var(--vp-c-text-1);
+  background-color: var(--vp-code-bg);
+}
+
+.custom-block.tip a > code {
+  color: var(--vp-c-tip-1);
+}
+
+/* MathJax */
+.mjx-scroll-wrapper {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  text-align: center;
+}
+
+mjx-container {
+  display: inline-block;
+  padding: 0.5rem 0;
+  margin: auto 2px -2px;
+  overflow: visible !important;
+  text-align: left;
+}
+
+mjx-container > svg {
+  display: inline-block;
+  height: auto;
+}
+
+mjx-container > svg[data-labels="true"] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+mjx-container svg path {
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+
+.MathJax_ref {
+  color: var(--vp-c-brand-1);
+}
+
+.MathJax_ref:hover {
+  color: var(--vp-c-brand-2);
+  cursor: pointer;
+}
+
+/* Output blocks of @example and @repl */
+:root {
+  --vp-c-bg-output: #fbfbfb;
+  --vp-c-bg-output-outline: #e2e2e3;
+}
+
+.dark {
+  --vp-c-bg-output: #1a1a1a;
+  --vp-c-bg-output-outline: #2e2e32;
+}
+
+.language- {
+  background-color: var(--vp-c-bg-output) !important;
+  outline: 1px solid var(--vp-c-bg-output-outline);
+}
+
+/* Julia REPL prompts */
+.vp-doc .shiki .repl-prompt {
+  opacity: 1.0;
+  user-select: none;
+}
+
+.vp-doc .shiki .repl-prompt-julia {
+  color: var(--vp-c-brand-2);
+}
+
+.vp-doc .shiki .repl-prompt-pkg {
+  color: var(--vp-c-brand-1);
+}

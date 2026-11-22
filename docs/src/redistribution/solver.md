@@ -188,7 +188,7 @@ nothing # hide
 ```
 
 ```@raw html
-<video src="redistribution-step.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./redistribution-step.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 ### [Remark (caustics and the coarse-basis regime)](@id rd-coarse-basis)

@@ -96,7 +96,7 @@ animate_stages("remapping-gauge-homotopy.mp4", zoom; window = (0, 2grid.Δx, -vl
 ```
 
 ```@raw html
-<video src="remapping-gauge-homotopy.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./remapping-gauge-homotopy.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 ## [The canonical transport of a separable density](@id remap-transport-example)
@@ -161,5 +161,5 @@ animate_lift_matching("remapping-ex3-lift.mp4", frames, transport); nothing # hi
 ```
 
 ```@raw html
-<video src="remapping-ex3-lift.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./remapping-ex3-lift.mp4" controls loop muted playsinline style="width:100%"></video>
 ```

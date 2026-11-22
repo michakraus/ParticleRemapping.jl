@@ -162,7 +162,7 @@ animate_eight_marker_homotopy("remapping-ex2-homotopy.mp4", data); nothing # hid
 ```
 
 ```@raw html
-<video src="remapping-ex2-homotopy.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./remapping-ex2-homotopy.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 ## [Current-quantile matching](@id remap-matching)
@@ -290,7 +290,7 @@ animate_matching_example("remapping-ex4-matching.mp4", e); nothing # hide
 ```
 
 ```@raw html
-<video src="remapping-ex4-matching.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./remapping-ex4-matching.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 ## [Combining the two constructions](@id remap-comparison)
