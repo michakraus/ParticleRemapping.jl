@@ -127,7 +127,7 @@ nothing # hide
 ```
 
 ```@raw html
-<video src="dlra.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./dlra.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 The low-rank density at ``\vartheta = 10^{-4}`` and the markers along the push

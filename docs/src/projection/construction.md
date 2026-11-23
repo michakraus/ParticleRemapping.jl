@@ -127,7 +127,7 @@ nothing # hide
 ```
 
 ```@raw html
-<video src="moser-targets.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./moser-targets.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 The density-interpolation flow from ``t = 0`` to ``t = 1``

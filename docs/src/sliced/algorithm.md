@@ -100,7 +100,7 @@ nothing # hide
 ```
 
 ```@raw html
-<video src="sliced-slices.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./sliced-slices.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 ## [Slices and quantile targets](@id sliced-slices)

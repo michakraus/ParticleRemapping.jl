@@ -385,7 +385,7 @@ animate_charge_fold("remapping-ex1-fold.mp4", ex1); nothing # hide
 ```
 
 ```@raw html
-<video src="remapping-ex1-fold.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./remapping-ex1-fold.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 ## The numerical example and the limits

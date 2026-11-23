@@ -115,7 +115,7 @@ nothing # hide
 ```
 
 ```@raw html
-<video src="sliced-stages.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./sliced-stages.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 The changes of the conserved quantities
