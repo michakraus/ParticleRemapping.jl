@@ -46,11 +46,12 @@ the least-squares problem of the residual `[r; √β θ]` with the Jacobian `[�
 `max_iterations = maxit` and GeometricSolvers' default tolerances; `status` is its
 `SolverStatus`, whose `code` says why the solve ended (`SUCCESS` on a convergence test, with
 `stationary` set for the stationarity test; `MAXITERS` after the budget). A trial `θ` with a
-non-finite residual is left to the step rule of the solver. With `trace = true` it prints the return code, the iterations and `F/F0` after the
-solve.
+non-finite residual is left to the step rule of the solver. With `trace = true` it prints the
+return code, the iterations and `F/F0` after the solve.
 
 Returns the parameters, the objective `F0` at `θ = 0` (whatever the start) and `F` at the returned
-`θ`, the number of iterations and the status. An unknown `solver` or a negative `maxit` throws an
+`θ`, the number of iterations and the status. An unknown `solver`, a negative `maxit`, a `maxit`
+above `typemax(Int32)` with `:gauss_newton` or a `β` that is negative or `NaN` throws an
 `ArgumentError`, a `θ0` of the wrong length a `DimensionMismatch`, and a non-finite `θ0` an
 `ArgumentError`.
 """
@@ -60,6 +61,10 @@ function fit_remap_parameters(
         θ0::Union{Nothing, AbstractVector{<:Real}} = nothing)
     _check_solver(solver)
     maxit >= 0 || throw(ArgumentError("maxit must be non-negative, got $maxit"))
+    solver === :gauss_newton && maxit > typemax(Int32) &&
+        throw(ArgumentError(
+            "maxit must be at most $(typemax(Int32)) for :gauss_newton, got $maxit"))
+    β >= 0 || throw(ArgumentError("β must be non-negative, got $β"))
     n = remap_parameter_count(par)
     if θ0 !== nothing
         length(θ0) == n || throw(DimensionMismatch(
@@ -81,8 +86,23 @@ function fit_remap_parameters(
         F = obj(θ, r)
     end
     if solver === :gauss_newton
-        θ, status = _gauss_newton_fit(par, residual, θ, length(r), x, p, w, wt, m, ℓx, ℓv,
-            β, maxit)
+        # GaussNewton with DogLeg on the augmented residual [r; √β θ], with `nr` rows of `r`
+        nr, sβ = length(r), sqrt(β)
+        function F!(y, θ, _)
+            y[1:nr] .= residual(θ)
+            y[(nr + 1):end] .= sβ .* θ
+            y
+        end
+        function J!(Jy, θ, _)
+            fill!(Jy, 0)
+            Jy[1:nr, :] .= _residual_jacobian(par, residual, θ, x, p, w, wt, m, ℓx, ℓv)
+            for i in 1:n
+                Jy[nr + i, i] = sβ
+            end
+            Jy
+        end
+        prob = LeastSquaresProblem(F!, J!; output_length = nr + n)
+        θ, status = solve(prob, θ, GaussNewton(; globalization = DogLeg()); max_iterations = maxit)
         F = obj(θ, residual(θ))
         trace && @printf("    %s after %d iterations: F/F0 = %.4f\n", status.code,
             status.iterations, F / F0)
@@ -115,26 +135,4 @@ function fit_remap_parameters(
         accepted || return (; θ, F0, F, iterations = it, status = nothing)
     end
     (; θ, F0, F, iterations = maxit, status = nothing)
-end
-
-# GaussNewton with DogLeg on the augmented residual [r; √β θ] (`nr` rows of `r`) from θ0; returns
-# the solver's θ and its SolverStatus.
-function _gauss_newton_fit(par, residual, θ0, nr, x, p, w, wt, m, ℓx, ℓv, β, maxit)
-    n = length(θ0)
-    sβ = sqrt(β)
-    function F!(y, θ, _)
-        y[1:nr] .= residual(θ)
-        y[(nr + 1):end] .= sβ .* θ
-        y
-    end
-    function J!(Jy, θ, _)
-        fill!(Jy, 0)
-        Jy[1:nr, :] .= _residual_jacobian(par, residual, θ, x, p, w, wt, m, ℓx, ℓv)
-        for i in 1:n
-            Jy[nr + i, i] = sβ
-        end
-        Jy
-    end
-    prob = LeastSquaresProblem(F!, J!; output_length = nr + n)
-    solve(prob, θ0, GaussNewton(; globalization = DogLeg()); max_iterations = maxit)
 end

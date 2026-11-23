@@ -109,6 +109,9 @@ hp = HatProjection(12, 13)
                 solver = :newton)
             @test_throws r"^ArgumentError: the seed must be non-negative, got -1$" M(;
                 seed = -1)
+            @test_throws r"^ArgumentError: the seed must be at most typemax\(Int\), got 18446744073709551615$" M(;
+                seed = typemax(UInt64))
+            @test M(; seed = UInt64(typemax(Int))).seed === typemax(Int)
         end
         @test_throws r"^ArgumentError: the Hamiltonian particle projection acts on 1D-1V" remap(
             KickDriftRemap(), Markers(rand(2, 3), rand(2, 3), rand(3)))

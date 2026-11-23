@@ -150,6 +150,17 @@ end
         r = vcat((X .- tgs.x) ./ ℓx, (P ./ (ms .* tgs.w) .- tgs.v) ./ ℓv)
         0.5 * dot(r, r) + 0.5β * dot(θ, θ)
     end
+    # the gradient Jmᵀr + βθ of the objective, with the Jacobian Jm of the package's residual
+    function gradient(par, θ, β)
+        residual(θ) = begin
+            X, P = remap_stages(par, θ, xs, ps, ws; m = ms)
+            vcat((X .- tgs.x) ./ ℓx, (P ./ (ms .* tgs.w) .- tgs.v) ./ ℓv)
+        end
+        Jm = ParticleRemapping.Projection._residual_jacobian(
+            par, residual, θ, xs, ps, ws, tgs.w, ms, ℓx, ℓv)
+        Jm' * residual(θ) + β * θ
+    end
+    g0 = norm(gradient(kds, zeros(n), 0))
     code(fr) = string(fr.status.code)
 
     @testset "the default is Levenberg–Marquardt" begin
@@ -173,12 +184,23 @@ end
         @test fgn.F < fgn.F0
         @test fgn.F ≈ objective(kds, fgn.θ, 1e-3) rtol = 1e-12
         @test fgn.F0 ≈ objective(kds, zeros(n), 1e-3) rtol = 1e-12
+        # θ is stationary for the objective, not only for the solver's model of it
+        @test norm(gradient(kds, fgn.θ, 1e-3)) < 1e-8 * g0
+        # the bound of the budget is inclusive
+        @test code(fit(kds; solver = :gauss_newton, maxit = typemax(Int32))) == "SUCCESS"
     end
 
     @testset "the regularisation rows" begin
         f10 = fit(kds; solver = :gauss_newton, maxit = 20, β = 10)
         @test norm(f10.θ) < 0.8 * norm(fgn.θ)
         @test f10.F ≈ objective(kds, f10.θ, 10) rtol = 1e-12
+        @test norm(gradient(kds, f10.θ, 10)) < 1e-8 * g0
+    end
+
+    @testset "the budget of Gauss–Newton" begin
+        f3 = fit(nss; solver = :gauss_newton, maxit = 3)
+        @test code(f3) == "MAXITERS"
+        @test f3.iterations == 3
     end
 
     @testset "the start and the zero budget, $solver" for solver in (
@@ -225,6 +247,17 @@ end
                 kds; solver, θ0 = [zeros(n - 1); -Inf])
             @test_throws r"^ArgumentError: maxit must be non-negative, got -1$" fit(
                 kds; solver, maxit = -1)
+            @test_throws r"^ArgumentError: β must be non-negative, got -1.0$" fit(
+                kds; solver, β = -1.0)
+            @test_throws r"^ArgumentError: β must be non-negative, got NaN$" fit(
+                kds; solver, β = NaN)
+            # β = 0 is allowed: the regularisation rows are zero rows
+            @test fit(kds; solver, maxit = 0, β = 0).iterations == 0
         end
+        @test_throws r"^ArgumentError: maxit must be at most 2147483647 for :gauss_newton, got 2147483648$" fit(
+            kds; solver = :gauss_newton, maxit = Int(typemax(Int32)) + 1)
+        # the bound holds for Gauss–Newton only: the length guard answers first here
+        @test_throws DimensionMismatch fit(kds; maxit = Int(typemax(Int32)) + 1,
+            θ0 = zeros(n + 1))
     end
 end

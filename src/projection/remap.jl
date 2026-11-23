@@ -14,7 +14,8 @@ lumped projection `f_h` (`density = nothing`) or from `density(xs, vs)`; the fit
 [`fit_remap_parameters`](@ref) with the regularisation `β`, at most `maxit` iterations and the
 `solver` (`:levenberg_marquardt` or `:gauss_newton`). It starts at `θ = 0` for `seed = nothing`,
 and at `θ0 = 1e-3 .* randn(Xoshiro(seed), n)`, with `n` the number of parameters, for a
-non-negative integer `seed`, stored as an `Int`. An unknown `solver` or a negative `seed` throws an `ArgumentError`. With `charge` a
+non-negative integer `seed`, stored as an `Int`. An unknown `solver`, or a `seed` that is
+negative or above `typemax(Int)`, throws an `ArgumentError`. With `charge` a
 [`ChargeConservingReweighting`](@ref), its weights replace the target weights.
 
     remap(method, markers::Markers; targets = nothing, reference_charge = nothing)
@@ -55,6 +56,8 @@ end
 _remap_seed(::Nothing) = nothing
 function _remap_seed(seed::Integer)
     seed >= 0 || throw(ArgumentError("the seed must be non-negative, got $seed"))
+    seed <= typemax(Int) ||
+        throw(ArgumentError("the seed must be at most typemax(Int), got $seed"))
     Int(seed)
 end
 
