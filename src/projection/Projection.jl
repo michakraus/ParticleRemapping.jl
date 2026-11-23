@@ -13,10 +13,11 @@ using ..ParticleRemapping: ParticleRemapping, AbstractRemap, Markers, RemapResul
 import ..ParticleRemapping: remap
 
 using ForwardDiff: ForwardDiff
+using GeometricSolvers: DogLeg, GaussNewton, LeastSquaresProblem, solve
 using LinearAlgebra: Diagonal, I, Symmetric, det, diag, dot, isposdef, norm, pinv, qr, svd,
                      tr
 using Printf: @printf
-using Random: Random, AbstractRNG
+using Random: Random, AbstractRNG, Xoshiro
 
 include("structure.jl")
 include("stages.jl")

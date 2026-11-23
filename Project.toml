@@ -6,6 +6,8 @@ authors = ["Michael Kraus"]
 [deps]
 # Jacobians of the remap maps (symplecticity defects) and of the fits through the implicit stages.
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+# The Gauss–Newton fit of the remap parameters.
+GeometricSolvers = "3a2b8526-dde5-4630-ad43-3d2dcd69f118"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
@@ -19,12 +21,16 @@ Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 [extensions]
 ParticleRemappingMakieExt = "Makie"
 
+[sources]
+GeometricSolvers = {url = "https://github.com/JuliaGNI/GeometricSolvers.jl", rev = "47d817b94a04be74edb59f06e52942a3c68f9045"}
+
 [compat]
-ForwardDiff = "1"
+ForwardDiff = "1.4"
+GeometricSolvers = "0.1"
 LinearAlgebra = "1"
 Makie = "0.24"
 Printf = "1"
 Random = "1"
 SimpleSplines = "0.4"
 SparseArrays = "1"
-julia = "1.12"
+julia = "1.13"

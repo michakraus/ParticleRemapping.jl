@@ -1,5 +1,5 @@
-# The fit of the parameters of the remap map to the target points: Levenberg–Marquardt on the
-# regularised least-squares objective.
+# The fit of the parameters of the remap map to the target points: Levenberg–Marquardt, or
+# GeometricSolvers' Gauss–Newton with a dogleg step, on the regularised least-squares objective.
 
 # The Jacobian of the residual: forward-mode for the explicit kick–drift stages, the linearised step
 # equations for the non-separable stages.
@@ -15,33 +15,79 @@ function _residual_jacobian(
     vcat(permutedims(s.dξ .+ s.dXc) ./ ℓx, permutedims(s.dv) .* (w ./ (wt .* ℓv)))
 end
 
+# The solvers of the fit; an unknown one is refused before any evaluation.
+function _check_solver(solver::Symbol)
+    solver in (:levenberg_marquardt, :gauss_newton) ||
+        throw(ArgumentError("unknown solver :$solver; use :levenberg_marquardt or :gauss_newton"))
+    solver
+end
+
 """
     fit_remap_parameters(par, x, p, w, xt, vt, wt; m = 1, ℓx, ℓv, β = 1e-3, maxit = 40,
-        trace = false) -> (; θ, F0, F, iterations)
+        trace = false, solver = :levenberg_marquardt, θ0 = nothing)
+        -> (; θ, F0, F, iterations, status)
 
 The parameters `θ` of the map `par` that minimise
 
     J(θ) = ½ Σ_k (|x^S_k − x*_k|² / ℓx² + |p^S_k/(m w*_k) − v*_k|² / ℓv²) + (β/2) |θ|²,
 
-with `(x^S, p^S) = R_θ(x, p)` ([`remap_stages`](@ref)) and the targets `(xt, vt, wt)`, by the
-Levenberg–Marquardt method from `θ = 0`: the damped Gauss–Newton step
+with `(x^S, p^S) = R_θ(x, p)` ([`remap_stages`](@ref)) and the targets `(xt, vt, wt)`, from the
+start `θ0` (`θ = 0` for `nothing`; a finite vector of [`remap_parameter_count`](@ref) entries,
+converted to `Float64`), with at most `maxit ≥ 0` iterations.
+
+With `solver = :levenberg_marquardt`, the Levenberg–Marquardt method: the damped Gauss–Newton step
 `(A + μ diag(A)) δ = −g` with `A = JᵀJ + β I`, the damping `μ` divided by 3 after an accepted step
 and multiplied by 4 after a rejected one. The iteration stops after `maxit` iterations, when no step
-decreases `J` within 20 trials, or when the relative decrease falls below `1e-6`. Returns the
-parameters, the objective at `θ = 0` and at the end, and the number of iterations.
+decreases `J` within 20 trials, or when the relative decrease falls below `1e-6`; `status` is
+`nothing`.
+
+With `solver = :gauss_newton`, GeometricSolvers' `GaussNewton(; globalization = DogLeg())` on
+the least-squares problem of the residual `[r; √β θ]` with the Jacobian `[∂r/∂θ; √β I]`, with
+`max_iterations = maxit` and GeometricSolvers' default tolerances; `status` is its
+`SolverStatus`, whose `code` says why the solve ended (`SUCCESS` on a convergence test, with
+`stationary` set for the stationarity test; `MAXITERS` after the budget). A trial `θ` with a
+non-finite residual is left to the step rule of the solver. With `trace = true` it prints the return code, the iterations and `F/F0` after the
+solve.
+
+Returns the parameters, the objective `F0` at `θ = 0` (whatever the start) and `F` at the returned
+`θ`, the number of iterations and the status. An unknown `solver` or a negative `maxit` throws an
+`ArgumentError`, a `θ0` of the wrong length a `DimensionMismatch`, and a non-finite `θ0` an
+`ArgumentError`.
 """
 function fit_remap_parameters(
         par::AbstractRemapParametrisation, x, p, w, xt, vt, wt; m = 1,
-        ℓx, ℓv, β = 1e-3, maxit = 40, trace = false)
+        ℓx, ℓv, β = 1e-3, maxit = 40, trace = false, solver::Symbol = :levenberg_marquardt,
+        θ0::Union{Nothing, AbstractVector{<:Real}} = nothing)
+    _check_solver(solver)
+    maxit >= 0 || throw(ArgumentError("maxit must be non-negative, got $maxit"))
+    n = remap_parameter_count(par)
+    if θ0 !== nothing
+        length(θ0) == n || throw(DimensionMismatch(
+            "θ0 has length $(length(θ0)), the parametrisation has $n parameters"))
+        all(isfinite, θ0) || throw(ArgumentError("θ0 must be finite"))
+    end
     function residual(θ)
         X, P = remap_stages(par, θ, x, p, w; m)
         vcat((X .- xt) ./ ℓx, (P ./ (m .* wt) .- vt) ./ ℓv)
     end
-    θ = zeros(remap_parameter_count(par))
+    θ = zeros(n)
     obj(θ, r) = 0.5 * dot(r, r) + 0.5β * dot(θ, θ)
     r = residual(θ)
     F = obj(θ, r)
     F0 = F
+    if θ0 !== nothing
+        θ = collect(Float64, θ0)
+        r = residual(θ)
+        F = obj(θ, r)
+    end
+    if solver === :gauss_newton
+        θ, status = _gauss_newton_fit(par, residual, θ, length(r), x, p, w, wt, m, ℓx, ℓv,
+            β, maxit)
+        F = obj(θ, residual(θ))
+        trace && @printf("    %s after %d iterations: F/F0 = %.4f\n", status.code,
+            status.iterations, F / F0)
+        return (; θ, F0, F, iterations = Int(status.iterations), status)
+    end
     μlm = 1e-2
     for it in 1:maxit
         Jm = _residual_jacobian(par, residual, θ, x, p, w, wt, m, ℓx, ℓv)
@@ -61,12 +107,34 @@ function fit_remap_parameters(
                         norm(g), μlm)
                 θ, r, F = θn, rn, Fn
                 μlm = max(μlm / 3, 1e-8)
-                rel < 1e-6 && return (; θ, F0, F, iterations = it)
+                rel < 1e-6 && return (; θ, F0, F, iterations = it, status = nothing)
                 break
             end
             μlm *= 4
         end
-        accepted || return (; θ, F0, F, iterations = it)
+        accepted || return (; θ, F0, F, iterations = it, status = nothing)
     end
-    (; θ, F0, F, iterations = maxit)
+    (; θ, F0, F, iterations = maxit, status = nothing)
+end
+
+# GaussNewton with DogLeg on the augmented residual [r; √β θ] (`nr` rows of `r`) from θ0; returns
+# the solver's θ and its SolverStatus.
+function _gauss_newton_fit(par, residual, θ0, nr, x, p, w, wt, m, ℓx, ℓv, β, maxit)
+    n = length(θ0)
+    sβ = sqrt(β)
+    function F!(y, θ, _)
+        y[1:nr] .= residual(θ)
+        y[(nr + 1):end] .= sβ .* θ
+        y
+    end
+    function J!(Jy, θ, _)
+        fill!(Jy, 0)
+        Jy[1:nr, :] .= _residual_jacobian(par, residual, θ, x, p, w, wt, m, ℓx, ℓv)
+        for i in 1:n
+            Jy[nr + i, i] = sβ
+        end
+        Jy
+    end
+    prob = LeastSquaresProblem(F!, J!; output_length = nr + n)
+    solve(prob, θ0, GaussNewton(; globalization = DogLeg()); max_iterations = maxit)
 end
