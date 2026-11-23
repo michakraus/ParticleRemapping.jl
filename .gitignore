@@ -7,9 +7,13 @@
 *.jl.mem
 *.jl.*.mem
 
-# The documentation build
+# The documentation build, and the Node packages that DocumenterVitepress installs for it
 docs/build/
 docs/site/
+docs/node_modules/
+docs/package-lock.json
+docs/src/.vitepress/cache/
+docs/src/.vitepress/dist/
 
 # The output directories of scripts/, root-anchored: `runs/` holds the data a run produced,
 # `results/` the figures, animations and reports. Both are regenerable from scripts/.

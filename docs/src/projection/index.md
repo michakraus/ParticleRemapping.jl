@@ -146,7 +146,7 @@ nothing # hide
 ```
 
 ```@raw html
-<video src="projection-stages.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./projection-stages.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 The changes of the total weight, the total momentum and the kinetic energy, and the largest

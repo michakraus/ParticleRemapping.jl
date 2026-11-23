@@ -119,7 +119,7 @@ nothing # hide
 ```
 
 ```@raw html
-<video src="redistribution-relaxation.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./redistribution-relaxation.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 Since ``(\bar{x}_a, \bar{v}_a)`` is only *approximately* uniform, a rigid constant

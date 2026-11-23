@@ -102,6 +102,10 @@
   The numerical examples of the gauge rezoning and the canonical transport are now on the page
   *Clustered markers and a separable density*, and *Combining the two constructions* is a section
   of the *Algorithm* page.
+- The manual is built with DocumenterVitepress instead of Documenter's HTML writer, in the style
+  of the VitePress tutorial on the Kolmogorov n-width: its colours, content width, code themes,
+  local search and outline. `docs/make.jl` builds the site into `docs/build/1`; the
+  animations are embedded as `./<name>.mp4`, so that VitePress bundles them with their page.
 - The evidence of K2, K3 and K4 is re-measured by `scripts/redistribution/failure_cases.jl` on
   the same machine and code: K3 returns after 44 s instead of 46 s (timing noise), with the
   momentum change 0.165.

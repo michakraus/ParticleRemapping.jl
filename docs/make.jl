@@ -4,6 +4,7 @@
 
 using Documenter
 using DocumenterCitations
+using DocumenterVitepress
 using CairoMakie
 using ParticleRemapping
 
@@ -93,15 +94,13 @@ makedocs(;
     plugins = [BIB],
     # the repository is private and the manual is built locally, so no source or edit links
     remotes = nothing,
-    format = Documenter.HTML(;
-        # plain URLs: an animation is written next to its page's HTML file and linked by its
-        # file name, which a page moved to <page>/index.html would no longer find
-        prettyurls = false,
-        edit_link = nothing,
-        mathengine = Documenter.MathJax3(),
-        size_threshold_warn = 400 * 1024,
-        size_threshold = 2000 * 1024,
-        example_size_threshold = 0,
-        assets = String[]
+    # VitePress builds the site into docs/build/1. An animation is written next to its page and
+    # embedded as `./<name>.mp4`, which VitePress bundles with the page.
+    format = DocumenterVitepress.MarkdownVitepress(;
+        repo = "github.com/michakraus/ParticleRemapping.jl",
+        devbranch = "main",
+        description = "Symplectic remapping, projection and redistribution of weighted particle-in-cell markers",
+        # the manual is not deployed: one site, with no version subfolder
+        deploy_decision = Documenter.DeployDecision(; all_ok = false, subfolder = "")
     )
 )

@@ -2,6 +2,7 @@
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 DocumenterCitations = "daee34ce-89f3-4625-b898-19384cb65244"
+DocumenterVitepress = "4710194d-e776-4893-9690-8d956a29c365"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 ParticleRemapping = "bc5e8d23-0f33-4727-bb6f-677a426f140d"
@@ -12,6 +13,7 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 CairoMakie = "0.15"
 Documenter = "1"
 DocumenterCitations = "1"
+DocumenterVitepress = "0.3.8"
 
 [sources]
 ParticleRemapping = {path = ".."}

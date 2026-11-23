@@ -1,0 +1,23 @@
+/* ==========================================================================
+   Brand colours and content width for the manual
+   ========================================================================== */
+
+:root {
+  /* VitePress brand colors */
+  --vp-c-brand-1: #1F4E79;
+  --vp-c-brand-2: #1B7A78;
+  --vp-c-brand-3: #163a5c;
+  --vp-c-brand-soft: rgba(31, 78, 121, 0.12);
+}
+
+.dark {
+  --vp-c-brand-1: #6cb0f0;
+  --vp-c-brand-2: #49c5c2;
+  --vp-c-brand-3: #8cc2f5;
+  --vp-c-brand-soft: rgba(108, 176, 240, 0.16);
+}
+
+/* Wider content container so side-by-side figures and animations breathe comfortably */
+.VPDoc.has-aside .content-container {
+  max-width: 860px !important;
+}

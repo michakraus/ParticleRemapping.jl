@@ -107,11 +107,11 @@ nothing # hide
 With a remap after every 100 steps:
 
 ```@raw html
-<video src="long-time-run.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./long-time-run.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
 Without remaps:
 
 ```@raw html
-<video src="long-time-run-no-remap.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./long-time-run-no-remap.mp4" controls loop muted playsinline style="width:100%"></video>
 ```

@@ -150,6 +150,6 @@ nothing # hide
 ```
 
 ```@raw html
-<video src="remap-non-separable-pi.mp4" controls loop muted playsinline style="width:100%"></video>
-<video src="remap-kick-drift-pi2.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./remap-non-separable-pi.mp4" controls loop muted playsinline style="width:100%"></video>
+<video src="./remap-kick-drift-pi2.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
