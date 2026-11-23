@@ -161,7 +161,24 @@
 - **kind:** not verified
 - **found:** 2026-11-23
 
-## SlicedRedistribution
+### K16 · The weight-dependent fit of the hole-filling experiment does not converge
+
+- **location:** `src/projection/experiments/hole_filling.jl`
+- **problem:** with `β = 1e-3`, GeometricSolvers' `GaussNewton(; globalization = DogLeg())` does
+  not reach a minimum of the weight-dependent fit at either hole position: the gradient stays
+  large and `|θ|` grows with the iterations, so every weight-dependent row of the hole-filling
+  tables, apart from the saddle at `x_h = π` that the fit from `θ = 0` reaches, is the value after
+  the budget of 40 iterations, not at a minimum; a larger `β` or a continuation in `β` may give a
+  minimum. The method of the experiment is unchanged.
+- **evidence:** the fit of the experiment's weight-dependent variant run past the budget on macOS
+  with `BLAS.set_num_threads(2)`, by Levenberg–Marquardt and by GeometricSolvers' `GaussNewton`
+  with `Backtracking` or `DogLeg`, from `θ = 0`, from targets moved by `1e-13` relative and from
+  `θ0 = 1e-3 .* randn(Xoshiro(100 + k), n)`: after 100–300 iterations `‖g‖/‖g0‖` is 0.045–5.9
+  and `|θ|` is 19–48 at `x_h = π/2` and at `x_h = π`. For example, `DogLeg` from `θ0` with
+  `k = 1` at `x_h = π`: `MAXITERS` after 300 iterations, `F/F0 = 0.297382`,
+  `‖g‖/‖g0‖ = 1.779`, `|θ| = 43.72`.
+- **kind:** found late
+- **found:** 2026-11-23
 
 ### K5 · The long-time sliced remap is canonical only for frozen multipliers
 
