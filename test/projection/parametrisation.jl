@@ -224,6 +224,42 @@ end
         # a Float32 start is converted to Float64
         f32 = fit(kds; solver, maxit = 0, θ0 = Float32.(θ0))
         @test f32.θ isa Vector{Float64} && f32.θ == Float32.(θ0)
+        # iterations is returned as an Int for every integer type of maxit
+        for cap in (Int32(0), false, Int128(0))
+            @test fit(kds; solver, maxit = cap).iterations === 0
+        end
+        for cap in (Int32(1), true, Int128(1))
+            @test fit(kds; solver, maxit = cap).iterations === 1
+        end
+    end
+
+    @testset "non-finite start objective, $solver" for solver in (
+        :levenberg_marquardt, :gauss_newton)
+        nss1 = NonSeparableParametrisation(ws; sp.L, sp.V, nξ = 6, nv = 7, nℓ = 3,
+            iteration_limit = 1)
+        θbad = randn(Xoshiro(11), remap_parameter_count(nss1))
+        fbad = fit(nss1; solver, maxit = 5, θ0 = θbad)
+        @test fbad.θ == θbad && fbad.θ !== θbad
+        @test isfinite(fbad.F0)
+        @test isnan(fbad.F)
+        @test fbad.iterations === 0
+        if solver === :gauss_newton
+            @test code(fbad) == "NONFINITE"
+        else
+            @test fbad.status === nothing
+        end
+    end
+
+    @testset "trace output" begin
+        out = mktemp() do _, io
+            redirect_stdout(io) do
+                fit(kds; solver = :gauss_newton, maxit = 0, trace = true)
+                flush(stdout)
+            end
+            seekstart(io)
+            read(io, String)
+        end
+        @test occursin("MAXITERS after 0 iterations: F/F0 = 1.0000", out)
     end
 
     @testset "the non-separable map with Gauss–Newton" begin

@@ -93,14 +93,16 @@
   regularised residual `[r; √β θ]`, with the budget `maxit` and GeometricSolvers' default
   tolerances, its stationarity test among them. The Levenberg–Marquardt fit stays the default with
   the same iteration, so no quoted number moves; both methods refuse a `β` that is negative,
-  infinite or `NaN`, and a non-integer `maxit`, which the Levenberg–Marquardt fit accepted
-  before. The fit takes a start `θ0` and returns
-  `status`: the solver's `SolverStatus` for `:gauss_newton`, `nothing` for `:levenberg_marquardt`
-  (K13). `KickDriftRemap` and `NonSeparableRemap`
-  take `solver` and `seed`; an integer `seed` starts the fit at `1e-3 .* randn(Xoshiro(seed), n)`,
-  and the `info` of `remap` holds `status`. Tests: both solvers, the start and the zero budget,
-  the invalid arguments and the seed (`test/projection/parametrisation.jl`,
-  `test/projection/remap.jl`).
+  infinite or `NaN`, and a non-integer or negative `maxit`, which the Levenberg–Marquardt fit
+  accepted before (negative `maxit` returned negative `iterations`); `:gauss_newton` also refuses
+  `maxit > typemax(Int32)`. The fit takes a start `θ0`, stops at `iterations = 0` when `J(θ0)` is
+  not finite, and returns `iterations` as an `Int` and `status`: the solver's `SolverStatus` for
+  `:gauss_newton`, `nothing` for `:levenberg_marquardt` (K13). `KickDriftRemap` and
+  `NonSeparableRemap` gain a fourth type parameter `S <: Union{Nothing, Int}` and take `solver` and
+  `seed`; a non-negative integer `seed` starts the fit at `1e-3 .* randn(Xoshiro(seed), n)`, and
+  the `info` of `remap` holds `status`. Tests: both solvers, the start and the zero budget,
+  non-finite starts, `Int` iterations, trace output, the invalid arguments and the seed
+  (`test/projection/parametrisation.jl`, `test/projection/remap.jl`).
 
 ### Fixed
 

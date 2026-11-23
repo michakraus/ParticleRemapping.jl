@@ -37,9 +37,9 @@ converted to `Float64`), with at most `maxit ≥ 0` iterations, an integer.
 
 With `solver = :levenberg_marquardt`, the Levenberg–Marquardt method: the damped Gauss–Newton step
 `(A + μ diag(A)) δ = −g` with `A = JᵀJ + β I`, the damping `μ` divided by 3 after an accepted step
-and multiplied by 4 after a rejected one. The iteration stops after `maxit` iterations, when no step
-decreases `J` within 20 trials, or when the relative decrease falls below `1e-6`; `status` is
-`nothing`.
+and multiplied by 4 after a rejected one. The iteration stops before the first step when `J(θ0)` is
+not finite, after `maxit` iterations, when no step decreases `J` within 20 trials, or when the
+relative decrease falls below `1e-6`; `status` is `nothing`.
 
 With `solver = :gauss_newton`, GeometricSolvers' `GaussNewton(; globalization = DogLeg())` on
 the least-squares problem of the residual `[r; √β θ]` with the Jacobian `[∂r/∂θ; √β I]`, with
@@ -84,8 +84,6 @@ function fit_remap_parameters(
     F0 = F
     if θ0 !== nothing
         θ = collect(Float64, θ0)
-        r = residual(θ)
-        F = obj(θ, r)
     end
     if solver === :gauss_newton
         # GaussNewton with DogLeg on the augmented residual [r; √β θ], with `nr` rows of `r`
@@ -110,6 +108,11 @@ function fit_remap_parameters(
             status.iterations, F / F0)
         return (; θ, F0, F, iterations = Int(status.iterations), status)
     end
+    if θ0 !== nothing
+        r = residual(θ)
+        F = obj(θ, r)
+    end
+    isfinite(F) || return (; θ, F0, F, iterations = 0, status = nothing)
     μlm = 1e-2
     for it in 1:maxit
         Jm = _residual_jacobian(par, residual, θ, x, p, w, wt, m, ℓx, ℓv)
@@ -129,12 +132,12 @@ function fit_remap_parameters(
                         norm(g), μlm)
                 θ, r, F = θn, rn, Fn
                 μlm = max(μlm / 3, 1e-8)
-                rel < 1e-6 && return (; θ, F0, F, iterations = it, status = nothing)
+                rel < 1e-6 && return (; θ, F0, F, iterations = Int(it), status = nothing)
                 break
             end
             μlm *= 4
         end
-        accepted || return (; θ, F0, F, iterations = it, status = nothing)
+        accepted || return (; θ, F0, F, iterations = Int(it), status = nothing)
     end
-    (; θ, F0, F, iterations = maxit, status = nothing)
+    (; θ, F0, F, iterations = Int(maxit), status = nothing)
 end

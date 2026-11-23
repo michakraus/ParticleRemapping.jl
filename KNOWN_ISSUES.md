@@ -161,21 +161,6 @@
 - **kind:** not verified
 - **found:** 2026-11-23
 
-### K14 · The Levenberg–Marquardt fit returns `iterations` of the type of `maxit` after the budget
-
-- **location:** `src/projection/fit.jl:139`
-- **problem:** when the budget runs out, `fit_remap_parameters` with `:levenberg_marquardt`
-  returns `iterations = maxit` as given, so `maxit = true` (a `Bool`, which `maxit::Integer`
-  admits) returns `iterations = true` and `maxit = Int32(1)` an `Int32`; an earlier stop and
-  `:gauss_newton` return an `Int`.
-- **evidence:** the small problem of `test/projection/parametrisation.jl`
-  (`KickDriftParametrisation` with `nξ = 8`, `nv = 10`, `nw = 4`), Julia 1.13:
-  `fit(kds; maxit = true).iterations === true`,
-  `typeof(fit(kds; maxit = Int32(1)).iterations) == Int32`, and with `solver = :gauss_newton`
-  `1 :: Int64` for both.
-- **kind:** found late
-- **found:** 2026-11-23
-
 ## SlicedRedistribution
 
 ### K5 · The long-time sliced remap is canonical only for frozen multipliers
