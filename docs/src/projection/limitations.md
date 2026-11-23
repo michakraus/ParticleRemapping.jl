@@ -63,7 +63,7 @@ parameters as the spline basis has functions, independent of ``N``.
   ([parameters that depend on the state](@ref state-dependent-parameters)).
 - **The non-separable stages end at the solvability of the midpoint equation.** The fit rejects
   every ``\theta`` whose fixed-point iteration needs more than 50 iterations, and the fitted
-  ``\theta`` of both hole-filling runs sits at that limit. One application costs 0.21 to 0.34 s
+  ``\theta`` of both hole-filling runs sits at that limit. One application costs 0.20 to 0.34 s
   against 0.004 to 0.007 s for the kicks and drifts in the run of the script
   ([hole filling](@ref projection-hole-filling)).
 - **The target weights must be positive and accurate in the tails.** The lumped projection

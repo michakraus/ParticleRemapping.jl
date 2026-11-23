@@ -106,18 +106,17 @@ The results are:
    ``1.52`` and the fill ``0.94``, where the kicks and drifts give ``1.81`` and ``0.47`` at the
    saddle and ``1.35`` to ``1.45`` and ``0.97`` to ``1.06`` from the seeded starts. The
    non-separable stages do not have the ``\pm v`` coupling, and their fit from ``\theta = 0``
-   ends on `LINESEARCH_FAILED` with the hole filled. Control C does
-   not fill the hole (``2.04`` and ``0.55``), so the filling comes from the dependence of
-   ``\phi_s`` on ``w``, as the proposition on [non-separable stages](@ref projection-nonseparable)
-   states. At ``x_h = \pi/2`` the non-separable map fills the hole as well (``1.56`` and
+   ends on `LINESEARCH_FAILED` with the hole filled. Control C does not fill the hole (``2.04``
+   and ``0.55``), so the filling comes from the dependence of ``\phi_s`` on ``w``, as the
+   proposition on [non-separable stages](@ref projection-nonseparable) states. At ``x_h = \pi/2`` the non-separable map fills the hole as well (``1.56`` and
    ``0.90``, after the 40 iterations).
 7. The non-separable map has more parameters than the kicks and drifts (3264 against 2304) and a
    coarser basis in ``\xi`` (16 against 32 splines). Its fixed-point iteration needs 50 iterations
    at the fitted ``\theta`` in both runs, the limit that the fit allows. In the run of the script,
-   one application of the map takes 0.21 to 0.34 s, against 0.004 to 0.007 s for the kicks and
-   drifts; the fit takes 411 s (40 iterations) and 67 s (25 iterations). The linearised step equations agree with forward-mode
-   derivatives along random directions at the fitted ``\theta`` to a relative
-   ``2.3 \cdot 10^{-13}`` ([`nonseparable_sensitivity_error`](@ref)); without the terms of ``c``
+   one application of the map takes 0.20 to 0.34 s, against 0.004 to 0.007 s for the kicks and
+   drifts; the fit takes 411 s (40 iterations) and 67 s (25 iterations). The linearised step
+   equations agree with forward-mode derivatives along random directions at the fitted
+   ``\theta`` to a relative ``2.3 \cdot 10^{-13}`` ([`nonseparable_sensitivity_error`](@ref)); without the terms of ``c``
    and ``b`` they miss by at least ``2.9 \cdot 10^{-2}``.
 8. The target weights ``c f`` describe the density without the hole, and the markers before the
    map carry its charge deficit. A map that fills the hole with these weights adds charge in the
