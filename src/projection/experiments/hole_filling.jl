@@ -33,6 +33,11 @@ function hole_filling_problem(; hole_x = π, hole_v = 1.2, hole_a = 0.45, hole_b
         volume, c0, density, nL)
 end
 
+# The return code of a fit: the code of the solver's status, with "stationary" where the solver's
+# stationarity test ended it; "no status" for the Levenberg–Marquardt fit, which returns none.
+_fit_stop(::Nothing) = "no status"
+_fit_stop(status) = string(status.code) * (status.stationary ? ", stationary" : "")
+
 # The diagnostics of markers (x, v) of the hole problem.
 function _hole_diagnostics(prob, hp, x, v)
     (; empty = local_empty_disk(prob.hole, x, v; prob.dx, prob.dv),
@@ -60,14 +65,18 @@ end
     hole_filling_experiment(; hole_x = π, weights = :exact,
         variants = (:weight_dependent, :control_A, :control_B, :non_separable, :control_C),
         problem = hole_filling_problem(; hole_x), projection = HatProjection(32, 33),
-        moser_steps = 40, ncharge = 32, β = 1e-3, maxit = 40, verbose = false)
+        moser_steps = 40, ncharge = 32, β = 1e-3, maxit = 40, solver = :gauss_newton,
+        seed = nothing, targets = nothing, verbose = false)
 
 The hole-filling experiment: the targets of the markers of `problem` ([`projection_targets`](@ref),
 with the target weights `c f` for `weights = :exact` or from the lumped projection for
-`weights = :projected`), then for each variant ([`hole_remap_method`](@ref)) the fit, the map, the
-reweighting with the target weights and the charge-conserving reweighting on `ncharge` periodic
-cubic B-splines against the grid charge `ρ0` of the markers before the map. With `verbose = true`
-one line per variant is printed while the experiment runs.
+`weights = :projected`), then for each variant ([`hole_remap_method`](@ref), with `solver` and
+`seed`) the fit, the map, the reweighting with the target weights and the charge-conserving
+reweighting on `ncharge` periodic cubic B-splines against the grid charge `ρ0` of the markers
+before the map. Precomputed `targets`, a `NamedTuple` `(; x, v, w)` as `projection_targets`
+returns it, replace the projection and the flow, and `weights` then has no effect. With
+`verbose = true` one line per variant, with the return code of its fit, is printed while the
+experiment runs.
 
 Returns a `NamedTuple` with the `problem`, the `projection`, the `targets`, the reference grid
 charge `ρ0`, the charge method `charge`, the diagnostics `before` and `target_diagnostics`
@@ -77,18 +86,22 @@ momenta `P`, the velocities `v1 = P/(m w*)` and `vc = P/(m w′)`, the charge-co
 `wc`, the diagnostics with `w*` (`diagnostics`) and with `w′` (`diagnostics_charge`), the grid
 charge residuals `charge_res` of `w*` and `charge_res_c` of `w′`, `charge_ok`, `charge_its`,
 `dlnw = max |ln(w′/w*)|`, and for the maps `θ`, `ratio` (objective after the fit relative to
-`θ = 0`), `iterations`, `ΔP`, `Δw`, `fit_time`, `map_time`, `stage_iterations`, the
+`θ = 0`), `iterations`, `status` (the `SolverStatus` of the fit, `nothing` for
+`solver = :levenberg_marquardt`), `ΔP`, `Δw`, `fit_time`, `map_time`, `stage_iterations`, the
 `parametrisation` and the `method` ([`experiment_remap`](@ref)).
 """
 function hole_filling_experiment(; hole_x = π, weights::Symbol = :exact,
         variants = (:weight_dependent, :control_A, :control_B, :non_separable, :control_C),
         problem = hole_filling_problem(; hole_x), projection = HatProjection(32, 33),
-        moser_steps = 40, ncharge = 32, β = 1e-3, maxit = 40, verbose = false)
+        moser_steps = 40, ncharge = 32, β = 1e-3, maxit = 40, solver = :gauss_newton,
+        seed = nothing, targets = nothing, verbose = false)
     prob = problem
     L, V, m = prob.L, prob.V, prob.m
     density = weights === :exact ? (xs, vs) -> prob.density.(xs, vs) : nothing
-    targets = projection_targets(projection, prob.x0, prob.v0, prob.w0; L, V,
-        steps = moser_steps, density)
+    if targets === nothing
+        targets = projection_targets(projection, prob.x0, prob.v0, prob.w0; L, V,
+            steps = moser_steps, density)
+    end
     wt = targets.w
     charge = ChargeConservingReweighting(L, ncharge)
     ρ0 = spline_grid_charge(charge.basis, prob.x0, prob.w0)
@@ -104,18 +117,19 @@ function hole_filling_experiment(; hole_x = π, weights::Symbol = :exact,
             diagnostics_charge = _hole_diagnostics(prob, projection, X, vc))
     end
     results = Dict{Symbol, Any}(:θ0 => charge_conserving(prob.x0, prob.p0))
+    method_kwargs = (; L, V, projection, moser_steps, β, maxit, solver, seed)
     for variant in variants
-        method = hole_remap_method(variant; L, V, projection, moser_steps, β, maxit)
+        method = hole_remap_method(variant; method_kwargs...)
         res = remap(method, prob.markers; targets)
         i = res.info
         r = (;
             charge_conserving(i.X, i.P)..., i.θ, ratio = i.objective_ratio, i.iterations,
-            ΔP = i.momentum_change, Δw = i.weight_change, i.fit_time, i.map_time,
+            i.status, ΔP = i.momentum_change, Δw = i.weight_change, i.fit_time, i.map_time,
             i.stage_iterations, i.parametrisation, method)
         verbose &&
-            @printf("  %-17s empty disk %5.2f, fill %4.2f, objective %.3f, %d its, %.0f s\n",
+            @printf("  %-17s empty disk %5.2f, fill %4.2f, objective %.3f, %d its, %s, %.0f s\n",
                 variant, r.diagnostics.empty, r.diagnostics.fill, r.ratio, r.iterations,
-                r.fit_time)
+                _fit_stop(r.status), r.fit_time)
         results[variant] = r
     end
     (; problem = prob, projection, targets, ρ0, charge,
