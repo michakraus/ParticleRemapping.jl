@@ -76,7 +76,7 @@ and the residual after the correction is at most ``8.5 \cdot 10^{-14}``.
 | non-separable | ``9.1 \cdot 10^{-2}`` | 1.57 | 0.70 | 0.166 | ``6.4 \cdot 10^{-2}`` | 1.55 | 0.70 | 0.169 |
 | control C | ``3.2 \cdot 10^{-2}`` | 1.86 | 0.55 | 0.071 | ``1.8 \cdot 10^{-2}`` | 2.06 | 0.55 | 0.053 |
 
-In every run, ``|\Delta P| / \sum_a |p_a| \leq 1.1 \cdot 10^{-17}`` and the total weight is exact.
+In every run, ``|\Delta P| / \sum_a |p_a| \leq 1.6 \cdot 10^{-16}`` and the total weight is exact.
 The results are:
 
 1. At ``x_h = \pi/2`` the weight-dependent map fills the hole: after the 40 iterations
