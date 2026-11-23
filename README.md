@@ -1,5 +1,7 @@
 # ParticleRemapping.jl
 
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://michakraus.github.io/ParticleRemapping.jl/dev/)
+
 Symplectic remapping, projection and redistribution of weighted particle-in-cell markers.
 
 A particle-in-cell method samples a phase-space density with weighted markers. Over a long run the
@@ -11,9 +13,9 @@ common layer of marker sets, canonical structure, grids and spline bases.
 
 | module | construction |
 |:--|:--|
-| `Remapping` | gauge rezoning (positions and momenta fixed, velocities and weights from a constrained optimisation) and canonical transport with consistent weights (current-quantile matching), in 1D-1V |
 | `Projection` | Hamiltonian particle projection: kicks and drifts, or non-separable stages, of a weight-dependent Hamiltonian fitted to target points, with a charge-conserving reweighting and target weights from a dynamical low-rank density |
 | `Redistribution` | spline-projection redistribution: one symplectic step of a pairwise spline Hamiltonian, with weights from a positive, moment-compatible spline projection |
+| `Remapping` | gauge rezoning (positions and momenta fixed, velocities and weights from a constrained optimisation) and canonical transport with consistent weights (current-quantile matching), in 1D-1V |
 | `SlicedRedistribution` | sliced quantile cotangent lifts followed by a canonical weight squeeze |
 
 `using ParticleRemapping` makes the names of all four modules available. The plotting functions
@@ -28,10 +30,11 @@ using ParticleRemapping
 mk = Markers([0.3, 1.2, 2.0], [0.5, -1.0, 2.0], [0.2, 0.5, 0.3]; m = 2.0)
 momentum(mk), total_momentum(mk), kinetic_energy(mk)
 
-# the gauge rezoning of 6400 clustered markers, with grid charge and kinetic energy kept
-s = gauge_rezoning_setup()
-r = remap(s.method, s.markers)
-conservation_report(s.markers, r.markers; grid = s.grid)
+# the Hamiltonian particle projection with non-separable stages on a lattice with an elliptic hole
+prob = hole_filling_problem(; nL = 16, hole_a = 0.9, hole_b = 0.8)
+method = NonSeparableRemap(; nξ = 6, nv = 7, nℓ = 3, projection = HatProjection(12, 13), maxit = 5)
+r = remap(method, prob.markers)
+conservation_report(prob.markers, r.markers)
 
 # the sliced redistribution of 900 markers after 500 steps in a two-wave electric field
 using CairoMakie
