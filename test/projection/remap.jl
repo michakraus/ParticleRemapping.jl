@@ -16,12 +16,22 @@ hp = HatProjection(12, 13)
         KickDriftRemap(; variant = :control_B, nξ = 8, nv = 10, projection = hp, maxit = 5),
         NonSeparableRemap(; nξ = 6, nv = 7, nℓ = 3, projection = hp, maxit = 5),
         NonSeparableRemap(; nξ = 6, nv = 7, nℓ = 3, projection = hp, maxit = 5,
-            weighted = false))
+            weighted = false),
+        KickDriftRemap(; nξ = 8, nv = 10, nw = 4, projection = hp, maxit = 5,
+            solver = :gauss_newton),
+        NonSeparableRemap(; nξ = 6, nv = 7, nℓ = 3, projection = hp, maxit = 5,
+            solver = :gauss_newton))
     for method in methods
-        @testset "$(nameof(typeof(method)))" begin
+        @testset "$(nameof(typeof(method))) $(method.solver)" begin
             r = remap(method, mk)
             i = r.info
             @test i.F < i.F0 && i.objective_ratio ≈ i.F / i.F0
+            if method.solver === :gauss_newton
+                @test nameof(typeof(i.status)) === :SolverStatus
+                @test i.iterations == i.status.iterations <= 5
+            else
+                @test i.status === nothing
+            end
             @test i.momentum_change < 1e-14
             @test i.weight_change < 1e-14
             @test total_momentum(r.markers) ≈ total_momentum(mk) atol = 1e-14 *
@@ -62,6 +72,17 @@ hp = HatProjection(12, 13)
         @test r.info.targets.w ≈ tg.w rtol = 8eps()
     end
 
+    @testset "the seed of the start" begin
+        # with no iteration the fit returns its start: the seeded draw, or θ = 0 without a seed
+        seeded(seed) = remap(
+            KickDriftRemap(; nξ = 8, nv = 10, nw = 4, projection = hp, maxit = 0,
+                solver = :gauss_newton, seed), mk).info.θ
+        θ3 = seeded(3)
+        @test θ3 == 1e-3 .* randn(Xoshiro(3), length(θ3))
+        @test seeded(Int32(3)) == θ3
+        @test seeded(nothing) == zeros(length(θ3))
+    end
+
     @testset "nonpositive target weights" begin
         # hats finer than the marker spacing: f_h vanishes at some targets
         @test_throws r"^DomainError(?s:.)*the target weights must be positive" remap(
@@ -73,6 +94,25 @@ hp = HatProjection(12, 13)
         @test hole_remap_method(:non_separable).weighted
         @test !hole_remap_method(:control_C).weighted
         @test_throws r"^ArgumentError: unknown variant" hole_remap_method(:other)
+        mw = hole_remap_method(:weight_dependent; solver = :gauss_newton, seed = 5)
+        @test mw.solver === :gauss_newton && mw.seed === 5
+        mn = hole_remap_method(:non_separable; solver = :gauss_newton)
+        @test mn.solver === :gauss_newton && mn.seed === nothing
+        @test KickDriftRemap(; seed = Int32(3)).seed === 3
+        @test NonSeparableRemap(; seed = Int32(3)).seed === 3
+        @test KickDriftRemap(; seed = 0).seed === 0 &&
+              NonSeparableRemap(; seed = 0).seed === 0
+        @test KickDriftRemap().solver === :levenberg_marquardt
+        @test NonSeparableRemap().solver === :levenberg_marquardt
+        for M in (KickDriftRemap, NonSeparableRemap)
+            @test_throws r"^ArgumentError: unknown solver :newton; use :levenberg_marquardt or :gauss_newton$" M(;
+                solver = :newton)
+            @test_throws r"^ArgumentError: the seed must be non-negative, got -1$" M(;
+                seed = -1)
+            @test_throws r"^ArgumentError: the seed must be at most typemax\(Int\), got 18446744073709551615$" M(;
+                seed = typemax(UInt64))
+            @test M(; seed = UInt64(typemax(Int))).seed === typemax(Int)
+        end
         @test_throws r"^ArgumentError: the Hamiltonian particle projection acts on 1D-1V" remap(
             KickDriftRemap(), Markers(rand(2, 3), rand(2, 3), rand(3)))
     end

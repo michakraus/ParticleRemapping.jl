@@ -88,6 +88,21 @@
   columns of its spline cells: the Hessian is singular up to round-off).
 - Tests: the remap states (`test/projection/frames.jl`) use 8 instead of 16 charge splines, which
   on 16 marker columns made the case of K12, and check that the charge step converged.
+- A second method for the fit of the projection: `fit_remap_parameters(...; solver =
+  :gauss_newton)` runs GeometricSolvers' `GaussNewton(; globalization = DogLeg())` on the
+  regularised residual `[r; √β θ]`, with the budget `maxit` and GeometricSolvers' default
+  tolerances, its stationarity test among them. The Levenberg–Marquardt fit stays the default with
+  the same iteration, so no quoted number moves; both methods refuse a `β` that is negative,
+  infinite or `NaN`, and a non-integer or negative `maxit`, which the Levenberg–Marquardt fit
+  accepted before (negative `maxit` returned negative `iterations`); `:gauss_newton` also refuses
+  `maxit > typemax(Int32)`. The fit takes a start `θ0`, stops at `iterations = 0` when `J(θ0)` is
+  not finite, and returns `iterations` as an `Int` and `status`: the solver's `SolverStatus` for
+  `:gauss_newton`, `nothing` for `:levenberg_marquardt` (K13). `KickDriftRemap` and
+  `NonSeparableRemap` gain a fourth type parameter `S <: Union{Nothing, Int}` and take `solver` and
+  `seed`; a non-negative integer `seed` starts the fit at `1e-3 .* randn(Xoshiro(seed), n)`, and
+  the `info` of `remap` holds `status`. Tests: both solvers, the start and the zero budget,
+  non-finite starts, `Int` iterations, trace output, the invalid arguments and the seed
+  (`test/projection/parametrisation.jl`, `test/projection/remap.jl`).
 
 ### Fixed
 
@@ -134,6 +149,10 @@
 - The evidence of K2, K3 and K4 is re-measured by `scripts/redistribution/failure_cases.jl` on
   the same machine and code: K3 returns after 44 s instead of 46 s (timing noise), with the
   momentum change 0.165.
+- The package depends on GeometricSolvers, which is not registered: `[sources]` takes it from
+  `https://github.com/JuliaGNI/GeometricSolvers.jl` at the commit `47d817b`. The Julia floor
+  rises from 1.12 to 1.13, the floor of GeometricSolvers, and the ForwardDiff floor from 1 to
+  1.4, the floor that GeometricSolvers needs.
 
 ### Removed
 
