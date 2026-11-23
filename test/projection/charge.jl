@@ -73,8 +73,8 @@ relative_entropy(u, ustar) = sum(u .* log.(u ./ ustar) .- u .+ ustar)
         @test ok2 && its2 == 0 && w2 == w
     end
 
-    # A start next to the solution: the Newton step lowers Φ by far less than its rounding error,
-    # so whether Φ rounds down decides an Armijo test without an allowance for rounding.
+    # A start next to the solution: the Newton step lowers Φ by far less than the rounding error of
+    # Φ, so an Armijo test that compares two values of Φ rather than evaluating ΔΦ directly stalls.
     @testset "a start within 1e-11 of the grid charge" begin
         runs = map(1:20) do _
             ρnear = A * (w1 .* (1 .+ 1e-11 .* randn(N)))

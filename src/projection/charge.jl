@@ -46,6 +46,7 @@ function charge_reweight(b::UniformBasis, x, wstar, ρ; tol = 1e-13, maxit = 50)
     A = spline_charge_matrix(b, x)
     λ = zeros(b.n)
     weights(λ) = wstar .* exp.(A' * λ)
+    ΔΦ(w, Aδ, δρ, s) = sum(k -> w[k] * expm1(s * Aδ[k]), eachindex(w, Aδ)) - s * δρ
     for it in 1:maxit
         w = weights(λ)
         F = A * w - ρ
@@ -58,9 +59,8 @@ function charge_reweight(b::UniformBasis, x, wstar, ρ; tol = 1e-13, maxit = 50)
         # exceeds the decrease of a Newton step near the solution; a NaN (an underflowed weight
         # times an overflowed factor) rejects the step
         Aδ, δρ, Fδ = A' * δ, dot(δ, ρ), dot(F, δ)
-        ΔΦ(s) = sum(w .* expm1.(s .* Aδ)) - s * δρ
         s = 1.0
-        while !(ΔΦ(s) <= 1e-4 * s * Fδ) && s > 1e-12
+        while !(ΔΦ(w, Aδ, δρ, s) <= 1e-4 * s * Fδ) && s > 1e-12
             s /= 2
         end
         λ = λ .+ s .* δ
