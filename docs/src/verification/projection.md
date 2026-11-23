@@ -112,17 +112,23 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
 
 ## Test files of the group `slow`
 
-- **`test/projection/experiments/hole_filling.jl`** (about 3 minutes): the
+- **`test/projection/experiments/hole_filling.jl`** (about 18 minutes): the
   [hole-filling experiment](@ref projection-hole-filling) at ``x_h = \pi/2`` and ``x_h = \pi``.
   It checks the set-up (2280 markers, 24 removed, 2304 and 3264 parameters), ``P`` and the total
   weight, the charge-conserving reweighting (at most 16 Newton iterations), every number of the
-  two tables with the digits it is quoted with, the sensitivities of the non-separable map at the
-  fitted ``\theta`` with the active iteration limit of 50, the result of `remap` against the
-  experiment, and the relative error of the projected target weights in the four velocity bands.
+  two tables with the digits it is quoted with or within the range it is quoted as, the return
+  code of every fit, the sensitivities of the non-separable map at the fitted ``\theta`` with
+  the active iteration limit of 50, the result of `remap` against the experiment, and the
+  relative error of the projected target weights in the four velocity bands. At ``x_h = \pi`` it
+  checks that the fit of the kicks and drifts from ``\theta = 0`` ends on the mirror-symmetric
+  saddle (`SUCCESS`, stationary, in at most 5 iterations), and that the fit from the seeded start
+  101 fills the hole (`MAXITERS` after 40 iterations, the empty disk below ``1.55`` and below
+  ``0.9`` of the reweighting alone, the fill above ``0.85``, the empty disk of the mirror ellipse
+  at ``v = -1.2`` below ``1.0``, the objective between ``0.25`` and ``0.40``).
   Cases that must fail: controls B and C, one area-preserving map of ``(x, v)``, do not shrink the
-  hole beyond the reweighting alone; the kicks and drifts do not fill the hole at ``x_h = \pi``;
-  the target weights alone miss the grid charge; the sensitivities without the terms of the shift
-  and the boost miss the derivatives.
+  hole beyond the reweighting alone; the kicks and drifts at the saddle do not fill the hole at
+  ``x_h = \pi``; the target weights alone miss the grid charge; the sensitivities without the
+  terms of the shift and the boost miss the derivatives.
 - **`test/projection/experiments/dlra_weights.jl`** (about 3 minutes): the
   [target weights after a push](@ref projection-push-test). It checks the push (largest speed,
   empty disk, fill and density deviation of the pushed markers), that no target weight of any
@@ -135,10 +141,14 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
 - **`scripts/projection/checks.jl`** (about one minute): runs `structure.jl`, `stages.jl`,
   `charge.jl` and `lowrank.jl` of `test/projection/`, each in a module of its own, and prints the
   measured numbers of the table of structural statements.
-- **`scripts/projection/hole_filling.jl`** (about 3 minutes): prints the two tables of the
-  hole-filling experiment, the cost of each map, the sensitivities of the non-separable map and
-  the relative error of the projected target weights, and checks every number against the value
-  of the source note.
+- **`scripts/projection/hole_filling.jl`** (about 31 minutes): prints the two tables of
+  the hole-filling experiment with the return code of each fit, the cost of each map, the
+  sensitivities of the non-separable map and the relative error of the projected target weights,
+  and checks every number against the value of the
+  [hole-filling page](@ref projection-hole-filling). It runs the experiment again with the
+  targets moved by ``10^{-13}`` relative and checks every number there too, and runs the seeded
+  weight-dependent fit at ``x_h = \pi`` for the seeds 101 to 105 and checks that each of its
+  numbers lies in its quoted range.
 - **`scripts/projection/dlra_weights.jl`** (about 3 minutes): prints the two tables of the target
   weights after a push and checks every number against the value of the source note.
 - **`scripts/projection/higher_dimensions.jl`** (seconds): prints the numbers of parameters,
@@ -154,12 +164,16 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
 
 The numbers of the note *Hamiltonian particle projection: a symplectic redistribution of weighted
 markers* are the numbers of the tables on
-[Structural statements and target weights after a push](@ref projection-checks) and
-[Hole filling](@ref projection-hole-filling).
+[Structural statements and target weights after a push](@ref projection-checks). The tables on
+[Hole filling](@ref projection-hole-filling) differ from the note in value: the note's fit is
+Levenberg–Marquardt, and the tables give the Gauss–Newton fit with the return code of each row,
+the mirror-symmetric saddle that it reaches from ``\theta = 0`` at ``x_h = \pi``, and the range of
+a seeded fit there.
 The two experiment scripts hold them in their tables `NOTE_*` and `NOTE`, and the two experiment
 tests in `TABLES`, `WEIGHT_TABLE` and `REMAP_TABLE`; a measured number agrees with a quoted one
-when it lies within half a unit of the last quoted digit. The experiment tests check every number
-of the tables in this way. Three points differ in form, not in value:
+when it lies within half a unit of the last quoted digit, or between the ends of a quoted range.
+The experiment tests check every number of the tables in this way. Three points differ in form,
+not in value:
 
 - The note quotes the relative error of the projected target weights at ``x_h = \pi`` only. At
   ``x_h = \pi/2`` the bands ``[1, 2)`` and ``[3, 4)`` differ in the second digit (``0.18`` and

@@ -1,9 +1,12 @@
 # The hole-filling experiment at both hole positions: the whole construction (projection,
 # targets, fit, map, reweighting, charge-conserving reweighting) for the weight-dependent kicks and
-# drifts, the non-separable stages and the controls A, B, C. Each number of the tables of the
-# documentation is checked with the digits it is quoted with. Cases that must fail: the controls
-# B and C (one area-preserving map of (x, v)) do not shrink the hole beyond the reweighting alone;
-# the kicks and drifts do not fill the hole at x_h = π; the target weights alone miss the grid
+# drifts, the non-separable stages and the controls A, B, C, each fitted by Gauss–Newton with
+# DogLeg. Each number of the tables of the documentation is checked with the digits it is quoted
+# with, or within the range it is quoted as, and the return code of each fit by its name. At
+# x_h = π the fit of the kicks and drifts from θ = 0 ends on a mirror-symmetric saddle, and a fit
+# from a seeded start fills the hole. Cases that must fail: the controls B and C (one
+# area-preserving map of (x, v)) do not shrink the hole beyond the reweighting alone; the kicks and
+# drifts at the saddle do not fill the hole at x_h = π; the target weights alone miss the grid
 # charge; the sensitivities without the terms of the shift and the boost miss the derivatives.
 
 using ParticleRemapping
@@ -11,41 +14,69 @@ using Random
 using Test
 
 # `x` agrees with the number `quoted` to the digits that `quoted` shows: within half a unit of its
-# last digit.
+# last digit. A range `lo–hi` holds `x` between its ends.
 function agrees(x, quoted::AbstractString)
+    if occursin('–', quoted)
+        lo, hi = parse.(Float64, split(quoted, '–'))
+        return lo <= x <= hi
+    end
     m = match(r"^-?(\d+)(?:\.(\d+))?(?:e(-?\d+))?$", quoted)
     decimals = m.captures[2] === nothing ? 0 : length(m.captures[2])
     exponent = m.captures[3] === nothing ? 0 : parse(Int, m.captures[3])
     abs(x - parse(Float64, quoted)) <= 0.5 * 10.0^(exponent - decimals) * (1 + 1e-9)
 end
 
+# The return code of a fit by its name, with "stationary" where the stationarity test ended it.
+stop(status) = string(status.code) * (status.stationary ? ", stationary" : "")
+
+# The experiment with `verbose = true`, and what it prints.
+function experiment_and_output(; kwargs...)
+    mktemp() do path, io
+        e = redirect_stdout(() -> hole_filling_experiment(; verbose = true, kwargs...), io)
+        close(io)
+        e, read(path, String)
+    end
+end
+
+# The line of the output `out` of the experiment for the variant `v`.
+printed(out, v) = only(filter(l -> startswith(strip(l), "$v "), split(out, '\n')))
+
 const VARIANTS = (:weight_dependent, :control_A, :control_B, :non_separable, :control_C)
 
 # The tables of the documentation: largest empty disk near the hole, fill, objective; then with the
-# charge-conserving weights the charge residual of w*, the empty disk, the fill and max |ln(w′/w*)|.
+# charge-conserving weights the charge residual of w*, the empty disk, the fill and max |ln(w′/w*)|;
+# and the return code of the fit.
 const TABLES = Dict(
     π / 2 => (before = ("2.75", "0.00"), targets = ("1.58", "0.86"),
-        rows = Dict(:θ0 => ("1.84", "0.51", "", "9.1e-3", "1.84", "0.51", "0.014"),
-            :weight_dependent =>
-                ("1.58", "0.94", "0.264", "9.0e-2", "1.56", "0.70", "0.173"),
-            :control_A => ("1.65", "0.82", "0.795", "5.4e-2", "1.90", "0.78", "0.142"),
-            :control_B => ("1.84", "0.62", "0.699", "2.8e-2", "1.83", "0.47", "0.061"),
+        rows = Dict(:θ0 => ("1.84", "0.51", "", "9.1e-3", "1.84", "0.51", "0.014", ""),
+            :weight_dependent => ("1.43", "0.90", "0.258", "8.9e-2", "1.48", "0.78",
+                "0.175", "MAXITERS"),
+            :control_A => ("1.67", "0.66", "0.834", "2.7e-2", "1.66", "0.70", "0.057",
+                "MAXITERS"),
+            :control_B => ("1.84", "0.62", "0.699", "2.8e-2", "1.83", "0.47", "0.061",
+                "MAXITERS"),
             :non_separable =>
-                ("1.54", "0.94", "0.439", "9.2e-2", "1.56", "0.70", "0.165"),
-            :control_C => ("1.80", "0.55", "0.663", "3.1e-2", "1.83", "0.55", "0.069"))),
+                ("1.56", "0.90", "0.438", "9.1e-2", "1.57", "0.70", "0.166",
+                    "MAXITERS"),
+            :control_C => ("1.88", "0.55", "0.668", "3.2e-2", "1.86", "0.55", "0.071",
+                "LINESEARCH_FAILED"))),
     Float64(π) => (before = ("2.75", "0.00"), targets = ("1.58", "0.86"),
-        rows = Dict(:θ0 => ("1.88", "0.47", "", "4.2e-3", "1.91", "0.47", "0.008"),
-            :weight_dependent =>
-                ("1.81", "0.47", "0.927", "4.2e-3", "1.84", "0.47", "0.008"),
-            :control_A => ("1.88", "0.47", "0.999", "4.2e-3", "1.91", "0.47", "0.008"),
-            :control_B => ("1.88", "0.55", "0.972", "4.2e-3", "1.86", "0.47", "0.008"),
+        rows = Dict(:θ0 => ("1.88", "0.47", "", "4.2e-3", "1.91", "0.47", "0.008", ""),
+            :weight_dependent => ("1.81", "0.47", "0.927", "4.2e-3", "1.84", "0.47",
+                "0.008", "SUCCESS, stationary"),
+            :control_A => ("1.64–1.66", "0.81–0.86", "0.697–0.704", "4.0e-2–4.4e-2",
+                "1.67–1.79", "0.55", "0.091–0.096", "MAXITERS"),
+            :control_B => ("1.88", "0.55", "0.972", "4.2e-3", "1.86", "0.47", "0.008",
+                "SUCCESS, stationary"),
             :non_separable =>
-                ("1.50", "0.94", "0.521", "6.3e-2", "1.53", "0.70", "0.165"),
-            :control_C => ("2.00", "0.55", "0.716", "1.6e-2", "2.03", "0.55", "0.050"))))
+                ("1.52", "0.94", "0.520", "6.4e-2", "1.55", "0.70", "0.169",
+                    "LINESEARCH_FAILED"),
+            :control_C => ("2.04", "0.55", "0.713", "1.8e-2", "2.06", "0.55", "0.053",
+                "LINESEARCH_FAILED"))))
 
 @testset "Hole filling, x_h = $(round(hole_x; digits = 4))" for hole_x in (π / 2, Float64(π))
     Random.seed!(20261119)
-    e = hole_filling_experiment(; hole_x)
+    e, output = experiment_and_output(; hole_x)
     res = e.results
     near(v) = res[v].diagnostics.empty
     fill(v) = res[v].diagnostics.fill
@@ -88,6 +119,9 @@ const TABLES = Dict(
             @test agrees(r.diagnostics_charge.empty, row[5])
             @test agrees(r.diagnostics_charge.fill, row[6])
             @test agrees(r.dlnw, row[7])
+            v === :θ0 || @test stop(r.status) == row[8]
+            # the line that `verbose = true` prints for the variant names its return code
+            v === :θ0 || @test occursin(row[8], printed(output, v))
         end
     end
 
@@ -114,7 +148,11 @@ const TABLES = Dict(
             @test near(:non_separable) < 0.9 * near(:θ0)
             @test fill(:non_separable) > fill(:control_C) + 0.2
         else
-            # the limit of the separable map where ∂_x W = 0
+            # the fit of the kicks and drifts from θ = 0 ends on the mirror-symmetric saddle of
+            # the objective, where the ±v coupling keeps the hole open
+            r = res[:weight_dependent]
+            @test string(r.status.code) == "SUCCESS" && r.status.stationary
+            @test r.iterations <= 5
             @test near(:weight_dependent) > 0.9 * near(:θ0)
             # the non-separable stages do not have the ±v coupling
             @test near(:non_separable) < 0.9 * near(:θ0)
@@ -123,10 +161,27 @@ const TABLES = Dict(
         end
     end
 
+    # A seeded start breaks the mirror symmetry, and the kicks and drifts fill the hole at
+    # x_h = π. The bounds hold the range of the seeds 101:105 of the script with a margin.
+    hole_x ≈ π && @testset "the seeded weight-dependent fit" begin
+        es = hole_filling_experiment(;
+            hole_x, variants = (:weight_dependent,), seed = 101, targets = e.targets)
+        r = es.results[:weight_dependent]
+        prob = es.problem
+        @test es.targets === e.targets
+        @test string(r.status.code) == "MAXITERS" && r.iterations == 40
+        @test r.diagnostics.empty < 1.55
+        @test r.diagnostics.empty < 0.9 * es.results[:θ0].diagnostics.empty
+        @test r.diagnostics.fill > 0.85
+        mirror = EllipticHole(hole_x, -1.2, 0.45, 0.40; prob.L)
+        @test local_empty_disk(mirror, r.X, r.v1; prob.dx, prob.dv) < 1.0
+        @test 0.25 < r.ratio < 0.40
+    end
+
     @testset "the remap result" begin
         prob = e.problem
         method = NonSeparableRemap(; charge = ChargeConservingReweighting(prob.L, 32),
-            density = (xs, vs) -> prob.density.(xs, vs))
+            density = (xs, vs) -> prob.density.(xs, vs), solver = :gauss_newton)
         out = remap(method, prob.markers; targets = e.targets)
         r = res[:non_separable]
         @test out.info.X == r.X && out.info.P == r.P

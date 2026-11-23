@@ -306,7 +306,9 @@ Three consequences follow.
 
 At a point where ``\partial_x W = 0`` and ``W`` is even in ``v``, the separable stages can
 therefore fill a hole only by opening its mirror image at ``-v``. In the
-[experiment](@ref projection-hole-filling), the fit at such a point does not fill the hole. A
+[experiment](@ref projection-hole-filling), the fit from ``\theta = 0`` at such a point ends on a
+mirror-symmetric saddle of its objective, where the hole stays open; a fit from a seeded start
+that breaks the symmetry fills the hole. A
 stage Hamiltonian that depends on ``x`` and ``p`` together does not have this coupling, at the
 price of an implicit integrator ([Non-separable stages](@ref projection-nonseparable)).
 
