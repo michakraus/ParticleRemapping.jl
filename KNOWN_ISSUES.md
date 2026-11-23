@@ -165,8 +165,8 @@
 
 - **location:** `src/projection/experiments/hole_filling.jl`
 - **problem:** with `β = 1e-3`, GeometricSolvers' `GaussNewton(; globalization = DogLeg())` does
-  not reach a minimum of the weight-dependent fit at either hole position: the gradient stays
-  large and `|θ|` grows with the iterations, so every weight-dependent row of the hole-filling
+  not reach a minimum of the weight-dependent fit at either hole position: after hundreds of
+  iterations the gradient and `|θ|` stay large, so every weight-dependent row of the hole-filling
   tables, apart from the saddle at `x_h = π` that the fit from `θ = 0` reaches, is the value after
   the budget of 40 iterations, not at a minimum; a larger `β` or a continuation in `β` may give a
   minimum. The method of the experiment is unchanged.
