@@ -1,5 +1,5 @@
 /* ==========================================================================
-   The colours and the layout of the VitePress tutorial on the Kolmogorov n-width
+   Brand colours and content width for the manual
    ========================================================================== */
 
 :root {
@@ -20,11 +20,4 @@
 /* Wider content container so side-by-side figures and animations breathe comfortably */
 .VPDoc.has-aside .content-container {
   max-width: 860px !important;
-}
-
-/* The nav bar would list the eleven top-level entries of the manual, which run past the right
-   edge at any screen width and push the appearance switch out of view. The sidebar lists every
-   page, so the nav bar shows only the title, the search box and the switches. */
-.VPNavBar .VPNavBarMenu {
-  display: none;
 }
