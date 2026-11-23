@@ -265,7 +265,7 @@ end
         # the bound holds for Gauss–Newton only: the length guard answers first here
         @test_throws DimensionMismatch fit(kds; maxit = Int(typemax(Int32)) + 1,
             θ0 = zeros(n + 1))
-        # maxit is an integer for both solvers
+        # maxit is an integer for both solvers; the test runs the default solver
         @test_throws TypeError fit(kds; maxit = 3.0)
     end
 end
