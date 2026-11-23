@@ -33,7 +33,7 @@ The parameters `θ` of the map `par` that minimise
 
 with `(x^S, p^S) = R_θ(x, p)` ([`remap_stages`](@ref)) and the targets `(xt, vt, wt)`, from the
 start `θ0` (`θ = 0` for `nothing`; a finite vector of [`remap_parameter_count`](@ref) entries,
-converted to `Float64`), with at most `maxit ≥ 0` iterations.
+converted to `Float64`), with at most `maxit ≥ 0` iterations, an integer.
 
 With `solver = :levenberg_marquardt`, the Levenberg–Marquardt method: the damped Gauss–Newton step
 `(A + μ diag(A)) δ = −g` with `A = JᵀJ + β I`, the damping `μ` divided by 3 after an accepted step
@@ -51,20 +51,22 @@ return code, the iterations and `F/F0` after the solve.
 
 Returns the parameters, the objective `F0` at `θ = 0` (whatever the start) and `F` at the returned
 `θ`, the number of iterations and the status. An unknown `solver`, a negative `maxit`, a `maxit`
-above `typemax(Int32)` with `:gauss_newton` or a `β` that is negative or `NaN` throws an
-`ArgumentError`, a `θ0` of the wrong length a `DimensionMismatch`, and a non-finite `θ0` an
-`ArgumentError`.
+above `typemax(Int32)` with `:gauss_newton` or a `β` that is negative, infinite or `NaN` throws
+an `ArgumentError`, a non-integer `maxit` a `TypeError`, a `θ0` of the wrong length a
+`DimensionMismatch`, and a non-finite `θ0` an `ArgumentError`.
 """
 function fit_remap_parameters(
         par::AbstractRemapParametrisation, x, p, w, xt, vt, wt; m = 1,
-        ℓx, ℓv, β = 1e-3, maxit = 40, trace = false, solver::Symbol = :levenberg_marquardt,
+        ℓx, ℓv, β = 1e-3, maxit::Integer = 40, trace = false,
+        solver::Symbol = :levenberg_marquardt,
         θ0::Union{Nothing, AbstractVector{<:Real}} = nothing)
     _check_solver(solver)
     maxit >= 0 || throw(ArgumentError("maxit must be non-negative, got $maxit"))
     solver === :gauss_newton && maxit > typemax(Int32) &&
         throw(ArgumentError(
             "maxit must be at most $(typemax(Int32)) for :gauss_newton, got $maxit"))
-    β >= 0 || throw(ArgumentError("β must be non-negative, got $β"))
+    isfinite(β) && β >= 0 ||
+        throw(ArgumentError("β must be finite and non-negative, got $β"))
     n = remap_parameter_count(par)
     if θ0 !== nothing
         length(θ0) == n || throw(DimensionMismatch(

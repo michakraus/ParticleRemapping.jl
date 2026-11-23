@@ -92,8 +92,9 @@
   :gauss_newton)` runs GeometricSolvers' `GaussNewton(; globalization = DogLeg())` on the
   regularised residual `[r; √β θ]`, with the budget `maxit` and GeometricSolvers' default
   tolerances, its stationarity test among them. The Levenberg–Marquardt fit stays the default with
-  the same iteration, so no quoted number moves; both methods refuse a `β` that is negative or
-  `NaN`, which the Levenberg–Marquardt fit accepted before. The fit takes a start `θ0` and returns
+  the same iteration, so no quoted number moves; both methods refuse a `β` that is negative,
+  infinite or `NaN`, and a non-integer `maxit`, which the Levenberg–Marquardt fit accepted
+  before. The fit takes a start `θ0` and returns
   `status`: the solver's `SolverStatus` for `:gauss_newton`, `nothing` for `:levenberg_marquardt`
   (K13). `KickDriftRemap` and `NonSeparableRemap`
   take `solver` and `seed`; an integer `seed` starts the fit at `1e-3 .* randn(Xoshiro(seed), n)`,

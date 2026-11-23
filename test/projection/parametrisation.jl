@@ -186,8 +186,10 @@ end
         @test fgn.F0 ≈ objective(kds, zeros(n), 1e-3) rtol = 1e-12
         # θ is stationary for the objective, not only for the solver's model of it
         @test norm(gradient(kds, fgn.θ, 1e-3)) < 1e-8 * g0
-        # the bound of the budget is inclusive
-        @test code(fit(kds; solver = :gauss_newton, maxit = typemax(Int32))) == "SUCCESS"
+        # the bound of the budget is inclusive: the maxit guard runs before the length guard, so
+        # typemax(Int32) passes it and the length guard answers, and no solve runs
+        @test_throws DimensionMismatch fit(
+            kds; solver = :gauss_newton, maxit = typemax(Int32), θ0 = zeros(n + 1))
     end
 
     @testset "the regularisation rows" begin
@@ -247,10 +249,14 @@ end
                 kds; solver, θ0 = [zeros(n - 1); -Inf])
             @test_throws r"^ArgumentError: maxit must be non-negative, got -1$" fit(
                 kds; solver, maxit = -1)
-            @test_throws r"^ArgumentError: β must be non-negative, got -1.0$" fit(
+            @test_throws r"^ArgumentError: β must be finite and non-negative, got -1.0$" fit(
                 kds; solver, β = -1.0)
-            @test_throws r"^ArgumentError: β must be non-negative, got NaN$" fit(
+            @test_throws r"^ArgumentError: β must be finite and non-negative, got NaN$" fit(
                 kds; solver, β = NaN)
+            @test_throws r"^ArgumentError: β must be finite and non-negative, got Inf$" fit(
+                kds; solver, β = Inf)
+            @test_throws r"^ArgumentError: β must be finite and non-negative, got -Inf$" fit(
+                kds; solver, β = -Inf)
             # β = 0 is allowed: the regularisation rows are zero rows
             @test fit(kds; solver, maxit = 0, β = 0).iterations == 0
         end
@@ -259,5 +265,7 @@ end
         # the bound holds for Gauss–Newton only: the length guard answers first here
         @test_throws DimensionMismatch fit(kds; maxit = Int(typemax(Int32)) + 1,
             θ0 = zeros(n + 1))
+        # maxit is an integer for both solvers
+        @test_throws TypeError fit(kds; maxit = 3.0)
     end
 end
