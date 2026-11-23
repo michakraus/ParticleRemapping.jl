@@ -76,12 +76,52 @@
   `DensityTarget` against `SeparableMaxwellianTarget`, and the parametrisations with equal weights.
 - `KNOWN_ISSUES.md`: K11 (the target points of markers outside the velocity box of the projection
   diverge, which stops the repeated remaps of the long run).
+- Continuous integration, the same generated workflows as the other repositories of the tree. The
+  tests run the groups `core` and `slow` on Julia `min` and `1` on Ubuntu, and on fewer events on
+  macOS and Windows; a pinned doctest job runs next to them. The manual is built on every change;
+  nothing is published, because there is no `deploydocs`.
+- An advisory `Downgrade` job tests the `[compat]` lower bounds; its failure does not fail the run.
+- Dependabot opens the weekly `[compat]` bumps of the root `Project.toml` and the GitHub Actions
+  updates.
+- `codecov.yml` sets the project and patch checks to target `auto` with a 1 % threshold.
+- `KNOWN_ISSUES.md`: K12 (the charge-conserving reweighting does not converge for markers in the
+  columns of its spline cells: the Hessian is singular up to round-off).
+- Tests: the remap states (`test/projection/frames.jl`) use 8 instead of 16 charge splines, which
+  on 16 marker columns made the case of K12, and check that the charge step converged.
+- A second method for the fit of the projection: `fit_remap_parameters(...; solver =
+  :gauss_newton)` runs GeometricSolvers' `GaussNewton(; globalization = DogLeg())` on the
+  regularised residual `[r; √β θ]`, with the budget `maxit` and GeometricSolvers' default
+  tolerances, its stationarity test among them. The Levenberg–Marquardt fit stays the default with
+  the same iteration, so no quoted number moves; both methods refuse a `β` that is negative,
+  infinite or `NaN`, and a non-integer or negative `maxit`, which the Levenberg–Marquardt fit
+  accepted before (negative `maxit` returned negative `iterations`); `:gauss_newton` also refuses
+  `maxit > typemax(Int32)`. The fit takes a start `θ0`, stops at `iterations = 0` when `J(θ0)` is
+  not finite, and returns `iterations` as an `Int` and `status`: the solver's `SolverStatus` for
+  `:gauss_newton`, `nothing` for `:levenberg_marquardt` (K13). `KickDriftRemap` and
+  `NonSeparableRemap` gain a fourth type parameter `S <: Union{Nothing, Int}` and take `solver` and
+  `seed`; a non-negative integer `seed` starts the fit at `1e-3 .* randn(Xoshiro(seed), n)`, and
+  the `info` of `remap` holds `status`. Tests: both solvers, the start and the zero budget,
+  non-finite starts, `Int` iterations, trace output, the invalid arguments and the seed
+  (`test/projection/parametrisation.jl`, `test/projection/remap.jl`).
 
 ### Fixed
 
 - The kick–drift and the non-separable parametrisation of the projection evaluate to `NaN` for
   markers of equal weight: the spline basis in `ln w` had the spacing zero. It now spans
   `[ln w, ln w + 1]`, and the stages are the same map for every marker, as they must be.
+- `charge_reweight`, the Newton iteration of the charge-conserving reweighting, no longer stalls
+  short of its tolerance. Near the solution the decrease of Φ in a Newton step (about 1e-25 against
+  Φ ≈ 6) is far below the rounding error of Φ (one ulp, 8.9e-16), so whether the Armijo test
+  accepted the full step depended on how the sum rounded. Where Φ rounded up, the line search
+  halved the step to 1e-12 and the iteration stopped after 50 iterations at a residual near 1e-10
+  (`converged = false`, and `remap` of a `ChargeConservingReweighting` threw "no positive weights
+  reproduce the reference grid charge"). This happened on Linux with Julia 1.13 in the example of
+  the manual page on the charge-conserving reweighting and with Julia 1.14 in
+  `test/projection/charge.jl`. The line search now evaluates the change of Φ along the step,
+  `Σ w (exp(s Aᵀδ) − 1) − s δᵀρ` with `expm1`, instead of the difference of two values of Φ, so
+  its rounding error stays below the decrease of the step. Each of 20 starts within 1e-11 of the
+  grid charge converges in one step (`test/projection/charge.jl`); before the fix one of them
+  stopped after 50 iterations and one took 29.
 
 ### Changed
 
@@ -109,6 +149,10 @@
 - The evidence of K2, K3 and K4 is re-measured by `scripts/redistribution/failure_cases.jl` on
   the same machine and code: K3 returns after 44 s instead of 46 s (timing noise), with the
   momentum change 0.165.
+- The package depends on GeometricSolvers, which is not registered: `[sources]` takes it from
+  `https://github.com/JuliaGNI/GeometricSolvers.jl` at the commit `47d817b`. The Julia floor
+  rises from 1.12 to 1.13, the floor of GeometricSolvers, and the ForwardDiff floor from 1 to
+  1.4, the floor that GeometricSolvers needs.
 - Compatibility with `SimpleSplines` moves from `"0.4"` to `"0.5"` (compat-only bump; no
   behavioural change and no change to the Julia `1.12` floor).
 - The README now links to the dev manual (`docs-dev` badge), lists the four modules in the

@@ -22,6 +22,24 @@
 - **kind:** upstream
 - **found:** 2026-11-20
 
+### K15 · The Downgrade job cannot resolve the unregistered GeometricSolvers
+
+- **location:** `Project.toml:25`
+- **problem:** the Downgrade job (`julia-actions/julia-downgrade-compat@v2`, mode `forcedeps`,
+  `julia_version: min`, projects `.` and `test`) resolves the lower bounds of `[compat]` from the
+  General registry, which does not hold GeometricSolvers, so it stops before any test runs; the
+  job is advisory, and the entry can go when GeometricSolvers is registered in General.
+- **evidence:** run 45206146166 of PR 5, job "Downgrade - ubuntu-latest", Julia 1.13.4:
+  ```
+  Info: Found source package: GeometricSolvers (url=https://github.com/JuliaGNI/GeometricSolvers.jl)
+  Info: Adding runtime dependency from direct path source ParticleRemapping: GeometricSolvers
+  Info: Running resolver on merged project with --min=@deps
+  ERROR: LoadError: unknown package UUID: 3a2b8526-dde5-4630-ad43-3d2dcd69f118
+  ```
+  The UUID is GeometricSolvers' (`Project.toml:10`).
+- **kind:** upstream
+- **found:** PR 5
+
 ## Remapping
 
 ### K9 · The Schur-complement step of the gauge rezoning solves a dense system
@@ -107,6 +125,41 @@
   `:nonseparable`.
 - **kind:** defect
 - **found:** 2026-11-22
+
+### K12 · The charge-conserving reweighting fails for markers in the columns of its spline cells
+
+- **location:** `src/projection/charge.jl`
+- **problem:** with one marker column at the centre of each of the `n` spline cells, the cubic
+  B-splines at the markers do not see the alternating mode, so the Hessian `A diag(w) Aᵀ` of
+  `charge_reweight` is singular up to round-off; whether its Cholesky test passes depends on the
+  platform, and the iteration stops with `converged = false`, after no step or after one; inside
+  `KickDriftRemap` and `NonSeparableRemap` the weights `wc` of such a run replace the target
+  weights with only `charge_converged = false` to show it, while `remap` of a
+  `ChargeConservingReweighting` throws.
+- **evidence:** `hole_filling_problem(; nL = 16, hole_a = 0.9, hole_b = 0.8)` with
+  `KickDriftRemap(; nξ = 8, nv = 10, nw = 4, projection = HatProjection(12, 13), maxit = 2,
+  stages = 3, charge = ChargeConservingReweighting(2π, 16))`: smallest eigenvalue of the Hessian
+  `4.4·10⁻¹⁷`, largest `0.49`; one Newton step on macOS with Julia 1.13, none with 1.14 and on
+  Linux. With 8 splines the eigenvalues are `0.034` and `0.91`, and the iteration converges.
+- **kind:** defect
+- **found:** PR 3
+
+### K13 · The return type of `fit_remap_parameters` is a union over the two solvers
+
+- **location:** `src/projection/fit.jl`
+- **problem:** the field `status` is a `SolverStatus` for `:gauss_newton` and `nothing` for
+  `:levenberg_marquardt`, so the inferred return type of `fit_remap_parameters`, and the `info` of
+  `remap`, is a `Union` of two `NamedTuple` types for a `solver` that is not a constant; no test
+  measures what this costs.
+- **evidence:** `Base.return_types` of a call with a `Symbol` argument `solver` and a
+  `KickDriftParametrisation`, Julia 1.13:
+  `Union{NamedTuple{(:θ, :F0, :F, :iterations, :status), <:Tuple{Vector{Float64}, Any, Any, Int64,
+  GeometricSolvers.SolverStatus{Float64}}}, NamedTuple{(:θ, :F0, :F, :iterations, :status),
+  <:Tuple{Any, Any, Any, Int64, Nothing}}}`. The `Any` fields come from `remap_stages` of the
+  kick–drift map, which infers `Tuple{Any, Any}`; with a `NonSeparableParametrisation` both
+  members are concrete.
+- **kind:** not verified
+- **found:** 2026-11-23
 
 ## SlicedRedistribution
 

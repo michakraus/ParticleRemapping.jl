@@ -73,6 +73,16 @@ relative_entropy(u, ustar) = sum(u .* log.(u ./ ustar) .- u .+ ustar)
         @test ok2 && its2 == 0 && w2 == w
     end
 
+    # A start next to the solution: the Newton step lowers Φ by far less than the rounding error of
+    # Φ, so an Armijo test that compares two values of Φ rather than evaluating ΔΦ directly stalls.
+    @testset "a start within 1e-11 of the grid charge" begin
+        runs = map(1:20) do _
+            ρnear = A * (w1 .* (1 .+ 1e-11 .* randn(N)))
+            charge_reweight(grid, xs, w1, ρnear)
+        end
+        @test count(r -> r.converged && r.iterations == 1, runs) == length(runs)
+    end
+
     @testset "must fail: target weights alone" begin
         @test res_star > 0.28                      # the note quotes 0.29
     end
