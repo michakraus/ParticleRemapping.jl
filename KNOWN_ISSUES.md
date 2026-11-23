@@ -133,10 +133,13 @@
   `:levenberg_marquardt`, so the inferred return type of `fit_remap_parameters`, and the `info` of
   `remap`, is a `Union` of two `NamedTuple` types for a `solver` that is not a constant; no test
   measures what this costs.
-- **evidence:** `Base.return_types` of a call with a `Symbol` argument `solver`, Julia 1.13:
+- **evidence:** `Base.return_types` of a call with a `Symbol` argument `solver` and a
+  `KickDriftParametrisation`, Julia 1.13:
   `Union{NamedTuple{(:θ, :F0, :F, :iterations, :status), <:Tuple{Vector{Float64}, Any, Any, Int64,
   GeometricSolvers.SolverStatus{Float64}}}, NamedTuple{(:θ, :F0, :F, :iterations, :status),
-  <:Tuple{Any, Any, Any, Int64, Nothing}}}`.
+  <:Tuple{Any, Any, Any, Int64, Nothing}}}`. The `Any` fields come from `remap_stages` of the
+  kick–drift map, which infers `Tuple{Any, Any}`; with a `NonSeparableParametrisation` both
+  members are concrete.
 - **kind:** not verified
 - **found:** 2026-11-23
 
