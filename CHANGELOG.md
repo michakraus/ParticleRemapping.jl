@@ -153,6 +153,11 @@
   `https://github.com/JuliaGNI/GeometricSolvers.jl` at the commit `47d817b`. The Julia floor
   rises from 1.12 to 1.13, the floor of GeometricSolvers, and the ForwardDiff floor from 1 to
   1.4, the floor that GeometricSolvers needs.
+- Compatibility with `SimpleSplines` moves from `"0.4"` to `"0.5"` (compat-only bump; no
+  behavioural change and no change to the Julia `1.12` floor).
+- The README now links to the dev manual (`docs-dev` badge), lists the four modules in the
+  manual's chapter order (`Projection`, `Redistribution`, `Remapping`, `SlicedRedistribution`),
+  and demonstrates `NonSeparableRemap` (`Projection`) in the quick start.
 
 ### Removed
 
