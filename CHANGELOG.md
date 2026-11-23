@@ -109,6 +109,11 @@
 - The evidence of K2, K3 and K4 is re-measured by `scripts/redistribution/failure_cases.jl` on
   the same machine and code: K3 returns after 44 s instead of 46 s (timing noise), with the
   momentum change 0.165.
+- Compatibility with `SimpleSplines` moves from `"0.4"` to `"0.5"` (compat-only bump; no
+  behavioural change and no change to the Julia `1.12` floor).
+- The README now links to the dev manual (`docs-dev` badge), lists the four modules in the
+  manual's chapter order (`Projection`, `Redistribution`, `Remapping`, `SlicedRedistribution`),
+  and demonstrates `NonSeparableRemap` (`Projection`) in the quick start.
 
 ### Removed
 
