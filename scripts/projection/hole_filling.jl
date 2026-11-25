@@ -5,8 +5,8 @@
 # non-separable map, and the relative error of the projected target weights, and checks every
 # number against the value the documentation quotes. It then runs the experiment again with the
 # targets moved by 1e-13 relative and checks that every quoted number agrees there too, and runs
-# the weight-dependent fit at x_h = π from the seeded starts 101:105 and checks that each of its
-# numbers lies in its quoted range.
+# the weight-dependent fit, control A and control B at x_h = π from the seeded starts 101:105 and
+# checks that each of their numbers lies in its quoted range.
 #
 #   julia --startup-file=no --project=scripts scripts/projection/hole_filling.jl
 #
@@ -38,8 +38,7 @@ const ROWS = (:θ0 => "θ = 0, reweighting only", :weight_dependent => "weight-d
     :control_C => "control C")
 
 # The numbers of the documentation, row by row: empty disk, fill, objective; charge, disk, fill,
-# max |ln|; the return code of the fit. A range `lo–hi` is the range over this run and two runs
-# with the targets moved by 1e-13 relative.
+# max |ln|; the return code of the fit.
 const NOTE = Dict(
     π / 2 => Dict(:θ0 => ("1.84", "0.51", "", "9.1e-3", "1.84", "0.51", "0.014", ""),
         :weight_dependent =>
@@ -57,8 +56,8 @@ const NOTE = Dict(
         :weight_dependent =>
             ("1.81", "0.47", "0.927", "4.2e-3", "1.84", "0.47", "0.008",
                 "SUCCESS, stationary"),
-        :control_A => ("1.64–1.66", "0.81–0.86", "0.697–0.704", "4.0e-2–4.4e-2",
-            "1.67–1.79", "0.55", "0.091–0.096", "MAXITERS"),
+        :control_A => ("1.88", "0.47", "0.999", "4.2e-3", "1.91", "0.47", "0.008",
+            "SUCCESS, stationary"),
         :control_B => ("1.88", "0.55", "0.972", "4.2e-3", "1.86", "0.47", "0.008",
             "SUCCESS, stationary"),
         :non_separable => ("1.52", "0.94", "0.520", "6.4e-2", "1.55", "0.70", "0.169",
@@ -73,6 +72,18 @@ const SEEDS = 101:105
 const SEEDED = (empty = "1.35–1.45", fill = "0.97–1.06", ratio = "0.285–0.333",
     charge = "5.6e-2–6.2e-2", cempty = "1.32–1.41", cfill = "0.74–0.78",
     dlnw = "0.153–0.168", mirror = "0.76–0.87")
+
+# Control A and control B at x_h = π from the same seeded starts: the range over the seeds of the
+# numbers of the tables, and the return codes that the fits end on.
+const SEEDED_CONTROLS = Dict(
+    :control_A => (
+        ("1.49–1.61", "0.81–0.90", "0.654–0.711", "4.5e-2–5.2e-2", "1.50–1.74",
+            "0.50–0.55", "0.102–0.116"),
+        ("MAXITERS",)),
+    :control_B => (
+        ("1.51–1.98", "0.62–0.78", "0.749–0.937", "1.6e-2–2.1e-2", "1.45–1.96",
+            "0.46–0.78", "0.047–0.071"),
+        ("MAXITERS", "SUCCESS, stationary")))
 
 # The values of the documentation's tables of a variant's entry `r` of `results`.
 function row_values(v, r)
@@ -91,7 +102,7 @@ function check_note(e, hole_x)
             isempty(q) || @test agrees(x, q)
         end
         @test r.charge_its <= 16
-        v === :θ0 || @test r.ΔP < 1e-12
+        v === :θ0 || @test r.ΔP < 1e-15
         v === :θ0 || @test stop(r.status) == row[8]
     end
 end
@@ -165,27 +176,39 @@ function perturbed(e, hole_x)
     end
 end
 
-# The weight-dependent fit at x_h = π from the seeded starts: each number in its quoted range.
+# The weight-dependent fit, control A and control B at x_h = π from the seeded starts: each number
+# in its quoted range.
 function seeded(e)
     prob = e.problem
     mirror = EllipticHole(π, -1.2, 0.45, 0.40; prob.L)
-    @printf("\nx_h = π, weight-dependent from θ0 = 1e-3 randn(Xoshiro(seed)):\n")
-    @printf("%-6s %10s %6s %9s %-20s | %8s %6s %6s %8s | %6s\n",
-        "seed", "empty disk", "fill",
+    @printf("\nx_h = π, from θ0 = 1e-3 randn(Xoshiro(seed)):\n")
+    @printf("%-6s %-17s %10s %6s %9s %-20s | %8s %6s %6s %8s | %6s\n",
+        "seed", "", "empty disk", "fill",
         "objective", " stop", "charge", "disk", "fill", "max|ln|", "mirror")
     @testset "the seeded fits, x_h = π" begin
         for seed in SEEDS
-            es = hole_filling_experiment(;
-                hole_x = π, variants = (:weight_dependent,), seed, targets = e.targets)
-            r = es.results[:weight_dependent]
-            values = row_values(:weight_dependent, r)
-            md = local_empty_disk(mirror, r.X, r.v1; prob.dx, prob.dv)
-            @printf("%-6d %10.2f %6.2f %9.3f %-20s | %8.1e %6.2f %6.2f %8.3f | %6.2f\n",
-                seed,
-                values[1:3]..., " " * stop(r.status), values[4:7]..., md)
-            @test stop(r.status) == "MAXITERS"
-            for (x, q) in zip((values..., md), SEEDED)
-                @test agrees(x, q)
+            es = hole_filling_experiment(; hole_x = π,
+                variants = (:weight_dependent, :control_A, :control_B), seed,
+                targets = e.targets)
+            for v in (:weight_dependent, :control_A, :control_B)
+                r = es.results[v]
+                values = row_values(v, r)
+                md = local_empty_disk(mirror, r.X, r.v1; prob.dx, prob.dv)
+                @printf("%-6d %-17s %10.2f %6.2f %9.3f %-20s | %8.1e %6.2f %6.2f %8.3f | %6.2f\n",
+                    seed, v, values[1:3]..., " " * stop(r.status), values[4:7]..., md)
+                @test r.ΔP < 1e-15
+                if v === :weight_dependent
+                    @test stop(r.status) == "MAXITERS"
+                    for (x, q) in zip((values..., md), SEEDED)
+                        @test agrees(x, q)
+                    end
+                else
+                    quoted, stops = SEEDED_CONTROLS[v]
+                    @test stop(r.status) in stops
+                    for (x, q) in zip(values, quoted)
+                        @test agrees(x, q)
+                    end
+                end
             end
         end
     end

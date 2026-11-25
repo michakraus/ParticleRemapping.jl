@@ -32,7 +32,7 @@ julia --startup-file=no --project=scripts scripts/<construction>/<file>.jl
 
 `test/runtests.jl` runs every file in a `@safetestset` of its own. The group `slow` holds the two
 experiments of the Hamiltonian particle projection, `test/projection/experiments/hole_filling.jl`
-and `test/projection/experiments/dlra_weights.jl`, of about 3 minutes each; the group `core`
+and `test/projection/experiments/dlra_weights.jl`, of about 18 and 3 minutes; the group `core`
 holds every other file and runs in about 5 minutes.
 
 A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:

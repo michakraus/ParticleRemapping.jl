@@ -43,9 +43,9 @@ gives the largest empty disk near the hole in units of the lattice spacing (a pe
 equidistribution ([`hole_fill`](@ref)), and the objective after the fit relative to
 ``\theta = 0``. All numbers of this section come from `scripts/projection/hole_filling.jl`; the
 test `test/projection/experiments/hole_filling.jl` checks each of them. A number is quoted with
-its digits where it does not move when the targets move by ``10^{-13}`` relative. The numbers of
-control A at ``x_h = \pi`` move, so its row gives the range over the run and two runs with moved
-targets; the row "seeded" gives the range over the starts of the seeds 101 to 105 (item 2).
+its digits where it does not move when the targets move by ``10^{-13}`` relative. The rows
+"seeded" start at ``\theta_0 = 10^{-3} \, \mathrm{randn}`` and give the range over the seeds 101
+to 105 (item 2).
 
 |  | ``x_h = \pi/2``, ``\partial_x W \neq 0``: empty disk | fill | objective | stop | ``x_h = \pi``, ``\partial_x W = 0``: empty disk | fill | objective | stop |
 |:--|--:|--:|--:|:--|--:|--:|--:|:--|
@@ -54,8 +54,10 @@ targets; the row "seeded" gives the range over the starts of the seeds 101 to 10
 | ``\theta = 0``, reweighting only | 1.84 | 0.51 | 1 | | 1.88 | 0.47 | 1 | |
 | weight-dependent | 1.43 | 0.90 | 0.258 | `MAXITERS` | 1.81 | 0.47 | 0.927 | `SUCCESS`, stationary (saddle) |
 | weight-dependent, seeded | | | | | 1.35–1.45 | 0.97–1.06 | 0.285–0.333 | `MAXITERS` |
-| control A | 1.67 | 0.66 | 0.834 | `MAXITERS` | 1.64–1.66 | 0.81–0.86 | 0.697–0.704 | `MAXITERS` |
+| control A | 1.67 | 0.66 | 0.834 | `MAXITERS` | 1.88 | 0.47 | 0.999 | `SUCCESS`, stationary |
+| control A, seeded | | | | | 1.49–1.61 | 0.81–0.90 | 0.654–0.711 | `MAXITERS` |
 | control B | 1.84 | 0.62 | 0.699 | `MAXITERS` | 1.88 | 0.55 | 0.972 | `SUCCESS`, stationary |
+| control B, seeded | | | | | 1.51–1.98 | 0.62–0.78 | 0.749–0.937 | `MAXITERS` or `SUCCESS`, stationary |
 | non-separable | 1.56 | 0.90 | 0.438 | `MAXITERS` | 1.52 | 0.94 | 0.520 | `LINESEARCH_FAILED` |
 | control C | 1.88 | 0.55 | 0.668 | `LINESEARCH_FAILED` | 2.04 | 0.55 | 0.713 | `LINESEARCH_FAILED` |
 
@@ -71,12 +73,14 @@ and the residual after the correction is at most ``8.5 \cdot 10^{-14}``.
 | ``\theta = 0`` | ``9.1 \cdot 10^{-3}`` | 1.84 | 0.51 | 0.014 | ``4.2 \cdot 10^{-3}`` | 1.91 | 0.47 | 0.008 |
 | weight-dependent | ``8.9 \cdot 10^{-2}`` | 1.48 | 0.78 | 0.175 | ``4.2 \cdot 10^{-3}`` | 1.84 | 0.47 | 0.008 |
 | weight-dependent, seeded | | | | | ``5.6 \cdot 10^{-2}``–``6.2 \cdot 10^{-2}`` | 1.32–1.41 | 0.74–0.78 | 0.153–0.168 |
-| control A | ``2.7 \cdot 10^{-2}`` | 1.66 | 0.70 | 0.057 | ``4.0 \cdot 10^{-2}``–``4.4 \cdot 10^{-2}`` | 1.67–1.79 | 0.55 | 0.091–0.096 |
+| control A | ``2.7 \cdot 10^{-2}`` | 1.66 | 0.70 | 0.057 | ``4.2 \cdot 10^{-3}`` | 1.91 | 0.47 | 0.008 |
+| control A, seeded | | | | | ``4.5 \cdot 10^{-2}``–``5.2 \cdot 10^{-2}`` | 1.50–1.74 | 0.50–0.55 | 0.102–0.116 |
 | control B | ``2.8 \cdot 10^{-2}`` | 1.83 | 0.47 | 0.061 | ``4.2 \cdot 10^{-3}`` | 1.86 | 0.47 | 0.008 |
+| control B, seeded | | | | | ``1.6 \cdot 10^{-2}``–``2.1 \cdot 10^{-2}`` | 1.45–1.96 | 0.46–0.78 | 0.047–0.071 |
 | non-separable | ``9.1 \cdot 10^{-2}`` | 1.57 | 0.70 | 0.166 | ``6.4 \cdot 10^{-2}`` | 1.55 | 0.70 | 0.169 |
 | control C | ``3.2 \cdot 10^{-2}`` | 1.86 | 0.55 | 0.071 | ``1.8 \cdot 10^{-2}`` | 2.06 | 0.55 | 0.053 |
 
-In every run, ``|\Delta P| / \sum_a |p_a| \leq 1.6 \cdot 10^{-16}`` and the total weight is exact.
+In every run, ``|\Delta P| / \sum_a |p_a| < 10^{-15}`` and the total weight is exact.
 The results are:
 
 1. At ``x_h = \pi/2`` the weight-dependent map fills the hole: after the 40 iterations
@@ -84,14 +88,18 @@ The results are:
    and the fill ``0.90``. Control B leaves the empty disk at the value of the reweighting alone.
 2. At ``x_h = \pi``, a point with ``\partial_x W = 0``, the ``\pm v`` coupling of the [stage
    Jacobians](@ref projection-stage-jacobians) makes the fit of the weight-dependent map from
-   ``\theta = 0`` lead to a mirror-symmetric saddle of its objective: the fit ends on the
-   stationarity test within 5 iterations (`SUCCESS`), and the map leaves the hole open (``1.81``
-   and ``0.47``). The kicks and drifts fill the hole once the fit breaks the symmetry: from the
-   starts ``\theta_0 = 10^{-3} \, \mathrm{randn}`` of the seeds 101 to 105 (row "seeded", the range
-   over the five seeds), the fit ends on `MAXITERS`, and after the 40 iterations, not at a
-   minimum, the empty disk is ``1.35`` to ``1.45`` and the fill ``0.97`` to ``1.06``. No hole
-   opens at ``-v``: the empty disk of the mirror ellipse around ``(\pi, -1.2)`` is ``0.76`` to
-   ``0.87``.
+   ``\theta = 0`` lead to a mirror-symmetric saddle of its objective: the fit ends there on the
+   stationarity test (`SUCCESS`), and the map leaves the hole open (``1.81`` and ``0.47``). The
+   kicks and drifts fill the hole once the fit breaks the symmetry: from the starts
+   ``\theta_0 = 10^{-3} \, \mathrm{randn}`` of the seeds 101 to 105 (row "seeded", the range over
+   the five seeds), the fit ends on `MAXITERS`, and after the 40 iterations, not at a minimum, the
+   empty disk is ``1.35`` to ``1.45`` and the fill ``0.97`` to ``1.06``. No hole opens at
+   ``-v``: the empty disk of the mirror ellipse around ``(\pi, -1.2)`` is ``0.76`` to ``0.87``.
+   From ``\theta = 0`` the fits of control A and control B end on the stationarity test as well,
+   with the empty disk of the reweighting alone (``1.88``); from the seeded starts their empty
+   disks are ``1.49`` to ``1.61`` and ``1.51`` to ``1.98``, and their fills ``0.81`` to ``0.90``
+   and ``0.62`` to ``0.78``. Control A ends on `MAXITERS` for every seed, control B on the
+   stationarity test for three of the five seeds and on `MAXITERS` for the other two.
 3. The reweighting alone moves markers towards the targets, because ``v' = v \, w / w^*``.
 4. Control A shrinks the empty disk at ``x_h = \pi/2``. It keeps the area of the hole in ``(x,p)``
    by the corollary [holes persist](@ref holes-persist), but it deforms the hole, and
@@ -104,7 +112,9 @@ The results are:
    velocities inherit errors of the same size.
 6. At ``x_h = \pi`` the non-separable map fills the hole from ``\theta = 0``, with the empty disk
    ``1.52`` and the fill ``0.94``, where the kicks and drifts give ``1.81`` and ``0.47`` at the
-   saddle and ``1.35`` to ``1.45`` and ``0.97`` to ``1.06`` from the seeded starts. The
+   saddle and ``1.35`` to ``1.45`` and ``0.97`` to ``1.06`` from the seeded starts: at this point
+   with ``\partial_x W = 0`` the ``\pm v`` coupling makes their fit from ``\theta = 0`` lead to a
+   mirror-symmetric saddle, and they fill the hole once the fit breaks the symmetry. The
    non-separable stages do not have the ``\pm v`` coupling, and their fit from ``\theta = 0``
    ends on `LINESEARCH_FAILED` with the hole filled. Control C does not fill the hole (``2.04``
    and ``0.55``), so the filling comes from the dependence of ``\phi_s`` on ``w``, as the

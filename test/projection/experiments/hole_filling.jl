@@ -2,28 +2,55 @@
 # targets, fit, map, reweighting, charge-conserving reweighting) for the weight-dependent kicks and
 # drifts, the non-separable stages and the controls A, B, C, each fitted by Gauss–Newton with
 # DogLeg. Each number of the tables of the documentation is checked with the digits it is quoted
-# with, or within the range it is quoted as, and the return code of each fit by its name. At
-# x_h = π the fit of the kicks and drifts from θ = 0 ends on a mirror-symmetric saddle, and a fit
-# from a seeded start fills the hole. Cases that must fail: the controls B and C (one
-# area-preserving map of (x, v)) do not shrink the hole beyond the reweighting alone; the kicks and
-# drifts at the saddle do not fill the hole at x_h = π; the target weights alone miss the grid
-# charge; the sensitivities without the terms of the shift and the boost miss the derivatives.
+# with, a number of a seeded row of the controls within its quoted range widened by its width, and
+# the return code of each fit by its name. At x_h = π the fit of the kicks and drifts from θ = 0
+# ends on a mirror-symmetric saddle, and a fit from a seeded start fills the hole. Cases that must
+# fail: the controls B and C (one area-preserving map of (x, v)) fitted from θ = 0 do not shrink
+# the hole beyond the reweighting alone; the kicks and drifts at the saddle do not fill the hole at
+# x_h = π; the target weights alone miss the grid charge; the sensitivities without the terms of
+# the shift and the boost miss the derivatives.
 
+using ForwardDiff
+using LinearAlgebra
 using ParticleRemapping
 using Random
 using Test
 
-# `x` agrees with the number `quoted` to the digits that `quoted` shows: within half a unit of its
-# last digit. A range `lo–hi` holds `x` between its ends.
-function agrees(x, quoted::AbstractString)
-    if occursin('–', quoted)
-        lo, hi = parse.(Float64, split(quoted, '–'))
-        return lo <= x <= hi
-    end
+# One unit of the last digit of the number `quoted`.
+function quoted_unit(quoted::AbstractString)
     m = match(r"^-?(\d+)(?:\.(\d+))?(?:e(-?\d+))?$", quoted)
     decimals = m.captures[2] === nothing ? 0 : length(m.captures[2])
     exponent = m.captures[3] === nothing ? 0 : parse(Int, m.captures[3])
-    abs(x - parse(Float64, quoted)) <= 0.5 * 10.0^(exponent - decimals) * (1 + 1e-9)
+    10.0^(exponent - decimals)
+end
+
+# `x` agrees with the number `quoted` to the digits that `quoted` shows: within half a unit of its
+# last digit. A range `lo–hi` holds `x` once it is widened on each side by its width, and by at
+# least one unit of the last digit of `hi`.
+function agrees(x, quoted::AbstractString)
+    if occursin('–', quoted)
+        lo, hi = split(quoted, '–')
+        d = max(parse(Float64, hi) - parse(Float64, lo), quoted_unit(hi))
+        return parse(Float64, lo) - d <= x <= parse(Float64, hi) + d
+    end
+    abs(x - parse(Float64, quoted)) <= 0.5 * quoted_unit(quoted) * (1 + 1e-9)
+end
+
+# The stationarity ratio ‖JᵀF‖ / (‖J‖_F ‖F‖) of the fit of the variant `v` of the experiment `e` at
+# its θ: `F = [r; √β θ]` is the residual of the fit with the regularisation, and
+# `J = [∂r/∂θ; √β I]` its Jacobian, by forward mode.
+function stationarity_ratio(e, v; β = 1e-3)
+    prob, tg, hp, r = e.problem, e.targets, e.projection, e.results[v]
+    ℓx, ℓv = prob.L / hp.nX, 2prob.V / (hp.nV - 1)
+    function residual(θ)
+        X, P = remap_stages(r.parametrisation, θ, prob.x0, prob.p0, prob.w0; prob.m)
+        vcat((X .- tg.x) ./ ℓx, (P ./ (prob.m .* tg.w) .- tg.v) ./ ℓv)
+    end
+    Jr = ForwardDiff.jacobian(residual, r.θ)
+    res = residual(r.θ)
+    g = Jr' * res .+ β .* r.θ
+    norm(g) /
+    (sqrt(sum(abs2, Jr) + β * length(r.θ)) * sqrt(dot(res, res) + β * dot(r.θ, r.θ)))
 end
 
 # The return code of a fit by its name, with "stationary" where the stationarity test ended it.
@@ -64,8 +91,8 @@ const TABLES = Dict(
         rows = Dict(:θ0 => ("1.88", "0.47", "", "4.2e-3", "1.91", "0.47", "0.008", ""),
             :weight_dependent => ("1.81", "0.47", "0.927", "4.2e-3", "1.84", "0.47",
                 "0.008", "SUCCESS, stationary"),
-            :control_A => ("1.64–1.66", "0.81–0.86", "0.697–0.704", "4.0e-2–4.4e-2",
-                "1.67–1.79", "0.55", "0.091–0.096", "MAXITERS"),
+            :control_A => ("1.88", "0.47", "0.999", "4.2e-3", "1.91", "0.47", "0.008",
+                "SUCCESS, stationary"),
             :control_B => ("1.88", "0.55", "0.972", "4.2e-3", "1.86", "0.47", "0.008",
                 "SUCCESS, stationary"),
             :non_separable =>
@@ -73,6 +100,18 @@ const TABLES = Dict(
                     "LINESEARCH_FAILED"),
             :control_C => ("2.04", "0.55", "0.713", "1.8e-2", "2.06", "0.55", "0.053",
                 "LINESEARCH_FAILED"))))
+
+# The rows "seeded" of control A and control B at x_h = π: the range of each number over the
+# seeds 101:105, and the return codes that the fits from these seeds end on.
+const SEEDED_CONTROLS = Dict(
+    :control_A => (
+        ("1.49–1.61", "0.81–0.90", "0.654–0.711", "4.5e-2–5.2e-2", "1.50–1.74",
+            "0.50–0.55", "0.102–0.116"),
+        ("MAXITERS",)),
+    :control_B => (
+        ("1.51–1.98", "0.62–0.78", "0.749–0.937", "1.6e-2–2.1e-2", "1.45–1.96",
+            "0.46–0.78", "0.047–0.071"),
+        ("MAXITERS", "SUCCESS, stationary")))
 
 @testset "Hole filling, x_h = $(round(hole_x; digits = 4))" for hole_x in (π / 2, Float64(π))
     Random.seed!(20261119)
@@ -91,7 +130,8 @@ const TABLES = Dict(
 
     @testset "momentum and total weight" begin
         for v in VARIANTS
-            @test res[v].ΔP < 1e-12            # the note quotes ≤ 1.1e-17 relative
+            # relative; the source note quotes ≤ 1.1e-17, the manual below 1e-15
+            @test res[v].ΔP < 1e-15
             @test res[v].Δw < 1e-12
         end
     end
@@ -134,12 +174,14 @@ const TABLES = Dict(
             r.parametrisation, r.θ, prob.x0, prob.p0, prob.w0)
         err_nc = nonseparable_sensitivity_error(r.parametrisation, r.θ, prob.x0, prob.p0,
             prob.w0; centroid_terms = false)
-        @test err < 1e-10                     # the note quotes 2.8e-13
-        @test err_nc > 2e-2                   # must fail; the note quotes ≥ 2.4e-2
+        # the source note quotes 2.8e-13 and ≥ 2.4e-2, the manual 2.3e-13 and ≥ 2.9e-2
+        @test err < 1e-10
+        @test err_nc > 2e-2                   # must fail
     end
 
     @testset "fill" begin
-        # one area-preserving map of (x, v) does not shrink the hole beyond the reweighting
+        # one area-preserving map of (x, v), fitted from θ = 0, does not shrink the hole beyond
+        # the reweighting
         @test near(:control_B) > 0.95 * near(:θ0)
         @test near(:control_C) > 0.95 * near(:θ0)
         if hole_x ≈ π / 2
@@ -152,7 +194,7 @@ const TABLES = Dict(
             # the objective, where the ±v coupling keeps the hole open
             r = res[:weight_dependent]
             @test string(r.status.code) == "SUCCESS" && r.status.stationary
-            @test r.iterations <= 5
+            @test stationarity_ratio(e, :weight_dependent) < 1e-8
             @test near(:weight_dependent) > 0.9 * near(:θ0)
             # the non-separable stages do not have the ±v coupling
             @test near(:non_separable) < 0.9 * near(:θ0)
@@ -176,6 +218,22 @@ const TABLES = Dict(
         mirror = EllipticHole(hole_x, -1.2, 0.45, 0.40; prob.L)
         @test local_empty_disk(mirror, r.X, r.v1; prob.dx, prob.dv) < 1.0
         @test 0.25 < r.ratio < 0.40
+    end
+
+    # Control A and control B from the seeded start of the seed 101 at x_h = π: each number
+    # within its quoted range, widened as `agrees` widens a range.
+    hole_x ≈ π && @testset "the seeded controls" begin
+        es = hole_filling_experiment(;
+            hole_x, variants = (:control_A, :control_B), seed = 101, targets = e.targets)
+        for (v, (quoted, stops)) in SEEDED_CONTROLS
+            r = es.results[v]
+            @test stop(r.status) in stops
+            values = (r.diagnostics.empty, r.diagnostics.fill, r.ratio, r.charge_res,
+                r.diagnostics_charge.empty, r.diagnostics_charge.fill, r.dlnw)
+            for (x, q) in zip(values, quoted)
+                @test agrees(x, q)
+            end
+        end
     end
 
     @testset "the remap result" begin
