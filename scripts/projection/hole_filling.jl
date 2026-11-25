@@ -3,10 +3,10 @@
 # two tables of the documentation (the remap with the target weights, and the charge-conserving
 # reweighting) with the return code of each fit, the cost of each map, the sensitivities of the
 # non-separable map, and the relative error of the projected target weights, and checks every
-# number against the value the documentation quotes. It then runs the experiment again with the
-# targets moved by 1e-13 relative and checks that every quoted number agrees there too, and runs
-# the weight-dependent fit, control A and control B at x_h = π from the seeded starts 101:105 and
-# checks that each of their numbers lies in its quoted range.
+# number against the value the documentation quotes, a number quoted as a range between its ends.
+# It then runs the experiment again with the targets moved by 1e-13 relative and checks every
+# quoted number there too, and runs the weight-dependent fit, control A and control B at x_h = π
+# from the seeded starts 101:105 and checks that each of their numbers lies in its quoted range.
 #
 #   julia --startup-file=no --project=scripts scripts/projection/hole_filling.jl
 #
@@ -42,16 +42,18 @@ const ROWS = (:θ0 => "θ = 0, reweighting only", :weight_dependent => "weight-d
 const NOTE = Dict(
     π / 2 => Dict(:θ0 => ("1.84", "0.51", "", "9.1e-3", "1.84", "0.51", "0.014", ""),
         :weight_dependent =>
-            ("1.43", "0.90", "0.258", "8.9e-2", "1.48", "0.78", "0.175",
+            ("1.43", "0.90", "0.258", "8.9e-2", "1.48", "0.78", "0.175–0.176",
                 "MAXITERS"),
-        :control_A => ("1.67", "0.66", "0.834", "2.7e-2", "1.66", "0.70", "0.057",
-            "MAXITERS"),
-        :control_B => ("1.84", "0.62", "0.699", "2.8e-2", "1.83", "0.47", "0.061",
-            "MAXITERS"),
+        :control_A =>
+            ("1.67", "0.66", "0.834–0.835", "2.7e-2", "1.66", "0.70", "0.057",
+                "MAXITERS"),
+        :control_B =>
+            ("1.84", "0.62", "0.699", "2.8e-2", "1.83", "0.47", "0.061–0.062",
+                "MAXITERS"),
         :non_separable => ("1.56", "0.90", "0.438", "9.1e-2", "1.57", "0.70", "0.166",
             "MAXITERS"),
-        :control_C => ("1.88", "0.55", "0.668", "3.2e-2", "1.86", "0.55", "0.071",
-            "LINESEARCH_FAILED")),
+        :control_C => ("1.88", "0.54–0.55", "0.667–0.668", "3.2e-2", "1.85–1.86",
+            "0.54–0.55", "0.071", "LINESEARCH_FAILED")),
     Float64(π) => Dict(:θ0 => ("1.88", "0.47", "", "4.2e-3", "1.91", "0.47", "0.008", ""),
         :weight_dependent =>
             ("1.81", "0.47", "0.927", "4.2e-3", "1.84", "0.47", "0.008",
@@ -60,10 +62,11 @@ const NOTE = Dict(
             "SUCCESS, stationary"),
         :control_B => ("1.88", "0.55", "0.972", "4.2e-3", "1.86", "0.47", "0.008",
             "SUCCESS, stationary"),
-        :non_separable => ("1.52", "0.94", "0.520", "6.4e-2", "1.55", "0.70", "0.169",
-            "LINESEARCH_FAILED"),
-        :control_C => ("2.04", "0.55", "0.713", "1.8e-2", "2.06", "0.55", "0.053",
-            "LINESEARCH_FAILED")))
+        :non_separable =>
+            ("1.51–1.52", "0.93–0.94", "0.520", "6.4e-2", "1.55–1.56", "0.70",
+                "0.169", "LINESEARCH_FAILED"),
+        :control_C => ("2.04", "0.54–0.55", "0.713–0.714", "1.8e-2", "2.05–2.06",
+            "0.54–0.55", "0.053", "LINESEARCH_FAILED")))
 
 # The weight-dependent fit at x_h = π from the seeded starts 101:105: the range over the seeds of
 # the empty disk, the fill and the objective, of the charge, the disk, the fill and max |ln| with

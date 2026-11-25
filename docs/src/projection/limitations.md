@@ -57,7 +57,8 @@ parameters as the spline basis has functions, independent of ``N``.
   ``\theta = 0`` lead to a mirror-symmetric saddle of its objective, where the hole stays open
   (fill ``0.47``). Once a seeded start breaks the symmetry, the kicks and drifts fill the hole
   (fill ``0.97`` to ``1.06`` after the 40 iterations, not at a minimum); the non-separable
-  stages fill it from ``\theta = 0`` (``0.94``) ([hole filling](@ref projection-hole-filling)).
+  stages fill it from ``\theta = 0`` (``0.93`` to ``0.94``)
+  ([hole filling](@ref projection-hole-filling)).
 - **The map is symplectic for frozen parameters only.** The targets, ``\theta`` and the target
   weights come from the state, so the remap is not one symplectic map of the state
   ([parameters that depend on the state](@ref state-dependent-parameters)).
@@ -75,7 +76,8 @@ parameters as the spline basis has functions, independent of ``N``.
 - **The charge-conserving reweighting needs markers under every charged shape function.** If a
   shape function with ``\rho_i > 0`` has no marker after the map, no weights reproduce the grid
   charge, and `remap` reports it. It keeps the charge deficit of a hole and lowers the fill of the
-  hole from ``0.94`` to ``0.70`` ([hole filling](@ref projection-hole-filling)).
+  hole from between ``0.93`` and ``0.94`` to ``0.70``
+  ([hole filling](@ref projection-hole-filling)).
 - **Neither the kinetic energy nor the grid current is kept.** The fit has no energy constraint,
   and the reweighting acts on the weights only.
 - **The density-interpolation flow equidistributes at the resolution of its hats.** On hats

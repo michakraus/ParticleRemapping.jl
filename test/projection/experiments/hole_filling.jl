@@ -2,13 +2,13 @@
 # targets, fit, map, reweighting, charge-conserving reweighting) for the weight-dependent kicks and
 # drifts, the non-separable stages and the controls A, B, C, each fitted by Gauss–Newton with
 # DogLeg. Each number of the tables of the documentation is checked with the digits it is quoted
-# with, a number of a seeded row of the controls within its quoted range widened by its width, and
-# the return code of each fit by its name. At x_h = π the fit of the kicks and drifts from θ = 0
-# ends on a mirror-symmetric saddle, and a fit from a seeded start fills the hole. Cases that must
-# fail: the controls B and C (one area-preserving map of (x, v)) fitted from θ = 0 do not shrink
-# the hole beyond the reweighting alone; the kicks and drifts at the saddle do not fill the hole at
-# x_h = π; the target weights alone miss the grid charge; the sensitivities without the terms of
-# the shift and the boost miss the derivatives.
+# with, a number quoted as a range within that range widened by its width, and the return code of
+# each fit by its name; the values of each fitted row are printed. At x_h = π the fit of the kicks
+# and drifts from θ = 0 ends on a mirror-symmetric saddle, and a fit from a seeded start fills the
+# hole. Cases that must fail: the controls B and C (one area-preserving map of (x, v)) fitted from
+# θ = 0 do not shrink the hole beyond the reweighting alone; the kicks and drifts at the saddle do
+# not fill the hole at x_h = π; the target weights alone miss the grid charge; the sensitivities
+# without the terms of the shift and the boost miss the derivatives.
 
 using ForwardDiff
 using LinearAlgebra
@@ -77,16 +77,18 @@ const TABLES = Dict(
     π / 2 => (before = ("2.75", "0.00"), targets = ("1.58", "0.86"),
         rows = Dict(:θ0 => ("1.84", "0.51", "", "9.1e-3", "1.84", "0.51", "0.014", ""),
             :weight_dependent => ("1.43", "0.90", "0.258", "8.9e-2", "1.48", "0.78",
-                "0.175", "MAXITERS"),
-            :control_A => ("1.67", "0.66", "0.834", "2.7e-2", "1.66", "0.70", "0.057",
-                "MAXITERS"),
-            :control_B => ("1.84", "0.62", "0.699", "2.8e-2", "1.83", "0.47", "0.061",
-                "MAXITERS"),
+                "0.175–0.176", "MAXITERS"),
+            :control_A =>
+                ("1.67", "0.66", "0.834–0.835", "2.7e-2", "1.66", "0.70", "0.057",
+                    "MAXITERS"),
+            :control_B =>
+                ("1.84", "0.62", "0.699", "2.8e-2", "1.83", "0.47", "0.061–0.062",
+                    "MAXITERS"),
             :non_separable =>
                 ("1.56", "0.90", "0.438", "9.1e-2", "1.57", "0.70", "0.166",
                     "MAXITERS"),
-            :control_C => ("1.88", "0.55", "0.668", "3.2e-2", "1.86", "0.55", "0.071",
-                "LINESEARCH_FAILED"))),
+            :control_C => ("1.88", "0.54–0.55", "0.667–0.668", "3.2e-2", "1.85–1.86",
+                "0.54–0.55", "0.071", "LINESEARCH_FAILED"))),
     Float64(π) => (before = ("2.75", "0.00"), targets = ("1.58", "0.86"),
         rows = Dict(:θ0 => ("1.88", "0.47", "", "4.2e-3", "1.91", "0.47", "0.008", ""),
             :weight_dependent => ("1.81", "0.47", "0.927", "4.2e-3", "1.84", "0.47",
@@ -96,10 +98,11 @@ const TABLES = Dict(
             :control_B => ("1.88", "0.55", "0.972", "4.2e-3", "1.86", "0.47", "0.008",
                 "SUCCESS, stationary"),
             :non_separable =>
-                ("1.52", "0.94", "0.520", "6.4e-2", "1.55", "0.70", "0.169",
+                ("1.51–1.52", "0.93–0.94", "0.520",
+                    "6.4e-2", "1.55–1.56", "0.70", "0.169",
                     "LINESEARCH_FAILED"),
-            :control_C => ("2.04", "0.55", "0.713", "1.8e-2", "2.06", "0.55", "0.053",
-                "LINESEARCH_FAILED"))))
+            :control_C => ("2.04", "0.54–0.55", "0.713–0.714", "1.8e-2", "2.05–2.06",
+                "0.54–0.55", "0.053", "LINESEARCH_FAILED"))))
 
 # The rows "seeded" of control A and control B at x_h = π: the range of each number over the
 # seeds 101:105, and the return codes that the fits from these seeds end on.
@@ -152,6 +155,13 @@ const SEEDED_CONTROLS = Dict(
         @test agrees(e.target_diagnostics.fill, table.targets[2])
         for (v, row) in table.rows
             r = res[v]
+            v === :θ0 || println("hole table, x_h = $(round(hole_x; digits = 4)), $v: ",
+                join(
+                    string.((
+                        r.diagnostics.empty, r.diagnostics.fill, r.ratio, r.charge_res,
+                        r.diagnostics_charge.empty, r.diagnostics_charge.fill, r.dlnw)),
+                    " "),
+                ", ", stop(r.status))
             @test agrees(r.diagnostics.empty, row[1])
             @test agrees(r.diagnostics.fill, row[2])
             v === :θ0 || @test agrees(r.ratio, row[3])
