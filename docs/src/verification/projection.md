@@ -116,7 +116,8 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   [hole-filling experiment](@ref projection-hole-filling) at ``x_h = \pi/2`` and ``x_h = \pi``.
   It checks the set-up (2280 markers, 24 removed, 2304 and 3264 parameters), ``P`` and the total
   weight, the charge-conserving reweighting (at most 16 Newton iterations), every number of the
-  two tables with the digits it is quoted with, the return code of every fit, the sensitivities
+  two tables with the digits it is quoted with or, where it is quoted as a range, within that
+  range widened on each side by its width, the return code of every fit, the sensitivities
   of the non-separable map at the fitted ``\theta`` with the active iteration limit of 50, the
   result of `remap` against the experiment, and the relative error of the projected target
   weights in the four velocity bands. At ``x_h = \pi`` it checks that the fit of the kicks and
@@ -135,8 +136,9 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   [target weights after a push](@ref projection-push-test). It checks the push (largest speed,
   empty disk, fill and density deviation of the pushed markers), that no target weight of any
   source is negative, ``P`` and the grid charge after the correction, every number of the two
-  tables with the digits it is quoted with, and that the weight error falls with ``\vartheta`` in
-  every band. Case that must fail: the fixed rank one misses the sheared density.
+  tables with the digits it is quoted with but the mass error of the fixed rank one, which is at
+  the level of rounding and is checked below ``2 \cdot 10^{-13}``, and that the weight error falls
+  with ``\vartheta`` in every band. Case that must fail: the fixed rank one misses the sheared density.
 
 ## Scripts
 
@@ -148,9 +150,10 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   sensitivities of the non-separable map and the relative error of the projected target weights,
   and checks every number against the value of the
   [hole-filling page](@ref projection-hole-filling). It runs the experiment again with the
-  targets moved by ``10^{-13}`` relative and checks every number there too, and runs the seeded
-  fits of the weight-dependent map, control A and control B at ``x_h = \pi`` for the seeds 101
-  to 105 and checks that each of their numbers lies in its quoted range.
+  targets moved by ``10^{-13}`` relative and checks every number there too, a number quoted as a
+  range between its ends, and runs the seeded fits of the weight-dependent map, control A and
+  control B at ``x_h = \pi`` for the seeds 101 to 105 and checks that each of their numbers lies
+  in its quoted range.
 - **`scripts/projection/dlra_weights.jl`** (about 3 minutes): prints the two tables of the target
   weights after a push and checks every number against the value of the source note.
 - **`scripts/projection/higher_dimensions.jl`** (seconds): prints the numbers of parameters,

@@ -60,7 +60,7 @@ section come from `scripts/projection/dlra_weights.jl`; the test
 | ``\vartheta = 10^{-4}`` | 7 | ``8.5 \cdot 10^{-5}`` | ``3.1 \cdot 10^{-3}`` | ``1.3 \cdot 10^{-2}`` | ``4.1 \cdot 10^{-2}`` | ``1.2 \cdot 10^{-1}`` |
 | ``\vartheta = 10^{-5}`` | 10 | ``4.2 \cdot 10^{-6}`` | ``2.7 \cdot 10^{-4}`` | ``1.3 \cdot 10^{-3}`` | ``5.5 \cdot 10^{-3}`` | ``2.0 \cdot 10^{-2}`` |
 | ``\vartheta = 10^{-6}`` | 13 | ``1.9 \cdot 10^{-7}`` | ``2.3 \cdot 10^{-5}`` | ``8.7 \cdot 10^{-5}`` | ``5.8 \cdot 10^{-4}`` | ``2.9 \cdot 10^{-3}`` |
-| rank one | 1 | ``1.1 \cdot 10^{-13}`` | ``1.5 \cdot 10^{-1}`` | ``1.8 \cdot 10^{-1}`` | ``1.4 \cdot 10^{-1}`` | ``1.8 \cdot 10^{-1}`` |
+| rank one | 1 | below ``2 \cdot 10^{-13}`` | ``1.5 \cdot 10^{-1}`` | ``1.8 \cdot 10^{-1}`` | ``1.4 \cdot 10^{-1}`` | ``1.8 \cdot 10^{-1}`` |
 | projection | | | ``4.1 \cdot 10^{-2}`` | ``1.1 \cdot 10^{-1}`` | ``8.4 \cdot 10^{-2}`` | ``2.0 \cdot 10^{-1}`` |
 
 The second table gives, after the map and the reweighting with ``w^*``, the largest empty disk

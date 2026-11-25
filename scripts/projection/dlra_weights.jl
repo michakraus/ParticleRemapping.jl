@@ -28,7 +28,7 @@ const NOTE_WEIGHTS = Dict(
     "ϑ = 1e-4" => ("7", "8.5e-5", "3.1e-3", "1.3e-2", "4.1e-2", "1.2e-1"),
     "ϑ = 1e-5" => ("10", "4.2e-6", "2.7e-4", "1.3e-3", "5.5e-3", "2.0e-2"),
     "ϑ = 1e-6" => ("13", "1.9e-7", "2.3e-5", "8.7e-5", "5.8e-4", "2.9e-3"),
-    "rank 1" => ("1", "1.1e-13", "1.5e-1", "1.8e-1", "1.4e-1", "1.8e-1"),
+    "rank 1" => ("1", nothing, "1.5e-1", "1.8e-1", "1.4e-1", "1.8e-1"),
     "projection" => ("", "", "4.1e-2", "1.1e-1", "8.4e-2", "2.0e-1"))
 
 const NOTE_REMAP = Dict(
@@ -79,7 +79,12 @@ end
     @test agrees(e.pushed.discrepancy, "0.099")
     for (name, row) in NOTE_WEIGHTS
         isempty(row[1]) || @test rank_of(name) == parse(Int, row[1])
-        isempty(row[2]) || @test agrees(e.solutions[name].mass_error, row[2])
+        # the mass error of the rank one is at the level of rounding: the note quotes its bound
+        if row[2] === nothing
+            @test e.solutions[name].mass_error < 2e-13
+        elseif !isempty(row[2])
+            @test agrees(e.solutions[name].mass_error, row[2])
+        end
         for (b, q) in zip(res[name].errs, row[3:end])
             @test agrees(b.rms, q)
         end
