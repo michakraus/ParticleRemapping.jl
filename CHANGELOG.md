@@ -150,7 +150,7 @@
   the same machine and code: K3 returns after 44 s instead of 46 s (timing noise), with the
   momentum change 0.165.
 - The package depends on GeometricSolvers, which is not registered: `[sources]` takes it from
-  `https://github.com/JuliaGNI/GeometricSolvers.jl` at the commit `47d817b`. The Julia floor
+  `https://github.com/JuliaGNI/GeometricSolvers.jl` at the commit `d41d379`. The Julia floor
   rises from 1.12 to 1.13, the floor of GeometricSolvers, and the ForwardDiff floor from 1 to
   1.4, the floor that GeometricSolvers needs.
 - The hole-filling experiment of the projection fits by GeometricSolvers' Gauss–Newton method with
@@ -160,25 +160,31 @@
   `results` holds the `status` of its fit, and `verbose = true` prints its return code. On Linux
   the Levenberg–Marquardt fit at `x_h = π` left the saddle of the weight-dependent fit that it
   stalls at on macOS, and 9 checks of `test/projection/experiments/hole_filling.jl` failed;
-  Gauss–Newton reaches the saddle from `θ = 0` on the stationarity test after 2 iterations, so the
-  saddle no longer depends on rounding. The tables of the manual page *Hole filling*, of the test
-  and of `scripts/projection/hole_filling.jl` are restated from the new fit, each row with the
-  return code of its fit. At `x_h = π/2` every fitted row changes but control B: the
-  weight-dependent map gives the empty disk 1.43 and the fill 0.90 (was 1.58 and 0.94), the
-  non-separable map 1.56 and 0.90 (was 1.54 and 0.94), and the weight-dependent and the
-  non-separable fit end on `MAXITERS`. At `x_h = π` the saddle row and control B keep their
-  numbers, the non-separable map gives 1.52 and 0.94 (was 1.50 and 0.94), control C 2.04 and 0.55
-  (was 2.00 and 0.55), and control A, whose numbers move when the targets move by `1e-13`
-  relative, is quoted as a range (empty disk 1.64–1.66, fill 0.81–0.86; was 1.88 and 0.47). The
-  claim that the kicks and drifts do not fill the hole at `x_h = π` is a property of the saddle:
-  the manual (*Hole filling*, *Properties, limitations and higher dimensions*, *Construction*, the
-  verification page) now says that the `±v` coupling makes the fit from `θ = 0` lead to a
-  mirror-symmetric saddle at a point with `∂_x W = 0`, and that the kicks and drifts fill the hole
-  once a seeded start breaks the symmetry: over the seeds 101–105 the empty disk is 1.35–1.45 and
-  the fill 0.97–1.06 after the 40 iterations (row "seeded"). The test checks the saddle and the
-  seed 101 with bounds; the script runs the five seeds, and runs every experiment again with the
-  targets moved by `1e-13` relative. `KNOWN_ISSUES.md`: K16 (the weight-dependent fit does not
-  converge).
+  GeometricSolvers at `d41d379` returns the start point of a step that leaves a stationary point,
+  with `SUCCESS` and `stationary`, so the fit from `θ = 0` ends on the saddle on Julia 1.13 and
+  1.14 and with the targets moved by `1e-13` relative. The tables of the manual page *Hole
+  filling*, of the test and of `scripts/projection/hole_filling.jl` are restated from the new fit,
+  each row with the return code of its fit. At `x_h = π/2` every fitted row changes but control
+  B: the weight-dependent map gives the empty disk 1.43 and the fill 0.90 (was 1.58 and 0.94),
+  the non-separable map 1.56 and 0.90 (was 1.54 and 0.94), and the weight-dependent and the
+  non-separable fit end on `MAXITERS`. At `x_h = π` the saddle row, control A (which ends on the
+  stationarity test as well) and control B keep their numbers (control A 1.88 and 0.47), the
+  non-separable map gives 1.52 and 0.94 (was 1.50 and 0.94), and control C 2.04 and 0.55 (was
+  2.00 and 0.55). The claim that the kicks and drifts do not fill the hole at `x_h = π` is a
+  property of the saddle: the manual (*Hole filling*, *Properties, limitations and higher
+  dimensions*, *Construction*, the verification page) now says that the `±v` coupling makes the
+  fit from `θ = 0` lead to a mirror-symmetric saddle at a point with `∂_x W = 0`, and that the
+  kicks and drifts fill the hole once a seeded start breaks the symmetry: over the seeds 101–105
+  the empty disk is 1.35–1.45 and the fill 0.97–1.06 after the 40 iterations (row "seeded"). New rows "seeded" give control A and
+  control B at `x_h = π` from the same starts, quoted as ranges over the five seeds (empty disk
+  1.49–1.61 and 1.51–1.98, fill 0.81–0.90 and 0.62–0.78); control A ends on `MAXITERS`, control B
+  on the stationarity test for three seeds and on `MAXITERS` for two. The test checks the saddle
+  with the stationarity ratio of its fit below `1e-8`, the seeded weight-dependent fit of the seed
+  101 with bounds, and control A and control B from the seed 101 within their ranges widened on
+  each side by their width; the script runs the five seeds for the three variants, and runs every
+  experiment again with the targets moved by `1e-13` relative. The test and the script bound the
+  relative momentum change of every fit by `1e-15` (was `1e-12`), and the manual quotes it as
+  below `10^{-15}`. `KNOWN_ISSUES.md`: K16 (the weight-dependent fit does not converge).
 - Compatibility with `SimpleSplines` moves from `"0.4"` to `"0.5"` (compat-only bump; no
   behavioural change and no change to the Julia `1.12` floor).
 - The README now links to the dev manual (`docs-dev` badge), lists the four modules in the

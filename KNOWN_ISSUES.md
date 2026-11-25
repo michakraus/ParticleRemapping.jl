@@ -180,6 +180,8 @@
 - **kind:** found late
 - **found:** 2026-11-23
 
+## SlicedRedistribution
+
 ### K5 · The long-time sliced remap is canonical only for frozen multipliers
 
 - **location:** `src/sliced/map.jl:164`
