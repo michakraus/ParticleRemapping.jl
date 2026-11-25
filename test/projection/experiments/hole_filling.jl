@@ -56,6 +56,14 @@ end
 # The return code of a fit by its name, with "stationary" where the stationarity test ended it.
 stop(status) = string(status.code) * (status.stationary ? ", stationary" : "")
 
+# Whether the test asserts the return code of the row of the variant `v` at `hole_x` on the Julia
+# `version`. The fit of the kicks and drifts from θ = 0 at x_h = π ends on the saddle with
+# `SUCCESS, stationary` on Julia 1.13.4 and 1.14.0-beta1; on a Julia with a prerelease tag the
+# test asserts its numbers only, not its return code or its stationarity (KNOWN_ISSUES.md, K17).
+function code_asserted(hole_x, v; version = VERSION)
+    isempty(version.prerelease) || !(hole_x ≈ π && v === :weight_dependent)
+end
+
 # The experiment with `verbose = true`, and what it prints.
 function experiment_and_output(; kwargs...)
     mktemp() do path, io
@@ -116,6 +124,13 @@ const SEEDED_CONTROLS = Dict(
             "0.46–0.78", "0.047–0.071"),
         ("MAXITERS", "SUCCESS, stationary")))
 
+@testset "the return codes that the test asserts" begin
+    @test code_asserted(Float64(π), :weight_dependent; version = v"1.13.4")
+    @test !code_asserted(Float64(π), :weight_dependent; version = v"1.15.0-DEV.1003")
+    @test code_asserted(Float64(π), :control_A; version = v"1.15.0-DEV.1003")
+    @test code_asserted(π / 2, :weight_dependent; version = v"1.15.0-DEV.1003")
+end
+
 @testset "Hole filling, x_h = $(round(hole_x; digits = 4))" for hole_x in (π / 2, Float64(π))
     Random.seed!(20261119)
     e, output = experiment_and_output(; hole_x)
@@ -169,9 +184,11 @@ const SEEDED_CONTROLS = Dict(
             @test agrees(r.diagnostics_charge.empty, row[5])
             @test agrees(r.diagnostics_charge.fill, row[6])
             @test agrees(r.dlnw, row[7])
-            v === :θ0 || @test stop(r.status) == row[8]
-            # the line that `verbose = true` prints for the variant names its return code
-            v === :θ0 || @test occursin(row[8], printed(output, v))
+            if v !== :θ0 && code_asserted(hole_x, v)
+                @test stop(r.status) == row[8]
+                # the line that `verbose = true` prints for the variant names its return code
+                @test occursin(row[8], printed(output, v))
+            end
         end
     end
 
@@ -203,8 +220,10 @@ const SEEDED_CONTROLS = Dict(
             # the fit of the kicks and drifts from θ = 0 ends on the mirror-symmetric saddle of
             # the objective, where the ±v coupling keeps the hole open
             r = res[:weight_dependent]
-            @test string(r.status.code) == "SUCCESS" && r.status.stationary
-            @test stationarity_ratio(e, :weight_dependent) < 1e-8
+            if code_asserted(hole_x, :weight_dependent)
+                @test string(r.status.code) == "SUCCESS" && r.status.stationary
+                @test stationarity_ratio(e, :weight_dependent) < 1e-8
+            end
             @test near(:weight_dependent) > 0.9 * near(:θ0)
             # the non-separable stages do not have the ±v coupling
             @test near(:non_separable) < 0.9 * near(:θ0)

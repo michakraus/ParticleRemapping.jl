@@ -33,6 +33,14 @@ end
 # The return code of a fit by its name, with "stationary" where the stationarity test ended it.
 stop(status) = string(status.code) * (status.stationary ? ", stationary" : "")
 
+# Whether the script checks the return code of the row of the variant `v` at `hole_x`. The fit of
+# the kicks and drifts from θ = 0 at x_h = π ends on the saddle with `SUCCESS, stationary` on
+# Julia 1.13.4 and 1.14.0-beta1; on a Julia with a prerelease tag the script checks its numbers
+# only (KNOWN_ISSUES.md, K17).
+function code_asserted(hole_x, v; version = VERSION)
+    isempty(version.prerelease) || !(hole_x ≈ π && v === :weight_dependent)
+end
+
 const ROWS = (:θ0 => "θ = 0, reweighting only", :weight_dependent => "weight-dependent",
     :control_A => "control A", :control_B => "control B", :non_separable => "non-separable",
     :control_C => "control C")
@@ -106,7 +114,7 @@ function check_note(e, hole_x)
         end
         @test r.charge_its <= 16
         v === :θ0 || @test r.ΔP < 1e-15
-        v === :θ0 || @test stop(r.status) == row[8]
+        v === :θ0 || !code_asserted(hole_x, v) || @test stop(r.status) == row[8]
     end
 end
 

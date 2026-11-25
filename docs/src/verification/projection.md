@@ -117,13 +117,15 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   It checks the set-up (2280 markers, 24 removed, 2304 and 3264 parameters), ``P`` and the total
   weight, the charge-conserving reweighting (at most 16 Newton iterations), every number of the
   two tables with the digits it is quoted with or, where it is quoted as a range, within that
-  range widened on each side by its width, the return code of every fit, the sensitivities
+  range widened on each side by its width, the return code of every fit (on a Julia with a
+  prerelease tag, of every fit but the saddle at ``x_h = \pi``), the sensitivities
   of the non-separable map at the fitted ``\theta`` with the active iteration limit of 50, the
   result of `remap` against the experiment, and the relative error of the projected target
   weights in the four velocity bands. At ``x_h = \pi`` it checks that the fit of the kicks and
   drifts from ``\theta = 0`` ends on the mirror-symmetric saddle (`SUCCESS`, stationary, and the
-  stationarity ratio ``\|J^{\mathsf{T}} F\| / (\|J\|_F \|F\|)`` of the fit below ``10^{-8}``),
-  that the fit from the seeded start 101 fills the hole (`MAXITERS` after 40 iterations, the
+  stationarity ratio ``\|J^{\mathsf{T}} F\| / (\|J\|_F \|F\|)`` of the fit below ``10^{-8}``;
+  on a Julia with a prerelease tag it checks the numbers of this row only, `KNOWN_ISSUES.md`,
+  K17), that the fit from the seeded start 101 fills the hole (`MAXITERS` after 40 iterations, the
   empty disk below ``1.55`` and below ``0.9`` of the reweighting alone, the fill above ``0.85``,
   the empty disk of the mirror ellipse at ``v = -1.2`` below ``1.0``, the objective between
   ``0.25`` and ``0.40``), and that control A and control B from the same seeded start give every
@@ -137,8 +139,8 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   empty disk, fill and density deviation of the pushed markers), that no target weight of any
   source is negative, ``P`` and the grid charge after the correction, every number of the two
   tables with the digits it is quoted with but the mass error of the fixed rank one, which is at
-  the level of rounding and is checked below ``2 \cdot 10^{-13}``, and that the weight error falls
-  with ``\vartheta`` in every band. Case that must fail: the fixed rank one misses the sheared density.
+  the level of rounding and is checked below ``10^{-12}``, and that the weight error falls with
+  ``\vartheta`` in every band. Case that must fail: the fixed rank one misses the sheared density.
 
 ## Scripts
 

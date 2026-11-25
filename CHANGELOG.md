@@ -161,13 +161,17 @@
   the Levenberg–Marquardt fit at `x_h = π` left the saddle of the weight-dependent fit that it
   stalls at on macOS, and 9 checks of `test/projection/experiments/hole_filling.jl` failed;
   GeometricSolvers at `d41d379` returns the start point of a step that leaves a stationary point,
-  with `SUCCESS` and `stationary`, so the fit from `θ = 0` ends on the saddle on Julia 1.13 and
-  1.14 and with the targets moved by `1e-13` relative. The tables of the manual page *Hole
-  filling*, of the test and of `scripts/projection/hole_filling.jl` are restated from the new fit,
-  each row with the return code of its fit. A number of a fit that does not end on the
-  stationarity test is quoted as the range over the runs with the targets moved by `1e-13` relative
-  (`Xoshiro(1:10)`) and on Julia 1.13 and 1.14 where its digits move in a run or a run lies less
-  than a tenth of a unit of its last digit from a rounding boundary; these are 14 cells of the
+  with `SUCCESS` and `stationary`, so the fit from `θ = 0` ends on the saddle that way on Julia
+  1.13.4 and 1.14.0-beta1 and with the targets moved by `1e-13` relative; on the nightly build
+  1.15.0-DEV.1003 (AMD EPYC 9V74, znver4) it ends at the same numbers with `LINESEARCH_FAILED`,
+  so the test and the script assert the return code and the stationarity of the saddle row only
+  on a Julia without a prerelease tag (`isempty(VERSION.prerelease)`) and its numbers on every
+  Julia. The tables of the manual page *Hole filling*, of the test and of
+  `scripts/projection/hole_filling.jl` are restated from the new fit, each row with the return
+  code of its fit. A number of a fit that does not end on the stationarity test is quoted as the
+  range over the runs with the targets moved by `1e-13` relative (`Xoshiro(1:10)`) and on Julia
+  1.13 and 1.14 where its digits move in a run or a run lies less than a tenth of a unit of its
+  last digit from a rounding boundary; these are 14 cells of the
   two tables (at `x_h = π/2` the objective of control A, max |ln| of the weight-dependent map
   and of control B, and the fill, the objective, and the empty disk and the fill after the
   charge-conserving reweighting of control C; at `x_h = π` the empty disk, the fill and the
@@ -195,11 +199,13 @@
   each side by their width; the script runs the five seeds for the three variants, and runs every
   experiment again with the targets moved by `1e-13` relative. The test and the script bound the
   relative momentum change of every fit by `1e-15` (was `1e-12`), and the manual quotes it as
-  below `10^{-15}`. `KNOWN_ISSUES.md`: K16 (the weight-dependent fit does not converge).
+  below `10^{-15}`. `KNOWN_ISSUES.md`: K16 (the weight-dependent fit does not converge) and K17
+  (on Julia nightly the saddle fit does not end stationary; reported as
+  JuliaGNI/GeometricSolvers.jl#124).
 - The manual page *Structural statements and target weights after a push* quotes the mass error
-  of the BUG solution at the fixed rank one as below `2·10^{-13}` (was `1.1·10^{-13}`): the
+  of the BUG solution at the fixed rank one as below `10^{-12}` (was `1.1·10^{-13}`): the
   number is at the level of rounding, 1.1e-13 on macOS with Julia 1.13, 1.6e-13 with Julia 1.14,
-  and 7.1e-14 to 8.0e-14 on the Linux runners of CI, so
+  7.1e-14 to 8.0e-14 on the Linux runners of CI, and 2.6e-13 on Windows with Julia 1.13, so
   `test/projection/experiments/dlra_weights.jl` and `scripts/projection/dlra_weights.jl` check that
   bound and no longer its digits.
 - Compatibility with `SimpleSplines` moves from `"0.4"` to `"0.5"` (compat-only bump; no

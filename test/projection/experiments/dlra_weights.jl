@@ -64,7 +64,7 @@ res = e.results
                 @test (name == "rank 1" ? ParticleRemapping.lowrank_rank(s.f) :
                        maximum(s.ranks)) == rank
                 if mass === nothing
-                    @test s.mass_error < 2e-13     # the manual: below 2e-13
+                    @test s.mass_error < 1e-12     # the manual: below 1e-12
                 else
                     @test agrees(s.mass_error, mass)
                 end

@@ -40,6 +40,30 @@
 - **kind:** upstream
 - **found:** PR 5
 
+### K17 · On Julia nightly the saddle fit of the hole-filling experiment does not end stationary
+
+- **location:** `test/projection/experiments/hole_filling.jl`, `code_asserted`
+- **problem:** the weight-dependent fit of the hole-filling experiment from `θ = 0` at `x_h = π`
+  ends on the mirror-symmetric saddle with `SUCCESS` and `stationary` on Julia 1.13.4 and
+  1.14.0-beta1; on the nightly build 1.15.0-DEV.1003 on an AMD EPYC 9V74 (znver4) it ends after 2
+  iterations with `LINESEARCH_FAILED`, at the quoted numbers but with the stationarity ratio
+  `4.03e-5` against the bound `1e-8`. The test and `scripts/projection/hole_filling.jl` therefore
+  assert the return code and the stationarity of this row only on a Julia without a prerelease
+  tag; on a prerelease Julia they assert its numbers. Reported as
+  [JuliaGNI/GeometricSolvers.jl#124](https://github.com/JuliaGNI/GeometricSolvers.jl/issues/124);
+  the entry can go when GeometricSolvers keeps the saddle stationary there.
+- **evidence:** CI run 45653025090, job "Julia nightly - ubuntu-latest", on commit `cad5bb8`:
+  ```
+  hole table, x_h = 3.1416, weight_dependent: 1.807122024142029 0.4678362573099415 0.9265457135502585 0.004241059149177599 1.844606460379962 0.4678362573099415 0.007980562889722034, LINESEARCH_FAILED
+  Expression: stationarity_ratio(e, :weight_dependent) < 1.0e-8
+   Evaluated: 4.0260004156085914e-5 < 1.0e-8
+  ```
+  On the same run, control A and control B at `x_h = π` end `SUCCESS, stationary`. In CI run
+  45596795331, on commit `a00c653` with the same GeometricSolvers commit `d41d379`, the nightly
+  build 1.15.0-DEV.996 on an AMD EPYC 7763 (znver3) ended the row `SUCCESS, stationary`.
+- **kind:** upstream
+- **found:** 2026-11-25
+
 ## Remapping
 
 ### K9 · The Schur-complement step of the gauge rezoning solves a dense system

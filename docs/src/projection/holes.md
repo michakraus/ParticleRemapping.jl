@@ -91,8 +91,11 @@ The results are:
    and the fill ``0.90``. Control B leaves the empty disk at the value of the reweighting alone.
 2. At ``x_h = \pi``, a point with ``\partial_x W = 0``, the ``\pm v`` coupling of the [stage
    Jacobians](@ref projection-stage-jacobians) makes the fit of the weight-dependent map from
-   ``\theta = 0`` lead to a mirror-symmetric saddle of its objective: the fit ends there on the
-   stationarity test (`SUCCESS`), and the map leaves the hole open (``1.81`` and ``0.47``). The
+   ``\theta = 0`` lead to a mirror-symmetric saddle of its objective: on Julia 1.13.4 (macOS, and
+   the Linux, macOS and Windows runners of CI) and 1.14.0-beta1 (macOS and the Linux runner), the
+   fit ends there on the stationarity test (`SUCCESS`), and the map leaves the hole open (``1.81``
+   and ``0.47``); on the nightly build 1.15.0-DEV.1003 it ends there with the same numbers on
+   `LINESEARCH_FAILED` (`KNOWN_ISSUES.md`, K17). The
    kicks and drifts fill the hole once the fit breaks the symmetry: from the starts
    ``\theta_0 = 10^{-3} \, \mathrm{randn}`` of the seeds 101 to 105 (row "seeded", the range over
    the five seeds), the fit ends on `MAXITERS`, and after the 40 iterations, not at a minimum, the

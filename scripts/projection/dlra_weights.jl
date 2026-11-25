@@ -81,7 +81,7 @@ end
         isempty(row[1]) || @test rank_of(name) == parse(Int, row[1])
         # the mass error of the rank one is at the level of rounding: the note quotes its bound
         if row[2] === nothing
-            @test e.solutions[name].mass_error < 2e-13
+            @test e.solutions[name].mass_error < 1e-12
         elseif !isempty(row[2])
             @test agrees(e.solutions[name].mass_error, row[2])
         end
