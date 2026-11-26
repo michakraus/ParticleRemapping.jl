@@ -43,10 +43,10 @@ A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:
 | common layer | 6 | 136 |
 | gauge rezoning and canonical transport | 7 | 512 |
 | Hamiltonian particle projection, group `core` | 9 | 494 |
-| Hamiltonian particle projection, group `slow` | 2 | 309 |
+| Hamiltonian particle projection, group `slow` | 2 | 358 |
 | spline-projection redistribution | 8 | 190 |
 | sliced redistribution | 11 | 315 |
-| **total** | **45** | **1969** |
+| **total** | **45** | **2018** |
 
 ## The common layer and the foundations
 
