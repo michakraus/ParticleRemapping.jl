@@ -131,7 +131,11 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   reweighting alone, the fill above ``0.85``, the empty disk of the mirror ellipse at
   ``v = -1.2`` below ``1.0``, the objective between ``0.25`` and ``0.40``), and that control A
   and control B from the same seeded start give every number of their rows "seeded" within the
-  quoted range, widened on each side by its width.
+  quoted range, widened on each side by its width, and apart from ``\theta = 0`` of the same run:
+  the fill above that of ``\theta = 0`` plus ``0.07``, the charge residual above twice and
+  ``\max |\ln(w'/w^*)|`` above ``2.5`` times that of ``\theta = 0``. The empty disk is not
+  checked against ``\theta = 0``: control B is one area-preserving map, and its range holds the
+  ``1.88`` of ``\theta = 0``.
   Cases that must fail: controls B and C, one area-preserving map of ``(x, v)``, fitted from
   ``\theta = 0`` do not shrink the hole beyond the reweighting alone; the kicks and drifts at the
   saddle do not fill the hole at ``x_h = \pi``; the target weights alone miss the grid charge;
