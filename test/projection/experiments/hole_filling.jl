@@ -255,10 +255,12 @@ end
     end
 
     # Control A and control B from the seeded start of the seed 101 at x_h = π: each number
-    # within its quoted range, widened as `agrees` widens a range.
+    # within its quoted range, widened as `agrees` widens a range, and apart from θ = 0 of the
+    # same run.
     hole_x ≈ π && @testset "the seeded controls" begin
         es = hole_filling_experiment(;
             hole_x, variants = (:control_A, :control_B), seed = 101, targets = e.targets)
+        θ0 = es.results[:θ0]
         for (v, (quoted, stops)) in SEEDED_CONTROLS
             r = es.results[v]
             @test fit_stop(r.status) in stops
@@ -267,6 +269,14 @@ end
             for (x, q) in zip(values, quoted)
                 @test agrees(x, q)
             end
+            # half the smallest gap over the seeds 101:105, fill 0.62 (B) − 0.47 = 0.15
+            @test r.diagnostics.fill > θ0.diagnostics.fill + 0.07
+            # about √ of the smallest ratio, charge residual 1.6e-2 (B) / 4.2e-3 ≈ 3.8
+            @test r.charge_res > 2.0 * θ0.charge_res
+            # about √ of the smallest ratio, max |ln(w′/w*)| 0.047 (B) / 0.008 ≈ 5.9
+            @test r.dlnw > 2.5 * θ0.dlnw
+            # The empty disk is not checked against θ = 0: control B is one area-preserving map,
+            # and its range 1.51–1.98 holds the 1.88 of θ = 0 (the seed 101 gives 1.977).
         end
     end
 
