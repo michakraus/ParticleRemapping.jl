@@ -16,13 +16,14 @@ function agrees(x, quoted::AbstractString)
     abs(x - parse(Float64, quoted)) <= 0.5 * 10.0^(exponent - decimals) * (1 + 1e-9)
 end
 
-# rank, mass error, rms of w*/(c f(T)) − 1 in the bands |v| < 1, [1, 2), [2, 3), [3, 4)
+# rank, mass error, rms of w*/(c f(T)) − 1 in the bands |v| < 1, [1, 2), [2, 3), [3, 4); the
+# mass error of the rank one is at the level of rounding, and `nothing` checks it by its bound
 const WEIGHT_TABLE = Dict(
     "ϑ = 1e-3" => (4, "1.1e-3", ("3.0e-2", "7.5e-2", "1.2e-1", "2.0e-1")),
     "ϑ = 1e-4" => (7, "8.5e-5", ("3.1e-3", "1.3e-2", "4.1e-2", "1.2e-1")),
     "ϑ = 1e-5" => (10, "4.2e-6", ("2.7e-4", "1.3e-3", "5.5e-3", "2.0e-2")),
     "ϑ = 1e-6" => (13, "1.9e-7", ("2.3e-5", "8.7e-5", "5.8e-4", "2.9e-3")),
-    "rank 1" => (1, "1.1e-13", ("1.5e-1", "1.8e-1", "1.4e-1", "1.8e-1")),
+    "rank 1" => (1, nothing, ("1.5e-1", "1.8e-1", "1.4e-1", "1.8e-1")),
     "projection" => (nothing, nothing, ("4.1e-2", "1.1e-1", "8.4e-2", "2.0e-1")))
 
 # with w*: empty disk, fill, density; charge-conserving: empty disk, fill, charge, max |ln|
@@ -62,7 +63,11 @@ res = e.results
                 s = e.solutions[name]
                 @test (name == "rank 1" ? ParticleRemapping.lowrank_rank(s.f) :
                        maximum(s.ranks)) == rank
-                @test agrees(s.mass_error, mass)
+                if mass === nothing
+                    @test s.mass_error < 1e-12     # the manual: below 1e-12
+                else
+                    @test agrees(s.mass_error, mass)
+                end
             end
             for (b, q) in zip(res[name].errs, bands)
                 @test agrees(b.rms, q)

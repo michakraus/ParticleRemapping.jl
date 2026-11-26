@@ -15,7 +15,7 @@ CurrentModule = ParticleRemapping.Projection
 | grid charge | not kept with the target weights; exact on the periodic cubic B-splines of the [charge-conserving reweighting](@ref projection-charge) ([hole filling](@ref projection-hole-filling), [push](@ref projection-push-test)) |
 | grid current | not kept: the map moves positions and momenta, and the charge-conserving reweighting leaves the momenta as the map made them ([charge-conserving reweighting](@ref projection-charge)); [example](@ref projection-example) |
 | represented density (consistency) | up to the fit residual and the projection error of ``f_h`` (consistency, below) |
-| equidistribution and hole filling | up to the fit residual and the resolution of the hats of the density-interpolation flow; the kicks and drifts fill a hole only where ``\partial_x W \neq 0``, the non-separable stages also where ``\partial_x W = 0`` ([hole filling](@ref projection-hole-filling)) |
+| equidistribution and hole filling | up to the fit residual and the resolution of the hats of the density-interpolation flow; at the hole of the experiment where ``\partial_x W = 0``, the fit of the kicks and drifts from ``\theta = 0`` ends on a mirror-symmetric saddle that leaves the hole open, and they fill it once the fit breaks the symmetry; the non-separable stages fill it from ``\theta = 0`` ([hole filling](@ref projection-hole-filling)) |
 | parameters computed from the state | the target points (density-interpolation flow), the target weights, the parameters ``\theta`` (least-squares fit) and the multipliers ``\lambda`` of the charge-conserving reweighting |
 | cost of one remap | linear in ``N`` for the projection, the flow, the map and the reweighting; the fit costs ``O(N n_\theta^2 + n_\theta^3)`` per Levenberg–Marquardt iteration with ``n_\theta`` parameters, and the Poisson problem of the flow ``O(M^3)`` on its ``M`` nodes ([the cost in 3d3v](@ref projection-cost-3d3v)) |
 | dimensions implemented in the package | the stages (kicks, drifts, non-separable stages) in any ``d``, tested for ``d = 1, 2``; the whole algorithm for ``d = 1`` ([what the package implements](@ref projection-implemented)) |
@@ -52,15 +52,19 @@ parameters as the spline basis has functions, independent of ``N``.
   velocities.
 - **The kicks and drifts couple ``+v`` and ``-v``.** Where ``\partial_x W = 0`` and ``W`` is even
   in ``v``, a kick that compresses the markers at ``+v`` expands them at ``-v``
-  ([stage Jacobians](@ref projection-stage-jacobians)). At ``x_h = \pi`` the fit of the
-  hole-filling experiment leaves the hole open (fill ``0.47``); the non-separable stages fill it
-  (``0.94``) ([hole filling](@ref projection-hole-filling)).
+  ([stage Jacobians](@ref projection-stage-jacobians)). At ``x_h = \pi``, a point with
+  ``\partial_x W = 0``, this coupling makes the fit of the hole-filling experiment from
+  ``\theta = 0`` lead to a mirror-symmetric saddle of its objective, where the hole stays open
+  (fill ``0.47``). Once a seeded start breaks the symmetry, the kicks and drifts fill the hole
+  (fill ``0.97`` to ``1.06`` after the 40 iterations, not at a minimum); the non-separable
+  stages fill it from ``\theta = 0`` (``0.93`` to ``0.94``)
+  ([hole filling](@ref projection-hole-filling)).
 - **The map is symplectic for frozen parameters only.** The targets, ``\theta`` and the target
   weights come from the state, so the remap is not one symplectic map of the state
   ([parameters that depend on the state](@ref state-dependent-parameters)).
 - **The non-separable stages end at the solvability of the midpoint equation.** The fit rejects
   every ``\theta`` whose fixed-point iteration needs more than 50 iterations, and the fitted
-  ``\theta`` of both hole-filling runs sits at that limit. One application costs 0.16 to 0.19 s
+  ``\theta`` of both hole-filling runs sits at that limit. One application costs 0.20 to 0.34 s
   against 0.004 to 0.007 s for the kicks and drifts in the run of the script
   ([hole filling](@ref projection-hole-filling)).
 - **The target weights must be positive and accurate in the tails.** The lumped projection
@@ -72,7 +76,8 @@ parameters as the spline basis has functions, independent of ``N``.
 - **The charge-conserving reweighting needs markers under every charged shape function.** If a
   shape function with ``\rho_i > 0`` has no marker after the map, no weights reproduce the grid
   charge, and `remap` reports it. It keeps the charge deficit of a hole and lowers the fill of the
-  hole from ``0.94`` to ``0.70`` ([hole filling](@ref projection-hole-filling)).
+  hole from between ``0.93`` and ``0.94`` to ``0.70``
+  ([hole filling](@ref projection-hole-filling)).
 - **Neither the kinetic energy nor the grid current is kept.** The fit has no energy constraint,
   and the reweighting acts on the weights only.
 - **The density-interpolation flow equidistributes at the resolution of its hats.** On hats

@@ -153,7 +153,8 @@ what binds first in 3d3v.
   tails, and the sign of ``f_r``, which the test never saw negative.
 - Charge against filling: the [charge-conserving reweighting](@ref projection-charge) keeps the
   grid charge of the markers before the map, with the charge deficit of a hole, and lowers the
-  fill (from ``0.94`` to ``0.70`` in the [hole-filling experiment](@ref projection-hole-filling)).
+  fill (from between ``0.93`` and ``0.94`` to ``0.70`` in the
+  [hole-filling experiment](@ref projection-hole-filling)).
   Which charge is the right reference depends on whether the hole is a defect of the sampling or
   a feature of ``f``. The correction keeps the grid charge only.
 
@@ -162,7 +163,7 @@ what binds first in 3d3v.
 - The [non-separable stages](@ref projection-nonseparable) end at the iteration limit of their
   fixed-point solver, so the solvability of the midpoint equation limits the step; a Newton
   solver, more stages with smaller steps, or a composition with kicks and drifts may relax this.
-  One application of the non-separable stages takes 0.16 to 0.19 s against 0.004 to 0.007 s for
+  One application of the non-separable stages takes 0.20 to 0.34 s against 0.004 to 0.007 s for
   the kicks and drifts in the run of the script.
 - The [coarse-basis regime](@ref rd-coarse-basis) of the spline-projection redistribution at
   large ``N``: with ``N_\theta \ll 2 N d - d`` the regularised parameter solve reaches the targets

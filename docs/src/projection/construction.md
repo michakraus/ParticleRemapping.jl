@@ -304,11 +304,15 @@ Three consequences follow.
    amount.
 3. A drift compresses only where ``\partial_x W \neq 0``.
 
-At a point where ``\partial_x W = 0`` and ``W`` is even in ``v``, the separable stages can
-therefore fill a hole only by opening its mirror image at ``-v``. In the
-[experiment](@ref projection-hole-filling), the fit at such a point does not fill the hole. A
-stage Hamiltonian that depends on ``x`` and ``p`` together does not have this coupling, at the
-price of an implicit integrator ([Non-separable stages](@ref projection-nonseparable)).
+At a point where ``\partial_x W = 0`` and ``W`` is even in ``v``, the drifts therefore leave the
+marker density unchanged, and a kick that compresses the markers at ``+v`` expands them at
+``-v`` by the same amount. This holds for the Jacobians of the stages at the point, with the
+weights the values of ``W``; it does not bound the composed stages over the extent of a hole. In
+the [experiment](@ref projection-hole-filling), the fit from ``\theta = 0`` at such a point ends
+on a mirror-symmetric saddle of its objective, where the hole stays open; a fit from a seeded
+start that breaks the symmetry fills the hole, and no hole opens at ``-v``. A stage Hamiltonian
+that depends on ``x`` and ``p`` together does not have this coupling, at the price of an implicit
+integrator ([Non-separable stages](@ref projection-nonseparable)).
 
 The formulas ([`kick_drift_jacobian_determinants`](@ref)) agree with the forward-mode Jacobians
 to ``2.2 \cdot 10^{-16}``; at ``\pm v`` the kick of the test gives ``\det DK - 1 = \mp 0.047``;

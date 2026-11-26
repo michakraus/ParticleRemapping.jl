@@ -152,7 +152,7 @@ julia --startup-file=no --project=docs docs/make.jl                # this manual
 ```
 
 The group `core` runs in about 5 minutes; the group `slow` holds the two experiments of the
-Hamiltonian particle projection and runs in about 7 minutes. Each construction has scripts in
+Hamiltonian particle projection and runs in about 21 minutes. Each construction has scripts in
 `scripts/<construction>/` that print every number of its chapter next to the value of its source
 and check them, and a `make_figures.jl` that writes the figures and animations to
 `results/<construction>/`. The [verification](@ref verification) chapter lists them all.

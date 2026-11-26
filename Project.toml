@@ -22,7 +22,7 @@ Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 ParticleRemappingMakieExt = "Makie"
 
 [sources]
-GeometricSolvers = {url = "https://github.com/JuliaGNI/GeometricSolvers.jl", rev = "47d817b94a04be74edb59f06e52942a3c68f9045"}
+GeometricSolvers = {url = "https://github.com/JuliaGNI/GeometricSolvers.jl", rev = "d41d37945ff76f5b3e8f35b97be71ff6446e9ab4"}
 
 [compat]
 ForwardDiff = "1.4"

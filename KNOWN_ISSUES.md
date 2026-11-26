@@ -40,6 +40,38 @@
 - **kind:** upstream
 - **found:** PR 5
 
+### K17 · On a prerelease Julia the saddle fit of the hole-filling experiment does not always end stationary
+
+- **location:** `test/projection/experiments/hole_filling.jl` and
+  `scripts/projection/hole_filling.jl`, `accepted_codes`
+- **problem:** the weight-dependent fit of the hole-filling experiment from `θ = 0` at `x_h = π`
+  ends on the mirror-symmetric saddle with `SUCCESS` and `stationary` on Julia 1.13.4. On the
+  nightly builds it ends there with `SUCCESS` and `stationary` on some builds and after 2
+  iterations with `LINESEARCH_FAILED` on others, at the quoted numbers in both cases; with
+  `LINESEARCH_FAILED` the stationarity ratio is `4.03e-5` against the bound `1e-8`. The outcome
+  changes from build to build on one CPU, so it is rounding at the saddle. The test and the script
+  check the numbers of this row on every Julia; on a Julia with a prerelease tag they accept
+  `SUCCESS, stationary` or `LINESEARCH_FAILED` as its return code, and they check the stationarity
+  ratio where the fit ends stationary. Reported as
+  [JuliaGNI/GeometricSolvers.jl#124](https://github.com/JuliaGNI/GeometricSolvers.jl/issues/124);
+  the entry can go when GeometricSolvers keeps the saddle stationary there.
+- **evidence:** CI run 45653025090, job "Julia nightly - ubuntu-latest", on commit `cad5bb8`:
+  ```
+  hole table, x_h = 3.1416, weight_dependent: 1.807122024142029 0.4678362573099415 0.9265457135502585 0.004241059149177599 1.844606460379962 0.4678362573099415 0.007980562889722034, LINESEARCH_FAILED
+  Expression: stationarity_ratio(e, :weight_dependent) < 1.0e-8
+   Evaluated: 4.0260004156085914e-5 < 1.0e-8
+  ```
+  On the same run, control A and control B at `x_h = π` end `SUCCESS, stationary`. With the same
+  GeometricSolvers commit `d41d379`, the row ended `SUCCESS, stationary` on the nightly build
+  1.15.0-DEV.996 on an AMD EPYC 7763 (znver3), in CI run 45596795331 on commit `a00c653`, and on
+  the nightly build 1.15.0-DEV.1022 on an AMD EPYC 9V74 (znver4) and on 1.14.0-beta1, in CI run
+  45789972016 on commit `839eae5`:
+  ```
+  hole table, x_h = 3.1416, weight_dependent: 1.807122024143528 0.4678362573099415 0.9265457135502759 0.00424105914917651 1.8446064603808374 0.4678362573099415 0.00798056288963116, SUCCESS, stationary
+  ```
+- **kind:** upstream
+- **found:** 2026-11-25
+
 ## Remapping
 
 ### K9 · The Schur-complement step of the gauge rezoning solves a dense system
@@ -159,6 +191,25 @@
   kick–drift map, which infers `Tuple{Any, Any}`; with a `NonSeparableParametrisation` both
   members are concrete.
 - **kind:** not verified
+- **found:** 2026-11-23
+
+### K16 · The weight-dependent fit of the hole-filling experiment does not converge
+
+- **location:** `src/projection/experiments/hole_filling.jl`
+- **problem:** with `β = 1e-3`, GeometricSolvers' `GaussNewton(; globalization = DogLeg())` does
+  not reach a minimum of the weight-dependent fit at either hole position: after hundreds of
+  iterations the gradient and `|θ|` stay large, so every weight-dependent row of the hole-filling
+  tables, apart from the saddle at `x_h = π` that the fit from `θ = 0` reaches, is the value after
+  the budget of 40 iterations, not at a minimum; a larger `β` or a continuation in `β` may give a
+  minimum. The experiment keeps `β = 1e-3` and the budget of 40 iterations.
+- **evidence:** the fit of the experiment's weight-dependent variant run past the budget on macOS
+  with `BLAS.set_num_threads(2)`, by Levenberg–Marquardt and by GeometricSolvers' `GaussNewton`
+  with `Backtracking` or `DogLeg`, from `θ = 0`, from targets moved by `1e-13` relative and from
+  `θ0 = 1e-3 .* randn(Xoshiro(100 + k), n)`: after 100–300 iterations `‖g‖/‖g0‖` is 0.045–5.9
+  and `|θ|` is 19–48 at `x_h = π/2` and at `x_h = π`. For example, `DogLeg` from `θ0` with
+  `k = 1` at `x_h = π`: `MAXITERS` after 300 iterations, `F/F0 = 0.297382`,
+  `‖g‖/‖g0‖ = 1.779`, `|θ| = 43.72`.
+- **kind:** found late
 - **found:** 2026-11-23
 
 ## SlicedRedistribution
