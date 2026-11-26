@@ -290,7 +290,7 @@ end
             kds; β = -Inf)
         # β = 0 is allowed: the regularisation rows are zero rows
         @test fit(kds; maxit = 0, β = 0).iterations == 0
-        @test_throws r"^ArgumentError: maxit must be at most 2147483647 for :gauss_newton, got 2147483648$" fit(
+        @test_throws r"^ArgumentError: maxit must be at most 2147483647, got 2147483648$" fit(
             kds; maxit = Int(typemax(Int32)) + 1)
         # the maxit guards run before the length guard
         @test_throws r"^ArgumentError: maxit must be at most 2147483647" fit(
