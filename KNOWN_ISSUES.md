@@ -232,6 +232,23 @@
 - **kind:** missing test
 - **found:** 2026-11-26
 
+### K20 · The kick–drift map does not infer its return type
+
+- **location:** `src/projection/parametrisation.jl:107`
+- **problem:** `kick_drift_map`, and so `remap_stages` of a `KickDriftParametrisation`, infers
+  `Tuple{Any, Any}`, so the fields `F0` and `F` of `fit_remap_parameters` with a
+  `KickDriftParametrisation` infer `Any`; with a `NonSeparableParametrisation` every field is
+  concrete. No test measures what this costs.
+- **evidence:** `Base.return_types` with `Vector{Float64}` arguments, Julia 1.13.4:
+  ```
+  KickDriftParametrisation remap_stages: Any[Tuple{Any, Any}]
+  KickDriftParametrisation fit_remap_parameters: Any[NamedTuple{(:θ, :F0, :F, :iterations, :status), <:Tuple{Vector{Float64}, Any, Any, Int64, GeometricSolvers.SolverStatus{Float64}}}]
+  NonSeparableParametrisation remap_stages: Any[Tuple{Vector{Float64}, Vector{Float64}}]
+  NonSeparableParametrisation fit_remap_parameters: Any[@NamedTuple{θ::Vector{Float64}, F0::Float64, F::Float64, iterations::Int64, status::GeometricSolvers.SolverStatus{Float64}}]
+  ```
+- **kind:** not verified
+- **found:** 2026-11-26
+
 ## SlicedRedistribution
 
 ### K5 · The long-time sliced remap is canonical only for frozen multipliers

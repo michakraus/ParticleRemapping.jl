@@ -92,6 +92,23 @@ The entries of `KNOWN_ISSUES.md` of the package that concern this chapter:
 - **K10** — the density-interpolation flow solves its Poisson problem with the pseudo-inverse of a
   dense matrix on the nodes of the hats, ``O(M^3)`` operations on ``M`` nodes, which limits the
   code to ``d = 1`` ([the cost in 3d3v](@ref projection-cost-3d3v)).
+- **K11** — the target points of markers outside the velocity box of the projection diverge, and
+  in a run with repeated remaps `remap` stops with a zero target weight
+  ([numerical experiments](@ref projection-experiments)).
+- **K12** — the charge-conserving reweighting fails for markers in the columns of its spline
+  cells, where its Hessian is singular up to round-off ([charge](@ref projection-charge)).
+- **K16** — the weight-dependent fit of the hole-filling experiment does not converge; its rows,
+  apart from the saddle at ``x_h = \pi``, are the values after the budget of 40 iterations
+  ([hole filling](@ref projection-hole-filling)).
+- **K17** — on a prerelease Julia the saddle fit of the hole-filling experiment ends stationary on
+  some builds and with `LINESEARCH_FAILED` on others, at the same numbers.
+- **K18** — a target weight near the underflow threshold passes the weight check of `remap`, and
+  the next remap throws `DomainError with NaN`
+  ([numerical experiments](@ref projection-experiments)).
+- **K19** — no test checks the numbers of the standard experiments with the positive density;
+  `scripts/standard/standard_experiments.jl` checks them.
+- **K20** — the kick–drift map does not infer its return type, so the objective values of a
+  kick–drift fit infer `Any`.
 
 ## [Open questions](@id projection-open-questions)
 

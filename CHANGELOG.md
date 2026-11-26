@@ -120,6 +120,12 @@
   its rounding error stays below the decrease of the step. Each of 20 starts within 1e-11 of the
   grid charge converges in one step (`test/projection/charge.jl`); before the fix one of them
   stopped after 50 iterations and one took 29.
+- The table of checks on the verification page counts all 48 test files: it left out
+  `test/common/svg.jl`, `test/algorithm_figures.jl` and `test/standard.jl`, and gave the gauge
+  rezoning and canonical transport 512 checks where a cold run gives 526. The page also says that
+  the group `slow` holds `test/standard.jl` beside the two projection experiments. The list of
+  known issues of the projection chapter names every entry of `KNOWN_ISSUES.md` that concerns it
+  (K10, K11, K12, K16, K17, K18, K19 and K20), not K10 alone.
 
 ### Changed
 

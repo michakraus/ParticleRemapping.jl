@@ -25,28 +25,30 @@ From the package root:
 ```
 julia --startup-file=no --project=test test/runtests.jl              # all test files
 julia --startup-file=no --project=test test/runtests.jl core         # without the slow files
-julia --startup-file=no --project=test test/runtests.jl slow         # the two slow files
+julia --startup-file=no --project=test test/runtests.jl slow         # the three slow files
 julia --startup-file=no --project=test test/<construction>/<file>.jl # one test file
 julia --startup-file=no --project=scripts scripts/<construction>/<file>.jl
 ```
 
 `test/runtests.jl` runs every file in a `@safetestset` of its own. The group `slow` holds the two
 experiments of the Hamiltonian particle projection, `test/projection/experiments/hole_filling.jl`
-and `test/projection/experiments/dlra_weights.jl`, of about 18 and 10 minutes; the group `core`
-holds every other file and runs in about 5 minutes.
+and `test/projection/experiments/dlra_weights.jl`, of about 18 and 10 minutes, and the standard
+experiments, `test/standard.jl`, of a few seconds; the group `core` holds every other file and
+runs in about 5 minutes.
 
 A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:
 
 | part | test files | checks |
 |:--|--:|--:|
 | quality: Aqua, explicit imports | 2 | 13 |
-| common layer | 6 | 136 |
-| gauge rezoning and canonical transport | 7 | 512 |
+| common layer, pictures and algorithm figures | 8 | 175 |
+| gauge rezoning and canonical transport | 7 | 526 |
 | Hamiltonian particle projection, group `core` | 9 | 606 |
 | Hamiltonian particle projection, group `slow` | 2 | 371 |
+| standard experiments, group `slow` | 1 | 51 |
 | spline-projection redistribution | 8 | 190 |
 | sliced redistribution | 11 | 315 |
-| **total** | **45** | **2143** |
+| **total** | **48** | **2247** |
 
 ## The common layer and the foundations
 
