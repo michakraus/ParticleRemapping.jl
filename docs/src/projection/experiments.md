@@ -96,13 +96,17 @@ plot_remap(long.before, long.after; period = (-π, π),
 
 ## Remaps during the run
 
-With a remap after every 100 steps, the kick–drift map fails at the third remap (``t = 15``).
-The first remap leaves some markers outside the velocity box ``|v| \le 3`` of the construction.
-For these markers the density-interpolation flow sends the targets out of the box: the largest
-target speed is ``2.9`` at ``t = 5``, ``12.3`` at ``t = 10`` and ``7.5 \cdot 10^{29}`` at
-``t = 15``, where the density underflows to zero and the target weights vanish. The construction
-assumes that every marker lies in its box; a repeated remap needs a box that grows with the
-velocities, or a limit on the velocities that the gauge step gives
+With a remap after every 100 steps, the kick–drift map fails at the second remap (``t = 10``) on
+Julia 1.13 and at the third remap (``t = 15``) on Julia 1.14. Its fit at ``t = 5`` ends on its
+20 iterations (`MAXITERS`), and the first remap leaves some markers outside the velocity box
+``|v| \le 3`` of the construction: the largest speed after it is 26.8–36.2. The run then fails
+through a target weight that is zero or that underflows. On Julia 1.13 a target weight at
+``t = 10`` is zero, and that remap throws `DomainError with 0.0`. On Julia 1.14 the remap at
+``t = 10`` passes, and its fit ends on `MAXITERS` after 20 iterations or on `SUCCESS` after one;
+where it ends on `SUCCESS`, target weights below ``10^{-200}`` pass the check of positive target
+weights (`KNOWN_ISSUES.md`, K18). The remap at ``t = 15`` then throws `DomainError with NaN`.
+The construction assumes that every marker lies in its box; a repeated remap needs a box that
+grows with the velocities, or a limit on the velocities that the gauge step gives
 ([limitations](@ref projection-limitations)). The fit of the non-separable map ends on its five
 iterations (`MAXITERS`) at ``t = 5`` and at ``t = 10``. The largest speed is ``31.44`` after the
 first remap and ``2.6 \cdot 10^{303}`` after the second, where a target weight near the underflow
@@ -112,7 +116,7 @@ threshold passes the check of positive target weights (`KNOWN_ISSUES.md`, K18); 
 
 ```julia
 h = standard_remap_history(:projection; variant = :positive)
-h.error   # "DomainError with 0.0: the target weights must be positive; …"
+h.error   # "DomainError with 0.0: …" on Julia 1.13, "DomainError with NaN: …" on 1.14
 ```
 
 The run takes about two minutes, so the manual does not repeat it.

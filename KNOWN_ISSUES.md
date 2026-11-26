@@ -149,7 +149,8 @@
 - **problem:** for a marker with `|v| > V`, the density-interpolation flow of `projection_targets`
   is not defined, and its target moves far out of the box; in a run with repeated remaps a remap
   that leaves markers outside the box sends their targets out of it at the next remap, where the
-  density underflows at a target and `remap` stops with a zero target weight.
+  density underflows at a target and `remap` stops with a zero target weight; where the target
+  weight underflows without vanishing, the run goes on as K18 says.
 - **evidence:** `standard_remap_history(:projection; variant = :positive)` (the long run of the
   standard experiments, box `V = 3`) on macOS with Julia 1.13.4: the fit of the first remap at
   `t = 5` ends `MAXITERS` after its 20 iterations, and the largest speed after it is 34.46; at

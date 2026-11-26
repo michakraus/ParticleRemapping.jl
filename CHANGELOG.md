@@ -230,6 +230,8 @@
   Julia 1.13 and 1.14 is quoted as the range over those runs. The weight in `Q_2 ∪ Q_4` of the
   checkerboard falls from 0.348 to 0.1875 (kick–drift) and from 0.393 to 0.3625
   (non-separable), and both maps leave cells empty in the long run (3–6 and 12, were 0 and 7).
+  The kick–drift remap history fails at `t = 10` on Julia 1.13 and at `t = 15` on Julia 1.14
+  (was `t = 15`), and the script accepts either outcome.
   `scripts/standard/standard_experiments.jl` checks these numbers and the return codes,
   `test/projection/experiments/dlra_weights.jl` and `scripts/projection/dlra_weights.jl` the
   return code of each fit of the remap table.

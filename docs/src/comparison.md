@@ -26,7 +26,7 @@ on Julia 1.13 and 1.14.
 | | checkerboard: quadrants after (before ``200, 0, 200, 0``) | weight in ``Q_2 \cup Q_4`` (exact: 0 rep., 1/2 pos.) | long run: empty cells (before 14) | long run: relative std (before 0.598) | remaps every 100 steps: mean relative std, ``t \ge 5`` (no remap 0.587) |
 |:--|:--|--:|--:|--:|--:|
 | [kick–drift projection](@ref projection-experiments), rep. | fails: zero target weights | | fails | fails | |
-| kick–drift projection, pos. | ``160, 40, 165, 35`` | 0.1875 | 3–6 | 0.808–0.837 | fails at ``t = 15``: markers outside the box |
+| kick–drift projection, pos. | ``160, 40, 165, 35`` | 0.1875 | 3–6 | 0.808–0.837 | fails at ``t = 10`` (Julia 1.13) or ``t = 15`` (1.14): markers outside the box, a zero or underflowing target weight |
 | non-separable projection, pos. | ``127, 72, 128, 73`` | 0.3625 | 12 | 1.01 | fails |
 | [spline redistribution](@ref rd-experiments) | fails: relaxation leaves the box (K2) | | fails (K2) | fails (K2) | |
 | [gauge rezoning](@ref remap-experiments) | ``200, 0, 200, 0`` | 0 | 13 | 0.559 | 0.550 |
