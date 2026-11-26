@@ -14,12 +14,21 @@ using Printf
 using Random
 using Test
 
+# `x` agrees with `quoted` to the digits that `quoted` shows; a range `lo–hi` holds `x` between
+# its ends.
 function agrees(x, quoted::AbstractString)
+    if occursin('–', quoted)
+        lo, hi = parse.(Float64, split(quoted, '–'))
+        return lo <= x <= hi
+    end
     m = match(r"^-?(\d+)(?:\.(\d+))?(?:e(-?\d+))?$", quoted)
     decimals = m.captures[2] === nothing ? 0 : length(m.captures[2])
     exponent = m.captures[3] === nothing ? 0 : parse(Int, m.captures[3])
     abs(x - parse(Float64, quoted)) <= 0.5 * 10.0^(exponent - decimals) * (1 + 1e-9)
 end
+
+# The return code of a fit by its name, with "stationary" where the stationarity test ended it.
+stop(status) = string(status.code) * (status.stationary ? ", stationary" : "")
 
 const SOURCES = (
     "f(T)", "ϑ = 1e-3", "ϑ = 1e-4", "ϑ = 1e-5", "ϑ = 1e-6", "rank 1", "projection")

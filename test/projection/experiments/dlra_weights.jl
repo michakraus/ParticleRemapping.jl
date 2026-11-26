@@ -9,12 +9,28 @@ using ParticleRemapping
 using Random
 using Test
 
-function agrees(x, quoted::AbstractString)
+# One unit of the last digit of the number `quoted`.
+function quoted_unit(quoted::AbstractString)
     m = match(r"^-?(\d+)(?:\.(\d+))?(?:e(-?\d+))?$", quoted)
     decimals = m.captures[2] === nothing ? 0 : length(m.captures[2])
     exponent = m.captures[3] === nothing ? 0 : parse(Int, m.captures[3])
-    abs(x - parse(Float64, quoted)) <= 0.5 * 10.0^(exponent - decimals) * (1 + 1e-9)
+    10.0^(exponent - decimals)
 end
+
+# `x` agrees with the number `quoted` to the digits that `quoted` shows: within half a unit of its
+# last digit. A range `lo–hi` holds `x` once it is widened on each side by its width, and by at
+# least one unit of the last digit of `hi`.
+function agrees(x, quoted::AbstractString)
+    if occursin('–', quoted)
+        lo, hi = split(quoted, '–')
+        d = max(parse(Float64, hi) - parse(Float64, lo), quoted_unit(hi))
+        return parse(Float64, lo) - d <= x <= parse(Float64, hi) + d
+    end
+    abs(x - parse(Float64, quoted)) <= 0.5 * quoted_unit(quoted) * (1 + 1e-9)
+end
+
+# The return code of a fit by its name, with "stationary" where the stationarity test ended it.
+stop(status) = string(status.code) * (status.stationary ? ", stationary" : "")
 
 # rank, mass error, rms of w*/(c f(T)) − 1 in the bands |v| < 1, [1, 2), [2, 3), [3, 4); the
 # mass error of the rank one is at the level of rounding, and `nothing` checks it by its bound

@@ -147,14 +147,15 @@
 
 - **location:** `src/projection/targets.jl`
 - **problem:** for a marker with `|v| > V`, the density-interpolation flow of `projection_targets`
-  is not defined, and its target moves far out of the box; in a run with repeated remaps the
-  speeds that the gauge step gives grow from remap to remap until the density underflows at a
-  target and `remap` stops with a zero target weight.
+  is not defined, and its target moves far out of the box; in a run with repeated remaps a remap
+  that leaves markers outside the box sends their targets out of it at the next remap, where the
+  density underflows at a target and `remap` stops with a zero target weight.
 - **evidence:** `standard_remap_history(:projection; variant = :positive)` (the long run of the
-  standard experiments, box `V = 3`): after the first remap at `t = 5` the largest speed is 6.48;
-  the largest target speed is 2.94 at `t = 5`, 12.3 at `t = 10` and `7.5·10²⁹` at `t = 15`, where
-  `remap` throws `DomainError with 0.0: the target weights must be positive`. The same holds for
-  `:nonseparable`.
+  standard experiments, box `V = 3`) on macOS with Julia 1.13.4: the fit of the first remap at
+  `t = 5` ends `MAXITERS` after its 20 iterations, and the largest speed after it is 34.46; at
+  `t = 10` the largest speed of a target is 34.4, and `remap` throws `DomainError with 0.0: the
+  target weights must be positive`. With `:nonseparable` the largest speed after the first remap
+  is 31.44, and the run ends as K18 says.
 - **kind:** defect
 - **found:** 2026-11-22
 
@@ -194,6 +195,33 @@
   `‖g‖/‖g0‖ = 1.779`, `|θ| = 43.72`.
 - **kind:** found late
 - **found:** 2026-11-23
+
+### K18 · A target weight near the underflow threshold passes the weight check of `remap`
+
+- **location:** `src/projection/remap.jl:148`
+- **problem:** `remap` of `KickDriftRemap` and `NonSeparableRemap` refuses only target weights
+  that are not positive; a positive target weight near the underflow threshold passes, the
+  velocity `P/(m w)` of its marker comes near `floatmax`, the objective `½|r|²` of the fit
+  overflows to `Inf` at every `θ`, so that `objective_ratio` is `NaN`, and the next remap computes
+  `NaN` target weights from these markers and throws `DomainError with NaN`.
+- **evidence:** `standard_remap_history(:nonseparable; variant = :positive)` on macOS with Julia
+  1.13.4: at the remap at `t = 10` the smallest target weight is `5.2·10⁻³⁰⁷`; the fit ends
+  `MAXITERS` after its 5 iterations with a finite `θ`, `|θ| = 7.52`, the residual norm of its
+  status is `6.9·10³⁰³`, `F0 = F = Inf`, and the largest speed after the remap is `2.6·10³⁰³`; the
+  remap at `t = 15` throws `DomainError with NaN: the target weights must be positive`.
+- **kind:** defect
+- **found:** 2026-11-26
+
+### K19 · No test checks the numbers of the standard experiments with the positive density
+
+- **location:** `scripts/standard/standard_experiments.jl`
+- **problem:** the numbers of the kick–drift and the non-separable projection with the positive
+  density that the pages *Numerical experiments* of the projection and *Comparison* quote are
+  checked by `scripts/standard/standard_experiments.jl` only; `test/standard.jl` runs the
+  represented density, which stops before the fit, so the suite does not check these numbers.
+- **evidence:** the script runs about 15 minutes (its header), too long for the suite.
+- **kind:** missing test
+- **found:** 2026-11-26
 
 ## SlicedRedistribution
 
