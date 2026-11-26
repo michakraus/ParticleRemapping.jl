@@ -40,16 +40,19 @@
 - **kind:** upstream
 - **found:** PR 5
 
-### K17 · On Julia nightly the saddle fit of the hole-filling experiment does not end stationary
+### K17 · On a prerelease Julia the saddle fit of the hole-filling experiment does not always end stationary
 
-- **location:** `test/projection/experiments/hole_filling.jl`, `code_asserted`
+- **location:** `test/projection/experiments/hole_filling.jl` and
+  `scripts/projection/hole_filling.jl`, `accepted_codes`
 - **problem:** the weight-dependent fit of the hole-filling experiment from `θ = 0` at `x_h = π`
-  ends on the mirror-symmetric saddle with `SUCCESS` and `stationary` on Julia 1.13.4 and
-  1.14.0-beta1; on the nightly build 1.15.0-DEV.1003 on an AMD EPYC 9V74 (znver4) it ends after 2
-  iterations with `LINESEARCH_FAILED`, at the quoted numbers but with the stationarity ratio
-  `4.03e-5` against the bound `1e-8`. The test and `scripts/projection/hole_filling.jl` therefore
-  assert the return code and the stationarity of this row only on a Julia without a prerelease
-  tag; on a prerelease Julia, 1.14.0-beta1 among them, they assert its numbers. Reported as
+  ends on the mirror-symmetric saddle with `SUCCESS` and `stationary` on Julia 1.13.4. On the
+  nightly builds it ends there with `SUCCESS` and `stationary` on some builds and after 2
+  iterations with `LINESEARCH_FAILED` on others, at the quoted numbers in both cases; with
+  `LINESEARCH_FAILED` the stationarity ratio is `4.03e-5` against the bound `1e-8`. The outcome
+  changes from build to build on one CPU, so it is rounding at the saddle. The test and the script
+  check the numbers of this row on every Julia; on a Julia with a prerelease tag they accept
+  `SUCCESS, stationary` or `LINESEARCH_FAILED` as its return code, and they check the stationarity
+  ratio where the fit ends stationary. Reported as
   [JuliaGNI/GeometricSolvers.jl#124](https://github.com/JuliaGNI/GeometricSolvers.jl/issues/124);
   the entry can go when GeometricSolvers keeps the saddle stationary there.
 - **evidence:** CI run 45653025090, job "Julia nightly - ubuntu-latest", on commit `cad5bb8`:
@@ -58,9 +61,14 @@
   Expression: stationarity_ratio(e, :weight_dependent) < 1.0e-8
    Evaluated: 4.0260004156085914e-5 < 1.0e-8
   ```
-  On the same run, control A and control B at `x_h = π` end `SUCCESS, stationary`. In CI run
-  45596795331, on commit `a00c653` with the same GeometricSolvers commit `d41d379`, the nightly
-  build 1.15.0-DEV.996 on an AMD EPYC 7763 (znver3) ended the row `SUCCESS, stationary`.
+  On the same run, control A and control B at `x_h = π` end `SUCCESS, stationary`. With the same
+  GeometricSolvers commit `d41d379`, the row ended `SUCCESS, stationary` on the nightly build
+  1.15.0-DEV.996 on an AMD EPYC 7763 (znver3), in CI run 45596795331 on commit `a00c653`, and on
+  the nightly build 1.15.0-DEV.1022 on an AMD EPYC 9V74 (znver4) and on 1.14.0-beta1, in CI run
+  45789972016 on commit `839eae5`:
+  ```
+  hole table, x_h = 3.1416, weight_dependent: 1.807122024143528 0.4678362573099415 0.9265457135502759 0.00424105914917651 1.8446064603808374 0.4678362573099415 0.00798056288963116, SUCCESS, stationary
+  ```
 - **kind:** upstream
 - **found:** 2026-11-25
 

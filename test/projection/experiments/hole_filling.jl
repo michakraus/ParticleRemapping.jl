@@ -54,15 +54,16 @@ function stationarity_ratio(e, v; β = 1e-3)
 end
 
 # The return code of a fit by its name, with "stationary" where the stationarity test ended it.
-stop(status) = string(status.code) * (status.stationary ? ", stationary" : "")
+const fit_stop = ParticleRemapping.Projection._fit_stop
 
-# Whether the test asserts the return code of the row of the variant `v` at `hole_x` on the Julia
-# `version`. The fit of the kicks and drifts from θ = 0 at x_h = π ends on the saddle with
-# `SUCCESS, stationary` on Julia 1.13.4 and 1.14.0-beta1; on a Julia with a prerelease tag,
-# 1.14.0-beta1 among them, the test asserts its numbers only, not its return code or its
-# stationarity (KNOWN_ISSUES.md, K17).
-function code_asserted(hole_x, v; version = VERSION)
-    isempty(version.prerelease) || !(hole_x ≈ π && v === :weight_dependent)
+# The return codes that the fit of the variant `v` at `hole_x`, quoted with the code `quoted`, may
+# end on with the Julia `version`. The fit of the kicks and drifts from θ = 0 at x_h = π reaches
+# the mirror-symmetric saddle; on a Julia without a prerelease tag it ends there with
+# `SUCCESS, stationary`, and on a Julia with one it ends there with `SUCCESS, stationary` or with
+# `LINESEARCH_FAILED`, at the same numbers (KNOWN_ISSUES.md, K17).
+function accepted_codes(hole_x, v, quoted; version = VERSION)
+    saddle = hole_x ≈ π && v === :weight_dependent
+    saddle && !isempty(version.prerelease) ? (quoted, "LINESEARCH_FAILED") : (quoted,)
 end
 
 # The experiment with `verbose = true`, and what it prints.
@@ -125,11 +126,14 @@ const SEEDED_CONTROLS = Dict(
             "0.46–0.78", "0.047–0.071"),
         ("MAXITERS", "SUCCESS, stationary")))
 
-@testset "the return codes that the test asserts" begin
-    @test code_asserted(Float64(π), :weight_dependent; version = v"1.13.4")
-    @test !code_asserted(Float64(π), :weight_dependent; version = v"1.15.0-DEV.1003")
-    @test code_asserted(Float64(π), :control_A; version = v"1.15.0-DEV.1003")
-    @test code_asserted(π / 2, :weight_dependent; version = v"1.15.0-DEV.1003")
+@testset "the return codes that the test accepts" begin
+    s = "SUCCESS, stationary"
+    @test accepted_codes(Float64(π), :weight_dependent, s; version = v"1.13.4") == (s,)
+    @test accepted_codes(Float64(π), :weight_dependent, s; version = v"1.15.0-DEV.1003") ==
+          (s, "LINESEARCH_FAILED")
+    @test accepted_codes(Float64(π), :control_A, s; version = v"1.15.0-DEV.1003") == (s,)
+    @test accepted_codes(π / 2, :weight_dependent, "MAXITERS";
+        version = v"1.15.0-DEV.1003") == ("MAXITERS",)
 end
 
 @testset "Hole filling, x_h = $(round(hole_x; digits = 4))" for hole_x in (π / 2, Float64(π))
@@ -177,7 +181,7 @@ end
                         r.diagnostics.empty, r.diagnostics.fill, r.ratio, r.charge_res,
                         r.diagnostics_charge.empty, r.diagnostics_charge.fill, r.dlnw)),
                     " "),
-                ", ", stop(r.status))
+                ", ", fit_stop(r.status))
             @test agrees(r.diagnostics.empty, row[1])
             @test agrees(r.diagnostics.fill, row[2])
             v === :θ0 || @test agrees(r.ratio, row[3])
@@ -185,10 +189,11 @@ end
             @test agrees(r.diagnostics_charge.empty, row[5])
             @test agrees(r.diagnostics_charge.fill, row[6])
             @test agrees(r.dlnw, row[7])
-            if v !== :θ0 && code_asserted(hole_x, v)
-                @test stop(r.status) == row[8]
+            if v !== :θ0
+                codes = accepted_codes(hole_x, v, row[8])
+                @test fit_stop(r.status) in codes
                 # the line that `verbose = true` prints for the variant names its return code
-                @test occursin(row[8], printed(output, v))
+                @test any(c -> occursin(c, printed(output, v)), codes)
             end
         end
     end
@@ -221,10 +226,9 @@ end
             # the fit of the kicks and drifts from θ = 0 ends on the mirror-symmetric saddle of
             # the objective, where the ±v coupling keeps the hole open
             r = res[:weight_dependent]
-            if code_asserted(hole_x, :weight_dependent)
-                @test string(r.status.code) == "SUCCESS" && r.status.stationary
-                @test stationarity_ratio(e, :weight_dependent) < 1e-8
-            end
+            @test fit_stop(r.status) in
+                  accepted_codes(hole_x, :weight_dependent, "SUCCESS, stationary")
+            r.status.stationary && @test stationarity_ratio(e, :weight_dependent) < 1e-8
             @test near(:weight_dependent) > 0.9 * near(:θ0)
             # the non-separable stages do not have the ±v coupling
             @test near(:non_separable) < 0.9 * near(:θ0)
@@ -257,7 +261,7 @@ end
             hole_x, variants = (:control_A, :control_B), seed = 101, targets = e.targets)
         for (v, (quoted, stops)) in SEEDED_CONTROLS
             r = es.results[v]
-            @test stop(r.status) in stops
+            @test fit_stop(r.status) in stops
             values = (r.diagnostics.empty, r.diagnostics.fill, r.ratio, r.charge_res,
                 r.diagnostics_charge.empty, r.diagnostics_charge.fill, r.dlnw)
             for (x, q) in zip(values, quoted)

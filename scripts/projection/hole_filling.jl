@@ -31,14 +31,16 @@ function agrees(x, quoted::AbstractString)
 end
 
 # The return code of a fit by its name, with "stationary" where the stationarity test ended it.
-stop(status) = string(status.code) * (status.stationary ? ", stationary" : "")
+const fit_stop = ParticleRemapping.Projection._fit_stop
 
-# Whether the script checks the return code of the row of the variant `v` at `hole_x`. The fit of
-# the kicks and drifts from θ = 0 at x_h = π ends on the saddle with `SUCCESS, stationary` on
-# Julia 1.13.4 and 1.14.0-beta1; on a Julia with a prerelease tag, 1.14.0-beta1 among them, the
-# script checks its numbers only (KNOWN_ISSUES.md, K17).
-function code_asserted(hole_x, v; version = VERSION)
-    isempty(version.prerelease) || !(hole_x ≈ π && v === :weight_dependent)
+# The return codes that the fit of the variant `v` at `hole_x`, quoted with the code `quoted`, may
+# end on. The fit of the kicks and drifts from θ = 0 at x_h = π reaches the mirror-symmetric
+# saddle; on a Julia without a prerelease tag it ends there with `SUCCESS, stationary`, and on a
+# Julia with one it ends there with `SUCCESS, stationary` or with `LINESEARCH_FAILED`, at the same
+# numbers (KNOWN_ISSUES.md, K17).
+function accepted_codes(hole_x, v, quoted; version = VERSION)
+    saddle = hole_x ≈ π && v === :weight_dependent
+    saddle && !isempty(version.prerelease) ? (quoted, "LINESEARCH_FAILED") : (quoted,)
 end
 
 const ROWS = (:θ0 => "θ = 0, reweighting only", :weight_dependent => "weight-dependent",
@@ -114,7 +116,7 @@ function check_note(e, hole_x)
         end
         @test r.charge_its <= 16
         v === :θ0 || @test r.ΔP < 1e-15
-        v === :θ0 || !code_asserted(hole_x, v) || @test stop(r.status) == row[8]
+        v === :θ0 || @test fit_stop(r.status) in accepted_codes(hole_x, v, row[8])
     end
 end
 
@@ -135,7 +137,7 @@ function report(hole_x)
         @printf("%-26s %10.2f %6.2f %9s %-20s | %8.1e %6.2f %6.2f %8.3f\n", name,
             r.diagnostics.empty, r.diagnostics.fill,
             v === :θ0 ? "1" : @sprintf("%.3f", r.ratio), v === :θ0 ? "" :
-                                                         " " * stop(r.status),
+                                                         " " * fit_stop(r.status),
             r.charge_res, r.diagnostics_charge.empty, r.diagnostics_charge.fill, r.dlnw)
     end
     for (v, name) in ROWS[2:end]
@@ -176,7 +178,7 @@ function perturbed(e, hole_x)
     for (v, name) in ROWS[2:end]
         r = ep.results[v]
         @printf("%-26s %10.2f %6.2f %9.3f %-20s | %8.1e %6.2f %6.2f %8.3f\n", name,
-            row_values(v, r)[1:3]..., " " * stop(r.status), row_values(v, r)[4:7]...)
+            row_values(v, r)[1:3]..., " " * fit_stop(r.status), row_values(v, r)[4:7]...)
     end
     @testset "the numbers of the documentation, moved targets, x_h = $(round(hole_x; digits = 4))" begin
         @test ep.targets.x != tg.x
@@ -206,16 +208,16 @@ function seeded(e)
                 values = row_values(v, r)
                 md = local_empty_disk(mirror, r.X, r.v1; prob.dx, prob.dv)
                 @printf("%-6d %-17s %10.2f %6.2f %9.3f %-20s | %8.1e %6.2f %6.2f %8.3f | %6.2f\n",
-                    seed, v, values[1:3]..., " " * stop(r.status), values[4:7]..., md)
+                    seed, v, values[1:3]..., " " * fit_stop(r.status), values[4:7]..., md)
                 @test r.ΔP < 1e-15
                 if v === :weight_dependent
-                    @test stop(r.status) == "MAXITERS"
+                    @test fit_stop(r.status) == "MAXITERS"
                     for (x, q) in zip((values..., md), SEEDED)
                         @test agrees(x, q)
                     end
                 else
                     quoted, stops = SEEDED_CONTROLS[v]
-                    @test stop(r.status) in stops
+                    @test fit_stop(r.status) in stops
                     for (x, q) in zip(values, quoted)
                         @test agrees(x, q)
                     end

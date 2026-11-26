@@ -118,14 +118,15 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   weight, the charge-conserving reweighting (at most 16 Newton iterations), every number of the
   two tables with the digits it is quoted with or, where it is quoted as a range, within that
   range widened on each side by its width, the return code of every fit (on a Julia with a
-  prerelease tag, of every fit but the saddle at ``x_h = \pi``), the sensitivities
+  prerelease tag, the saddle at ``x_h = \pi`` may end on `LINESEARCH_FAILED`), the sensitivities
   of the non-separable map at the fitted ``\theta`` with the active iteration limit of 50, the
   result of `remap` against the experiment, and the relative error of the projected target
   weights in the four velocity bands. At ``x_h = \pi`` it checks that the fit of the kicks and
   drifts from ``\theta = 0`` ends on the mirror-symmetric saddle (`SUCCESS`, stationary, and the
   stationarity ratio ``\|J^{\mathsf{T}} F\| / (\|J\|_F \|F\|)`` of the fit below ``10^{-8}``;
-  on a Julia with a prerelease tag, 1.14.0-beta1 among them, it checks the numbers of this row
-  only, `KNOWN_ISSUES.md`, K17), that the fit from the seeded start 101 fills the hole
+  on a Julia with a prerelease tag, 1.14.0-beta1 among them, `SUCCESS`, stationary, with that
+  ratio, or `LINESEARCH_FAILED`, `KNOWN_ISSUES.md`, K17), that the fit from the seeded start 101
+  fills the hole
   (`MAXITERS` after 40 iterations, the empty disk below ``1.55`` and below ``0.9`` of the
   reweighting alone, the fill above ``0.85``, the empty disk of the mirror ellipse at
   ``v = -1.2`` below ``1.0``, the objective between ``0.25`` and ``0.40``), and that control A
@@ -157,6 +158,12 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   range between its ends, and runs the seeded fits of the weight-dependent map, control A and
   control B at ``x_h = \pi`` for the seeds 101 to 105 and checks that each of their numbers lies
   in its quoted range.
+- **`scripts/projection/hole_filling_ranges.jl`** (about 85 minutes): rebuilds the 14 cells of
+  the hole-filling tables that are quoted as a range, each as the range of its value over the
+  experiment and the experiment with the targets moved by ``10^{-13}`` relative with the seeds 1
+  to 10, with each end rounded outward to the quoted digits, and checks that it lies within the
+  quoted range. Run it on Julia 1.13 and on Julia 1.14; the quoted ranges also hold the values of
+  the CI runners.
 - **`scripts/projection/dlra_weights.jl`** (about 3 minutes): prints the two tables of the target
   weights after a push and checks every number against the value of the source note but the mass
   error of the fixed rank one, which it checks below ``10^{-12}``.
