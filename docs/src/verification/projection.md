@@ -92,8 +92,9 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   with a hole: the objective drops, ``P`` and the total weight are kept, the result carries the
   positions modulo ``L``, the target weights and the momenta of the map; the option `charge`; the
   default target weights from the lumped projection; the guards of nonpositive target weights, of
-  an unknown variant and of markers that are not 1D-1V. Case that must fail: the target weights
-  alone miss the grid charge.
+  an unknown variant and of markers that are not 1D-1V; the return code `MAXITERS` after the
+  budget of each remap example of the manual. Case that must fail: the target weights alone miss
+  the grid charge.
 - **`test/projection/frames.jl`**: the states and the frames of the remaps on small runs
   ([`remap_states`](@ref ParticleRemapping.remap_states),
   [`remap_frames`](@ref ParticleRemapping.remap_frames)) for the kick–drift map, the
@@ -192,11 +193,12 @@ the note in value: the note's fit is a damped least-squares method, and the tabl
 Gauss–Newton fit with the return code of each row, and those on hole filling also the
 mirror-symmetric saddle that it reaches from ``\theta = 0`` at ``x_h = \pi`` and the ranges of the
 seeded fits there.
-The two experiment scripts hold the numbers of both pages in their tables `NOTE_*` and `NOTE`,
-and the two experiment tests in `TABLES`, `WEIGHT_TABLE` and `REMAP_TABLE`; a measured number
-agrees with a quoted one when it lies within half a unit of the last quoted digit. A quoted range
-holds a number of the script between its ends, and a number of the test within the range widened
-on each side by its width. The experiment tests check every number of the tables in this way.
+The two experiment scripts hold the numbers of both pages in their tables `NOTE_WEIGHTS`,
+`REMAP_TABLE` and `NOTE`, and the two experiment tests in `TABLES`, `WEIGHT_TABLE` and
+`REMAP_TABLE`; a measured number agrees with a quoted one when it lies within half a unit of the
+last quoted digit. A quoted range holds a number of the script between its ends, and a number of
+the test within the range widened on each side by its width. The experiment tests check every
+number of the tables in this way.
 Three points differ in form, not in value:
 
 - The note quotes the relative error of the projected target weights at ``x_h = \pi`` only. At

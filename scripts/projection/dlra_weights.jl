@@ -28,7 +28,7 @@ function agrees(x, quoted::AbstractString)
 end
 
 # The return code of a fit by its name, with "stationary" where the stationarity test ended it.
-stop(status) = string(status.code) * (status.stationary ? ", stationary" : "")
+const stop = ParticleRemapping.Projection._fit_stop
 
 const SOURCES = (
     "f(T)", "ϑ = 1e-3", "ϑ = 1e-4", "ϑ = 1e-5", "ϑ = 1e-6", "rank 1", "projection")
@@ -45,7 +45,7 @@ const NOTE_WEIGHTS = Dict(
 # return code of the fit. No fit ends on the stationarity test, so a cell whose digits move when
 # the targets move by 1e-13 relative, or on Julia 1.13 and 1.14, or that lies within a tenth of a
 # unit of a rounding boundary, is a range over those runs.
-const NOTE_REMAP = Dict(
+const REMAP_TABLE = Dict(
     "f(T)" =>
         ("1.05", "0.82", "0.113", "1.066", "0.74", "2.4e-2", "0.035–0.036", "MAXITERS"),
     "ϑ = 1e-3" => ("1.43", "1.13", "0.308–0.309", "1.52–1.53", "1.21", "3.3e-2", "0.039",
@@ -93,7 +93,7 @@ for name in SOURCES
         stop(r.status), r.iterations, r.fit_time, r.ΔP, r.charge_res_c)
 end
 
-@testset "the note's numbers" begin
+@testset "the quoted numbers" begin
     @test agrees(maximum(abs, e.vT), "3.95")
     @test agrees(e.pushed.largest_empty, "1.38") && e.pushed.fill == 0
     @test agrees(e.pushed.discrepancy, "0.099")
@@ -109,7 +109,7 @@ end
             @test agrees(b.rms, q)
         end
     end
-    for (name, row) in NOTE_REMAP
+    for (name, row) in REMAP_TABLE
         r = res[name]
         values = (
             r.diagnostics.largest_empty, r.diagnostics.fill, r.diagnostics.discrepancy,

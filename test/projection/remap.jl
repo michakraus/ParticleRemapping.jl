@@ -19,7 +19,9 @@ hp = HatProjection(12, 13)
         NonSeparableRemap(; nξ = 6, nv = 7, nℓ = 3, projection = hp, maxit = 5,
             weighted = false))
     for method in methods
-        @testset "$(nameof(typeof(method))) $(method.solver)" begin
+        variant = method isa KickDriftRemap ? method.variant :
+                  "weighted = $(method.weighted)"
+        @testset "$(nameof(typeof(method))) $variant" begin
             r = remap(method, mk)
             i = r.info
             @test i.F < i.F0 && i.objective_ratio ≈ i.F / i.F0
@@ -112,5 +114,26 @@ hp = HatProjection(12, 13)
         end
         @test_throws r"^ArgumentError: the Hamiltonian particle projection acts on 1D-1V" remap(
             KickDriftRemap(), Markers(rand(2, 3), rand(2, 3), rand(3)))
+    end
+
+    # The remap examples of the manual, as the pages run them: each fit ends after its budget,
+    # with the return code `MAXITERS` that the page states.
+    @testset "the examples of the manual" begin
+        maxiters(r, budget) = string(r.info.status.code) == "MAXITERS" &&
+                              !r.info.status.stationary && r.info.iterations == budget
+        # the home page
+        home = remap(
+            NonSeparableRemap(; nξ = 6, nv = 7, nℓ = 3, projection = hp, maxit = 5), mk)
+        @test maxiters(home, 5)
+        # the algorithm page and the overview of the projection
+        Random.seed!(20261119)
+        small = hole_filling_problem(; hole_x = π / 2, nL = 24, hole_a = 0.9, hole_b = 0.8)
+        algorithm = remap(KickDriftRemap(; projection = hp, maxit = 10), small.markers)
+        @test maxiters(algorithm, 10)
+        overview = remap(
+            KickDriftRemap(; projection = hp, maxit = 20,
+                density = (xs, vs) -> small.density.(xs, vs)),
+            small.markers)
+        @test maxiters(overview, 20)
     end
 end

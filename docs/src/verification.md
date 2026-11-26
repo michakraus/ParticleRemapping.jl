@@ -42,11 +42,11 @@ A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:
 | quality: Aqua, explicit imports | 2 | 13 |
 | common layer | 6 | 136 |
 | gauge rezoning and canonical transport | 7 | 512 |
-| Hamiltonian particle projection, group `core` | 9 | 454 |
-| Hamiltonian particle projection, group `slow` | 2 | 365 |
+| Hamiltonian particle projection, group `core` | 9 | 457 |
+| Hamiltonian particle projection, group `slow` | 2 | 371 |
 | spline-projection redistribution | 8 | 190 |
 | sliced redistribution | 11 | 315 |
-| **total** | **45** | **1985** |
+| **total** | **45** | **1994** |
 
 ## The common layer and the foundations
 

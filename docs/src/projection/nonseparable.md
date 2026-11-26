@@ -173,9 +173,9 @@ determinant with ``(I - \tfrac12 \mathbb{J}K)^{-1}`` by at least ``0.475``.
 ### The steps of the map
 
 The non-separable map of the [hole-filling experiment](@ref projection-hole-filling) at
-``x_h = \pi``, here with the fit stopped after 5 iterations: the markers near the hole, coloured
-and sized by weight, before the map, after each of the two stages (at the old weights), after the
-reweighting and after the charge-conserving reweighting.
+``x_h = \pi``, here with a fit that ends after its budget of 5 iterations (`MAXITERS`): the
+markers near the hole, coloured and sized by weight, before the map, after each of the two stages
+(at the old weights), after the reweighting and after the charge-conserving reweighting.
 
 ```@example nonseparable
 using Random

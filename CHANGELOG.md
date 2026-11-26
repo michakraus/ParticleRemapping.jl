@@ -256,4 +256,6 @@
   returns a `SolverStatus` as `status`, and `info.status` of `remap` is never `nothing`, which
   closes K13 (the return type of the fit was a union over the two solvers). A call that passed no
   `solver` gets another fit and other numbers. The manual states the method, its QR step and its
-  cost per iteration, and every docs example that runs a fit shows its return code.
+  cost per iteration. The remap examples of the home page and of the projection's overview and
+  algorithm pages show the return code of their fit, which `test/projection/remap.jl` checks; the
+  text beside the figures of the steps of the kick–drift and the non-separable map names it.

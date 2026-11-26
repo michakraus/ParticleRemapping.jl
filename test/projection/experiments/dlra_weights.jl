@@ -30,7 +30,7 @@ function agrees(x, quoted::AbstractString)
 end
 
 # The return code of a fit by its name, with "stationary" where the stationarity test ended it.
-stop(status) = string(status.code) * (status.stationary ? ", stationary" : "")
+const stop = ParticleRemapping.Projection._fit_stop
 
 # rank, mass error, rms of w*/(c f(T)) − 1 in the bands |v| < 1, [1, 2), [2, 3), [3, 4); the
 # mass error of the rank one is at the level of rounding, and `nothing` checks it by its bound

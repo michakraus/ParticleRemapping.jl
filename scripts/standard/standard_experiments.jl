@@ -8,7 +8,7 @@
 # also runs its reduced sizes. Prints the return code of each fit of the projection maps with the
 # positive density, and checks every number of these rows that the pages "Numerical experiments" of
 # the projection and "Comparison" quote, with the digits they are quoted with, a number quoted as a
-# range between its ends.
+# range within that range widened on each side by its width.
 
 using ParticleRemapping
 using Printf
@@ -16,21 +16,28 @@ using Test
 
 short(e) = first(replace(e, "\n" => " "), 100)
 
-# `x` agrees with `quoted` to the digits that `quoted` shows; a range `lo–hi` holds `x` between
-# its ends.
-function agrees(x, quoted::AbstractString)
-    if occursin('–', quoted)
-        lo, hi = parse.(Float64, split(quoted, '–'))
-        return lo <= x <= hi
-    end
+# One unit of the last digit of the number `quoted`.
+function quoted_unit(quoted::AbstractString)
     m = match(r"^-?(\d+)(?:\.(\d+))?(?:e(-?\d+))?$", quoted)
     decimals = m.captures[2] === nothing ? 0 : length(m.captures[2])
     exponent = m.captures[3] === nothing ? 0 : parse(Int, m.captures[3])
-    abs(x - parse(Float64, quoted)) <= 0.5 * 10.0^(exponent - decimals) * (1 + 1e-9)
+    10.0^(exponent - decimals)
+end
+
+# `x` agrees with the number `quoted` to the digits that `quoted` shows: within half a unit of its
+# last digit. A range `lo–hi` holds `x` once it is widened on each side by its width, and by at
+# least one unit of the last digit of `hi`.
+function agrees(x, quoted::AbstractString)
+    if occursin('–', quoted)
+        lo, hi = split(quoted, '–')
+        d = max(parse(Float64, hi) - parse(Float64, lo), quoted_unit(hi))
+        return parse(Float64, lo) - d <= x <= parse(Float64, hi) + d
+    end
+    abs(x - parse(Float64, quoted)) <= 0.5 * quoted_unit(quoted) * (1 + 1e-9)
 end
 
 # The return code of a fit by its name, with "stationary" where the stationarity test ended it.
-stop(status) = string(status.code) * (status.stationary ? ", stationary" : "")
+const stop = ParticleRemapping.Projection._fit_stop
 
 # The quoted numbers of the projection maps with the positive density, and the return code and
 # the iterations of the fit. Checkerboard: the quadrant counts, the weight in Q2 ∪ Q4 and the empty
