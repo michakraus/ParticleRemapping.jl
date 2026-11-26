@@ -127,8 +127,9 @@ agreement ``7 \times 10^{-16}`` of the Schur-complement step with the full KKT s
   for the hole at ``x_h = \pi``; at ``x_h = \pi/2`` two bands differ in the second digit
   ([verification of the projection](@ref projection-verification)).
 - The section on the fit describes a minimum-image distance, an adjoint recursion and a
-  kinetic-energy constraint. The code fits the lifted positions by the Levenberg–Marquardt method
-  with forward-mode Jacobians and has no kinetic-energy constraint ([the fit](@ref projection-fit)).
+  kinetic-energy constraint. The code fits the lifted positions by the Gauss–Newton method with a
+  dogleg trust region and forward-mode Jacobians, and has no kinetic-energy constraint
+  ([the fit](@ref projection-fit)).
 
 **Symplectic redistribution of weighted particles in phase space** (the note and its script
 `verify_symplectic_redistribution.jl`). The script never passes in a cold process: 27 passes, 2

@@ -29,9 +29,10 @@ exact weights `w`), the low-rank solutions `solutions` (a dictionary from the so
 `(; f, ranks, mass_error, time)`), the grid values `Fe` of `f(T)`, the image of the hole outline
 `hole_image`, and the dictionary `results` from the source name (`"f(T)"`, `"ϑ = 1e-3"`, …,
 `"rank 1"`, `"projection"`) to the target weights `wt`, the band errors `errs`, the number `nneg`
-of nonpositive weights and, after a fit, `X`, `P`, `v1`, `vc`, `wc`, `θ`, `ratio`, `ΔP`,
-`fit_time`, the diagnostics with `w*` (`diagnostics`) and with `w′` (`diagnostics_charge`), the
-residuals `charge_res`, `charge_res_c`, `charge_ok` and `dlnw`.
+of nonpositive weights and, after a fit, `X`, `P`, `v1`, `vc`, `wc`, `θ`, `ratio`, `iterations`,
+`status` (the `SolverStatus` of the fit), `ΔP`, `fit_time`, the diagnostics with `w*`
+(`diagnostics`) and with `w′` (`diagnostics_charge`), the residuals `charge_res`, `charge_res_c`,
+`charge_ok` and `dlnw`.
 """
 function dlra_weights_experiment(; hole_x = π, field_amplitude = 0.15, T = 3.0, nx = 64,
         nv = 256, Vd = 6.0, dt = 0.01, tolerances = (1e-3, 1e-4, 1e-5, 1e-6), fit = true,
@@ -91,7 +92,7 @@ function dlra_weights_experiment(; hole_x = π, field_amplitude = 0.15, T = 3.0,
             i = res.info
             v1, vc = i.P ./ (m .* wt), i.P ./ (m .* i.wc)
             r = (; r..., i.X, i.P, v1, vc, i.wc, i.θ, ratio = i.objective_ratio,
-                ΔP = abs(sum(i.P) - sum(pT)) / sum(abs, pT), i.fit_time,
+                i.iterations, i.status, ΔP = abs(sum(i.P) - sum(pT)) / sum(abs, pT), i.fit_time,
                 charge_ok = i.charge_converged, charge_res = i.charge_residual_target,
                 charge_res_c = i.charge_residual, dlnw = i.max_log_change,
                 diagnostics = diagnostics(i.X, v1), diagnostics_charge = diagnostics(i.X, vc))

@@ -46,7 +46,7 @@ function main(args = ARGS)
     result = remap(method, small.markers)
     tg = result.info.targets
     println("standard example: objective ratio ", result.info.objective_ratio, ", ",
-        result.info.iterations, " iterations")
+        result.info.iterations, " iterations, ", result.info.status.code)
     println("T1: ",
         conservation_report(small.markers, result.markers; grid = PeriodicGrid(2π, 12)))
     savefig("remap",

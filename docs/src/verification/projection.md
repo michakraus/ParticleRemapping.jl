@@ -181,9 +181,9 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
 The numbers of the note *Hamiltonian particle projection: a symplectic redistribution of weighted
 markers* are the numbers of the tables on
 [Structural statements and target weights after a push](@ref projection-checks). The tables on
-[Hole filling](@ref projection-hole-filling) differ from the note in value: the note's fit is
-Levenberg–Marquardt, and the tables give the Gauss–Newton fit with the return code of each row,
-the mirror-symmetric saddle that it reaches from ``\theta = 0`` at ``x_h = \pi``, and the ranges of
+[Hole filling](@ref projection-hole-filling) differ from the note in value: the note's fit is a
+damped least-squares method, and the tables give the Gauss–Newton fit with the return code of
+each row, the mirror-symmetric saddle that it reaches from ``\theta = 0`` at ``x_h = \pi``, and the ranges of
 the seeded fits there.
 The two experiment scripts hold the numbers of both pages in their tables `NOTE_*` and `NOTE`,
 and the two experiment tests in `TABLES`, `WEIGHT_TABLE` and `REMAP_TABLE`; a measured number

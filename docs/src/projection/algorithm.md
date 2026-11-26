@@ -20,9 +20,9 @@ drifts by non-separable stages, and the option `charge` adds the [charge-conserv
 reweighting](@ref projection-charge). The [example](@ref projection-example) of the overview runs
 the algorithm on a lattice of ``24 \times 24`` markers with the target weights ``c f``. The example
 below runs it on the same markers with the target weights from the lumped projection (the
-default) on ``12 \times 13`` hats, coarser than the markers, and a fit stopped after 10
-iterations. On hats finer than the marker spacing the lumped projection vanishes between the
-markers, and `remap` refuses the zero target weights.
+default) on ``12 \times 13`` hats, coarser than the markers, and a fit that ends after its budget
+of 10 iterations, with the return code `MAXITERS`. On hats finer than the marker spacing the
+lumped projection vanishes between the markers, and `remap` refuses the zero target weights.
 
 ```@example construction
 using ParticleRemapping, CairoMakie, Random
@@ -30,7 +30,8 @@ Random.seed!(20261119)
 small = hole_filling_problem(; hole_x = π / 2, nL = 24, hole_a = 0.9, hole_b = 0.8)
 result = remap(KickDriftRemap(; projection = HatProjection(12, 13), maxit = 10), small.markers)
 (; objective_ratio = result.info.objective_ratio, iterations = result.info.iterations,
-    momentum_change = result.info.momentum_change, weight_change = result.info.weight_change)
+    code = result.info.status.code, momentum_change = result.info.momentum_change,
+    weight_change = result.info.weight_change)
 ```
 
 ```@example construction
@@ -44,9 +45,10 @@ The errors of the lumped projection pass to the velocities through ``v' = p' / (
 ## The steps of the map
 
 The kick–drift map of the [hole-filling experiment](@ref projection-hole-filling) at
-``x_h = \pi/2``, here with the fit stopped after 10 iterations: the markers near the hole after
-each kick and each drift (velocities ``p/(m w)`` with the old weights), after the reweighting with
-the target weights and after the charge-conserving reweighting
+``x_h = \pi/2``, here with a fit that ends after its budget of 10 iterations (`MAXITERS`): the
+markers near the hole after each kick and each drift (velocities ``p/(m w)`` with the old
+weights), after the reweighting with the target weights and after the charge-conserving
+reweighting
 ([`experiment_remap`](@ref), [`remap_states`](@ref ParticleRemapping.remap_states),
 [`plot_hole_stages`](@ref)).
 
