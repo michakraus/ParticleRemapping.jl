@@ -58,7 +58,7 @@ function fit_remap_parameters(
     maxit >= 0 || throw(ArgumentError("maxit must be non-negative, got $maxit"))
     maxit > typemax(Int32) &&
         throw(ArgumentError(
-            "maxit must be at most $(typemax(Int32)) for :gauss_newton, got $maxit"))
+            "maxit must be at most $(typemax(Int32)), got $maxit"))
     isfinite(β) && β >= 0 ||
         throw(ArgumentError("β must be finite and non-negative, got $β"))
     n = remap_parameter_count(par)
@@ -74,8 +74,7 @@ function fit_remap_parameters(
     θ = zeros(n)
     obj(θ, r) = 0.5 * dot(r, r) + 0.5β * dot(θ, θ)
     r = residual(θ)
-    F = obj(θ, r)
-    F0 = F
+    F0 = obj(θ, r)
     if θ0 !== nothing
         θ = collect(Float64, θ0)
     end
