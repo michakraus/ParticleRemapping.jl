@@ -141,7 +141,7 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   ``\theta = 0`` do not shrink the hole beyond the reweighting alone; the kicks and drifts at the
   saddle do not fill the hole at ``x_h = \pi``; the target weights alone miss the grid charge;
   the sensitivities without the terms of the shift and the boost miss the derivatives.
-- **`test/projection/experiments/dlra_weights.jl`** (about 14 minutes): the
+- **`test/projection/experiments/dlra_weights.jl`** (about 10 minutes): the
   [target weights after a push](@ref projection-push-test). It checks the push (largest speed,
   empty disk, fill and density deviation of the pushed markers), that no target weight of any
   source is negative, ``P`` and the grid charge after the correction, every number of the two
