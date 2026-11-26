@@ -74,9 +74,9 @@ with the target weights `c f` for `weights = :exact` or from the lumped projecti
 `seed`) the fit, the map, the reweighting with the target weights and the charge-conserving
 reweighting on `ncharge` periodic cubic B-splines against the grid charge `ρ0` of the markers
 before the map. Precomputed `targets`, a `NamedTuple` `(; x, v, w)` as `projection_targets`
-returns it, replace the projection and the flow, and `weights` then has no effect. With
-`verbose = true` one line per variant, with the return code of its fit, is printed while the
-experiment runs.
+returns it, replace its call, and `weights` then has no effect; `projection` still enters the
+diagnostics. With `verbose = true` one line per variant, with the return code of its fit, is
+printed while the experiment runs.
 
 Returns a `NamedTuple` with the `problem`, the `projection`, the `targets`, the reference grid
 charge `ρ0`, the charge method `charge`, the diagnostics `before` and `target_diagnostics`

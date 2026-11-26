@@ -165,8 +165,8 @@
   1.13.4 and 1.14.0-beta1 and with the targets moved by `1e-13` relative; on the nightly build
   1.15.0-DEV.1003 (AMD EPYC 9V74, znver4) it ends at the same numbers with `LINESEARCH_FAILED`,
   so the test and the script assert the return code and the stationarity of the saddle row only
-  on a Julia without a prerelease tag (`isempty(VERSION.prerelease)`) and its numbers on every
-  Julia. The tables of the manual page *Hole filling*, of the test and of
+  on a Julia without a prerelease tag (`isempty(VERSION.prerelease)`, so not on 1.14.0-beta1)
+  and its numbers on every Julia. The tables of the manual page *Hole filling*, of the test and of
   `scripts/projection/hole_filling.jl` are restated from the new fit, each row with the return
   code of its fit. A number of a fit that does not end on the stationarity test is quoted as the
   range over the runs with the targets moved by `1e-13` relative (`Xoshiro(1:10)`) and on Julia

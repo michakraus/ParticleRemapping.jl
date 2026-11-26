@@ -2,7 +2,8 @@
 # characteristics with E = −0.15 sin x to T = 3; the target weights come from f(T), from the BUG
 # solution at ϑ = 1e-3 … 1e-6 and at the fixed rank one, and from the lumped projection; each set
 # enters the fit of the non-separable map and the charge-conserving reweighting. Prints the two
-# tables of the documentation and checks every number against the value the note quotes.
+# tables of the documentation and checks every number against the value the note quotes, the
+# mass error of the fixed rank one against the bound the manual quotes.
 #
 #   julia --startup-file=no --project=scripts scripts/projection/dlra_weights.jl
 #
@@ -79,7 +80,7 @@ end
     @test agrees(e.pushed.discrepancy, "0.099")
     for (name, row) in NOTE_WEIGHTS
         isempty(row[1]) || @test rank_of(name) == parse(Int, row[1])
-        # the mass error of the rank one is at the level of rounding: the note quotes its bound
+        # the mass error of the rank one is at the level of rounding: the manual quotes its bound
         if row[2] === nothing
             @test e.solutions[name].mass_error < 1e-12
         elseif !isempty(row[2])

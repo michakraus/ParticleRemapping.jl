@@ -124,12 +124,13 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   weights in the four velocity bands. At ``x_h = \pi`` it checks that the fit of the kicks and
   drifts from ``\theta = 0`` ends on the mirror-symmetric saddle (`SUCCESS`, stationary, and the
   stationarity ratio ``\|J^{\mathsf{T}} F\| / (\|J\|_F \|F\|)`` of the fit below ``10^{-8}``;
-  on a Julia with a prerelease tag it checks the numbers of this row only, `KNOWN_ISSUES.md`,
-  K17), that the fit from the seeded start 101 fills the hole (`MAXITERS` after 40 iterations, the
-  empty disk below ``1.55`` and below ``0.9`` of the reweighting alone, the fill above ``0.85``,
-  the empty disk of the mirror ellipse at ``v = -1.2`` below ``1.0``, the objective between
-  ``0.25`` and ``0.40``), and that control A and control B from the same seeded start give every
-  number of their rows "seeded" within the quoted range, widened on each side by its width.
+  on a Julia with a prerelease tag, 1.14.0-beta1 among them, it checks the numbers of this row
+  only, `KNOWN_ISSUES.md`, K17), that the fit from the seeded start 101 fills the hole
+  (`MAXITERS` after 40 iterations, the empty disk below ``1.55`` and below ``0.9`` of the
+  reweighting alone, the fill above ``0.85``, the empty disk of the mirror ellipse at
+  ``v = -1.2`` below ``1.0``, the objective between ``0.25`` and ``0.40``), and that control A
+  and control B from the same seeded start give every number of their rows "seeded" within the
+  quoted range, widened on each side by its width.
   Cases that must fail: controls B and C, one area-preserving map of ``(x, v)``, fitted from
   ``\theta = 0`` do not shrink the hole beyond the reweighting alone; the kicks and drifts at the
   saddle do not fill the hole at ``x_h = \pi``; the target weights alone miss the grid charge;
@@ -157,7 +158,8 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   control B at ``x_h = \pi`` for the seeds 101 to 105 and checks that each of their numbers lies
   in its quoted range.
 - **`scripts/projection/dlra_weights.jl`** (about 3 minutes): prints the two tables of the target
-  weights after a push and checks every number against the value of the source note.
+  weights after a push and checks every number against the value of the source note but the mass
+  error of the fixed rank one, which it checks below ``10^{-12}``.
 - **`scripts/projection/higher_dimensions.jl`** (seconds): prints the numbers of parameters,
   nodes and basis functions of the [higher dimensions](@ref projection-higher-dimensions) for
   ``d = 1, 2, 3`` and checks the column ``d = 1`` against the code.
@@ -176,22 +178,23 @@ markers* are the numbers of the tables on
 Levenberg–Marquardt, and the tables give the Gauss–Newton fit with the return code of each row,
 the mirror-symmetric saddle that it reaches from ``\theta = 0`` at ``x_h = \pi``, and the ranges of
 the seeded fits there.
-The two experiment scripts hold them in their tables `NOTE_*` and `NOTE`, and the two experiment
-tests in `TABLES`, `WEIGHT_TABLE` and `REMAP_TABLE`; a measured number agrees with a quoted one
-when it lies within half a unit of the last quoted digit. A quoted range holds a number of the
-script between its ends, and a number of the test within the range widened on each side by its
-width. The experiment tests check every number of the tables in this way. Three points differ in
-form, not in value:
+The two experiment scripts hold the numbers of both pages in their tables `NOTE_*` and `NOTE`,
+and the two experiment tests in `TABLES`, `WEIGHT_TABLE` and `REMAP_TABLE`; a measured number
+agrees with a quoted one when it lies within half a unit of the last quoted digit. A quoted range
+holds a number of the script between its ends, and a number of the test within the range widened
+on each side by its width. The experiment tests check every number of the tables in this way.
+Three points differ in form, not in value:
 
 - The note quotes the relative error of the projected target weights at ``x_h = \pi`` only. At
   ``x_h = \pi/2`` the bands ``[1, 2)`` and ``[3, 4)`` differ in the second digit (``0.18`` and
   ``0.22`` against ``0.17`` and ``0.21``); the [hole-filling page](@ref projection-hole-filling) gives both.
 - The tests assert bounds where the note quotes a measured value: ``|\Delta P|`` below
   ``10^{-15}`` in the hole-filling test and below ``10^{-12}`` in the test of the target weights
-  (the note quotes ``1.1 \cdot 10^{-17}`` and ``3.5 \cdot 10^{-17}`` relative), the
-  error of the sensitivities below ``10^{-10}`` (the note quotes ``2.8 \cdot 10^{-13}``), and the
-  cases that must fail above a threshold below the quoted value (for example ``> 0.28`` for the
-  charge error ``0.29``, ``> 0.15`` for the rank-one error ``0.16``). `checks.jl` and the
-  experiment scripts print the measured values.
+  (the note quotes ``1.1 \cdot 10^{-17}`` and ``3.5 \cdot 10^{-17}`` relative), the mass error of
+  the fixed rank one below ``10^{-12}``, as the table quotes it (the note quotes
+  ``1.1 \cdot 10^{-13}``), the error of the sensitivities below ``10^{-10}`` (the note quotes
+  ``2.8 \cdot 10^{-13}``), and the cases that must fail above a threshold below the quoted value
+  (for example ``> 0.28`` for the charge error ``0.29``, ``> 0.15`` for the rank-one error
+  ``0.16``). `checks.jl` and the experiment scripts print the measured values.
 - The cost of the maps and of the fit (seconds) is printed by `hole_filling.jl` and
   `dlra_weights.jl` and depends on the machine; no test checks it.

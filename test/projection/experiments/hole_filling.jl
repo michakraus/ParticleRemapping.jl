@@ -58,8 +58,9 @@ stop(status) = string(status.code) * (status.stationary ? ", stationary" : "")
 
 # Whether the test asserts the return code of the row of the variant `v` at `hole_x` on the Julia
 # `version`. The fit of the kicks and drifts from θ = 0 at x_h = π ends on the saddle with
-# `SUCCESS, stationary` on Julia 1.13.4 and 1.14.0-beta1; on a Julia with a prerelease tag the
-# test asserts its numbers only, not its return code or its stationarity (KNOWN_ISSUES.md, K17).
+# `SUCCESS, stationary` on Julia 1.13.4 and 1.14.0-beta1; on a Julia with a prerelease tag,
+# 1.14.0-beta1 among them, the test asserts its numbers only, not its return code or its
+# stationarity (KNOWN_ISSUES.md, K17).
 function code_asserted(hole_x, v; version = VERSION)
     isempty(version.prerelease) || !(hole_x ≈ π && v === :weight_dependent)
 end

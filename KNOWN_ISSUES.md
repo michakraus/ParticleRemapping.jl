@@ -49,7 +49,7 @@
   iterations with `LINESEARCH_FAILED`, at the quoted numbers but with the stationarity ratio
   `4.03e-5` against the bound `1e-8`. The test and `scripts/projection/hole_filling.jl` therefore
   assert the return code and the stationarity of this row only on a Julia without a prerelease
-  tag; on a prerelease Julia they assert its numbers. Reported as
+  tag; on a prerelease Julia, 1.14.0-beta1 among them, they assert its numbers. Reported as
   [JuliaGNI/GeometricSolvers.jl#124](https://github.com/JuliaGNI/GeometricSolvers.jl/issues/124);
   the entry can go when GeometricSolvers keeps the saddle stationary there.
 - **evidence:** CI run 45653025090, job "Julia nightly - ubuntu-latest", on commit `cad5bb8`:
@@ -193,7 +193,7 @@
   iterations the gradient and `|θ|` stay large, so every weight-dependent row of the hole-filling
   tables, apart from the saddle at `x_h = π` that the fit from `θ = 0` reaches, is the value after
   the budget of 40 iterations, not at a minimum; a larger `β` or a continuation in `β` may give a
-  minimum. The method of the experiment is unchanged.
+  minimum. The experiment keeps `β = 1e-3` and the budget of 40 iterations.
 - **evidence:** the fit of the experiment's weight-dependent variant run past the budget on macOS
   with `BLAS.set_num_threads(2)`, by Levenberg–Marquardt and by GeometricSolvers' `GaussNewton`
   with `Backtracking` or `DogLeg`, from `θ = 0`, from targets moved by `1e-13` relative and from

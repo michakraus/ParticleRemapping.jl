@@ -153,7 +153,8 @@ what binds first in 3d3v.
   tails, and the sign of ``f_r``, which the test never saw negative.
 - Charge against filling: the [charge-conserving reweighting](@ref projection-charge) keeps the
   grid charge of the markers before the map, with the charge deficit of a hole, and lowers the
-  fill (from ``0.94`` to ``0.70`` in the [hole-filling experiment](@ref projection-hole-filling)).
+  fill (from between ``0.93`` and ``0.94`` to ``0.70`` in the
+  [hole-filling experiment](@ref projection-hole-filling)).
   Which charge is the right reference depends on whether the hole is a defect of the sampling or
   a feature of ``f``. The correction keeps the grid charge only.
 
