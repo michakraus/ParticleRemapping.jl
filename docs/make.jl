@@ -92,15 +92,23 @@ makedocs(;
     pagesonly = true,
     checkdocs = :exports,
     plugins = [BIB],
-    # the repository is private and the manual is built locally, so no source or edit links
+    # no source or edit links
     remotes = nothing,
-    # VitePress builds the site into docs/build/1. An animation is written next to its page and
-    # embedded as `./<name>.mp4`, which VitePress bundles with the page.
+    # VitePress builds one site per deploy base: docs/build/1 for a local build, a push to main or
+    # a pull request, and docs/build/1, docs/build/2, … for the aliases of a release tag. An
+    # animation is written next to its page and embedded as `./<name>.mp4`, which VitePress
+    # bundles with the page.
     format = DocumenterVitepress.MarkdownVitepress(;
         repo = "github.com/michakraus/ParticleRemapping.jl",
         devbranch = "main",
-        description = "Symplectic remapping, projection and redistribution of weighted particle-in-cell markers",
-        # the manual is not deployed: one site, with no version subfolder
-        deploy_decision = Documenter.DeployDecision(; all_ok = false, subfolder = "")
+        description = "Symplectic remapping, projection and redistribution of weighted particle-in-cell markers"
     )
+)
+
+DocumenterVitepress.deploydocs(;
+    repo = "github.com/michakraus/ParticleRemapping.jl",
+    target = joinpath(@__DIR__, "build"),
+    branch = "gh-pages",
+    devbranch = "main",
+    push_preview = true
 )

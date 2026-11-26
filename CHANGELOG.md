@@ -78,8 +78,8 @@
   diverge, which stops the repeated remaps of the long run).
 - Continuous integration, the same generated workflows as the other repositories of the tree. The
   tests run the groups `core` and `slow` on Julia `min` and `1` on Ubuntu, and on fewer events on
-  macOS and Windows; a pinned doctest job runs next to them. The manual is built on every change;
-  nothing is published, because there is no `deploydocs`.
+  macOS and Windows; a pinned doctest job runs next to them. The manual is built on every change
+  and published to the `gh-pages` branch by `DocumenterVitepress.deploydocs` (see *Changed*).
 - An advisory `Downgrade` job tests the `[compat]` lower bounds; its failure does not fail the run.
 - Dependabot opens the weekly `[compat]` bumps of the root `Project.toml` and the GitHub Actions
   updates.
@@ -144,8 +144,15 @@
   of the *Algorithm* page.
 - The manual is built with DocumenterVitepress instead of Documenter's HTML writer, in the style
   of the VitePress tutorial on the Kolmogorov n-width: its colours, content width, code themes,
-  local search and outline. `docs/make.jl` builds the site into `docs/build/1`; the
-  animations are embedded as `./<name>.mp4`, so that VitePress bundles them with their page.
+  local search and outline. `docs/make.jl` builds the site into one directory for each deploy
+  base: `docs/build/1` for a local build, a push to `main` or a pull request, and `docs/build/1`,
+  `docs/build/2`, … for the aliases of a release tag; the animations are embedded as
+  `./<name>.mp4`, so that VitePress bundles them with their page.
+- The Documentation workflow publishes the manual to the `gh-pages` branch:
+  `docs/make.jl` ends in `DocumenterVitepress.deploydocs`, and the deploy decision comes from the
+  CI environment. A push to `main` publishes `dev`, a release tag publishes `stable` and the
+  version aliases, and a pull request publishes a preview under `previews/PR<n>`. A local build
+  deploys nothing.
 - The evidence of K2, K3 and K4 is re-measured by `scripts/redistribution/failure_cases.jl` on
   the same machine and code: K3 returns after 44 s instead of 46 s (timing noise), with the
   momentum change 0.165.

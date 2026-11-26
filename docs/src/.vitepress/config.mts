@@ -5,8 +5,8 @@ import { juliaReplTransformer } from './julia-repl-transformer'
 import footnote from "markdown-it-footnote";
 import path from 'path'
 
-// DocumenterVitepress configuration for the manual. The manual is built locally and in CI and
-// is not deployed, so it has no version picker, no edit links, no logo and no favicon.
+// DocumenterVitepress configuration for the manual. The manual is built locally and in CI, and
+// CI deploys it to gh-pages; it has no version picker, no edit links, no logo and no favicon.
 
 const mathjax = mathjaxPlugin()
 
