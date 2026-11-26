@@ -246,6 +246,9 @@
   NonSeparableParametrisation remap_stages: Any[Tuple{Vector{Float64}, Vector{Float64}}]
   NonSeparableParametrisation fit_remap_parameters: Any[@NamedTuple{θ::Vector{Float64}, F0::Float64, F::Float64, iterations::Int64, status::GeometricSolvers.SolverStatus{Float64}}]
   ```
+  The cause is `_stage_functions` (`src/projection/parametrisation.jl:84`): it picks the closures
+  `gκ` and `gη` by the runtime field `variant::Symbol` (`:40`), so `Base.return_types` gives each
+  of them as a `Union` of three closure types.
 - **kind:** defect
 - **found:** 2026-11-26
 

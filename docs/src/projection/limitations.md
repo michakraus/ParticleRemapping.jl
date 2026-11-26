@@ -100,8 +100,9 @@ The entries of `KNOWN_ISSUES.md` of the package that concern this chapter:
 - **K16** — the weight-dependent fit of the hole-filling experiment does not converge; its rows,
   apart from the saddle at ``x_h = \pi``, are the values after the budget of 40 iterations
   ([hole filling](@ref projection-hole-filling)).
-- **K17** — on a prerelease Julia the saddle fit of the hole-filling experiment ends stationary on
-  some builds and with `LINESEARCH_FAILED` on others, at the same numbers.
+- **K17** (upstream) — on a prerelease Julia the saddle fit of the hole-filling experiment ends
+  stationary on some builds and with `LINESEARCH_FAILED` on others, at the same numbers
+  ([hole filling](@ref projection-hole-filling)).
 - **K18** — a target weight near the underflow threshold passes the weight check of `remap`, and
   the next remap throws `DomainError with NaN`
   ([numerical experiments](@ref projection-experiments)).

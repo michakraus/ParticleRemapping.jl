@@ -20,9 +20,12 @@
 - The Makie extension `ParticleRemappingMakieExt`, with the figures and animations of every note.
 - One manual, built by `docs/make.jl`: foundations, a chapter for each construction in one
   notation, a comparison with the open questions, a verification chapter with the findings against
-  the source notes, and a library page for each module.
-- A test suite of 48 test files in the groups `core` and `slow`, and scripts in
-  `scripts/<construction>/` that reproduce the numbers and figures of each note.
+  the source notes and a table of the checks of every test file, and a library page for each
+  module.
+- A test suite of 48 test files in the groups `core` and `slow` (the group `slow` holds the two
+  projection experiments and `test/standard.jl`, as the README, the home page and the verification
+  page say), and scripts in `scripts/<construction>/` that reproduce the numbers and figures of
+  each note.
 - `KNOWN_ISSUES.md` with the entries K1–K7.
 - The states of a remap, common to every construction: `RemapStage`, `remap_states(method,
   before, result)` (the markers before, after each stage of the canonical map at the old weights,
@@ -42,8 +45,9 @@
   algorithm in short*, *Example*, *The pages of this chapter* and *The code*; the theory pages;
   *Numerical experiments* (new for the remapping and the spline-projection redistribution); and
   *Properties, limitations and higher dimensions* (new; it replaces the projection's
-  *Properties*), with the properties table, the limitations, the known issues, the open questions
-  and the counts and costs of each step in 3d3v.
+  *Properties*), with the properties table, the limitations, the known issues (every entry of
+  `KNOWN_ISSUES.md` that concerns the construction), the open questions and the counts and costs
+  of each step in 3d3v.
 - The manual page *Figures and animations*, with the style rules and the inventory of every
   figure and animation of the manual and of the notes; the comparison has a section on what binds
   first in 3d3v.
@@ -101,6 +105,9 @@
   holds `status`. Tests: the solver, the start and the zero budget,
   non-finite starts, `Int` iterations, trace output, the invalid arguments and the seed
   (`test/projection/parametrisation.jl`, `test/projection/remap.jl`).
+- `KNOWN_ISSUES.md`: K20 (the kick–drift map does not infer its return type, so the fields `F0`
+  and `F` of `fit_remap_parameters` with a `KickDriftParametrisation` infer `Any`; no test
+  measures what this costs).
 
 ### Fixed
 
@@ -120,13 +127,6 @@
   its rounding error stays below the decrease of the step. Each of 20 starts within 1e-11 of the
   grid charge converges in one step (`test/projection/charge.jl`); before the fix one of them
   stopped after 50 iterations and one took 29.
-- The table of checks on the verification page counts all 48 test files: it left out
-  `test/common/svg.jl`, `test/algorithm_figures.jl` and `test/standard.jl`, and gave the gauge
-  rezoning and canonical transport 512 checks where a cold run gives 526. The page, the home page
-  of the manual and the README also say that the group `slow` holds `test/standard.jl` beside the
-  two projection experiments, and the `[Unreleased]` entry of the test suite counts 48 files, not
-  45. The list of known issues of the projection chapter names every entry of `KNOWN_ISSUES.md`
-  that concerns it (K10, K11, K12, K16, K17, K18, K19 and K20), not K10 alone.
 
 ### Changed
 
