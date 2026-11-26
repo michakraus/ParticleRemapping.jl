@@ -131,7 +131,7 @@ end
     end
 end
 
-@testset "fit with a chosen solver" begin
+@testset "fit with Gauss–Newton" begin
     # the small problem of `remap.jl` with the targets of the exact density on hats 12 × 13
     sp = hole_filling_problem(; nL = 16, hole_a = 0.9, hole_b = 0.8)
     xs, ps, ws, ms = sp.x0, sp.p0, sp.w0, sp.m
