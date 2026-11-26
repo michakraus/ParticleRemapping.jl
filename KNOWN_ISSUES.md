@@ -209,6 +209,14 @@
   `MAXITERS` after its 5 iterations with a finite `θ`, `|θ| = 7.52`, the residual norm of its
   status is `6.9·10³⁰³`, `F0 = F = Inf`, and the largest speed after the remap is `2.6·10³⁰³`; the
   remap at `t = 15` throws `DomainError with NaN: the target weights must be positive`.
+  `standard_remap_history(:projection; variant = :positive)` on macOS with Julia 1.14.0-beta1,
+  with the targets moved by `1e-13` relative (`Xoshiro(5)` and `Xoshiro(6)`): at the remap at
+  `t = 10` three of the 900 target weights are below `10⁻²⁰⁰`, the smallest `1.3·10⁻²⁷³` and
+  `6.4·10⁻²⁷⁵`; the residual norm of the fit at `θ = 0` is `3.4·10²⁷⁰` and `6.8·10²⁷¹`, one
+  step lowers it to `8.3·10²⁵⁵` and `2.2·10²⁵⁷`, and the fit returns `SUCCESS`, not
+  stationary, after 1 iteration through the relative residual test of GeometricSolvers, with a
+  finite `θ` (`|θ| = 8.87` and `10.0`) and `F0 = F = Inf`; the largest speed after the remap is
+  `3.1·10²⁵⁵` and `8.4·10²⁵⁶`, and the remap at `t = 15` throws `DomainError with NaN`.
 - **kind:** defect
 - **found:** 2026-11-26
 

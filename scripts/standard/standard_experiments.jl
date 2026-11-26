@@ -35,19 +35,22 @@ stop(status) = string(status.code) * (status.stationary ? ", stationary" : "")
 # The quoted numbers of the projection maps with the positive density, and the return code and
 # the iterations of the fit. Checkerboard: the quadrant counts, the weight in Q2 ∪ Q4 and the empty
 # cells of 64. Long run: the empty cells, the relative std, the L² difference, the change of the
-# kinetic energy and the largest |v|.
+# kinetic energy and the largest |v|. No fit ends on the stationarity test, so a number whose
+# digits move when the targets move by 1e-13 relative, or on Julia 1.13 and 1.14, or that lies
+# within a tenth of a unit of a rounding boundary, is a range over those runs.
 const CHECKERBOARD = Dict(
-    :projection => (("160", "40", "165", "35"), "0.188", "13", "MAXITERS", 20),
-    :nonseparable => (("127", "72", "128", "73"), "0.363", "19", "MAXITERS", 5))
+    :projection => (("160", "40", "165", "35"), "0.1875", "13", "MAXITERS", 20),
+    :nonseparable => (("127", "72", "128", "73"), "0.3625", "19", "MAXITERS", 5))
 const LONG_RUN = Dict(
-    :projection => (("5", "0.826", "0.496", "1.38", "33.2"), "MAXITERS", 20),
-    :nonseparable => (("12", "1.01", "0.623", "2.14", "65.2"), "MAXITERS", 5))
+    :projection => (("3–6", "0.808–0.837", "0.494–0.507", "1.36–1.43", "32.4–33.4"),
+        "MAXITERS", 20),
+    :nonseparable => (("12", "1.01", "0.623", "2.144", "65.16"), "MAXITERS", 5))
 
 # The remaps after every 100 steps with the positive density: the return code and the iterations
 # of each fit, the largest |v| after it, and the time and the error of the remap that fails.
 const HISTORY = Dict(
     :projection => ((("MAXITERS", 20, "34.5"),), 10.0, "DomainError with 0.0"),
-    :nonseparable => ((("MAXITERS", 5, "31.4"), ("MAXITERS", 5, "2.6e303")), 15.0,
+    :nonseparable => ((("MAXITERS", 5, "31.44"), ("MAXITERS", 5, "2.6e303")), 15.0,
         "DomainError with NaN"))
 
 # A remap by `method` at the time `t` that records the return code and the iterations of its fit

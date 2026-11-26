@@ -18,13 +18,16 @@ close the chapter.
 Every construction remaps the same markers ([standard experiments](@ref standard-experiments));
 the page *Numerical experiments* of each chapter gives the figures and the details. "fails" names
 the reason the construction stops; "rep." and "pos." are the represented and the positive density,
-which matter only for the projection and the transport.
+which matter only for the projection and the transport. The fits of the two projection maps end
+on their iteration budgets (`MAXITERS`), so their rows give the values after the budget, not at a
+minimum; a range is the range over the runs with the targets moved by ``10^{-13}`` relative and
+on Julia 1.13 and 1.14.
 
 | | checkerboard: quadrants after (before ``200, 0, 200, 0``) | weight in ``Q_2 \cup Q_4`` (exact: 0 rep., 1/2 pos.) | long run: empty cells (before 14) | long run: relative std (before 0.598) | remaps every 100 steps: mean relative std, ``t \ge 5`` (no remap 0.587) |
 |:--|:--|--:|--:|--:|--:|
 | [kick–drift projection](@ref projection-experiments), rep. | fails: zero target weights | | fails | fails | |
-| kick–drift projection, pos. | ``131, 73, 130, 66`` | 0.348 | 0 | 0.475 | fails at ``t = 15``: markers outside the box |
-| non-separable projection, pos. | ``123, 76, 120, 81`` | 0.393 | 7 | 0.937 | fails |
+| kick–drift projection, pos. | ``160, 40, 165, 35`` | 0.1875 | 3–6 | 0.808–0.837 | fails at ``t = 15``: markers outside the box |
+| non-separable projection, pos. | ``127, 72, 128, 73`` | 0.3625 | 12 | 1.01 | fails |
 | [spline redistribution](@ref rd-experiments) | fails: relaxation leaves the box (K2) | | fails (K2) | fails (K2) | |
 | [gauge rezoning](@ref remap-experiments) | ``200, 0, 200, 0`` | 0 | 13 | 0.559 | 0.550 |
 | canonical transport, ``\psi = \mathrm{id}``, rep. | ``200, 0, 200, 0`` | 0 | 15 | 0.572 | 0.597 |

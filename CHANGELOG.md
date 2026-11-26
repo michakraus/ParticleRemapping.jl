@@ -222,6 +222,17 @@
 - The README now links to the dev manual (`docs-dev` badge), lists the four modules in the
   manual's chapter order (`Projection`, `Redistribution`, `Remapping`, `SlicedRedistribution`),
   and demonstrates `NonSeparableRemap` (`Projection`) in the quick start.
+- The numbers of the projection's fits with the Gauss–Newton method: the remap table of the
+  target weights after a push (*Structural statements and target weights after a push*), and the
+  checkerboard, the long run and the non-separable remap history with the positive density
+  (*Numerical experiments* of the projection, *Comparison*). Each table gives the return code of
+  its fits, and a number whose digits move with the targets moved by `1e-13` relative or between
+  Julia 1.13 and 1.14 is quoted as the range over those runs. The weight in `Q_2 ∪ Q_4` of the
+  checkerboard falls from 0.348 to 0.1875 (kick–drift) and from 0.393 to 0.3625
+  (non-separable), and both maps leave cells empty in the long run (3–6 and 12, were 0 and 7).
+  `scripts/standard/standard_experiments.jl` checks these numbers and the return codes,
+  `test/projection/experiments/dlra_weights.jl` and `scripts/projection/dlra_weights.jl` the
+  return code of each fit of the remap table.
 
 ### Removed
 
