@@ -214,6 +214,11 @@
   below `10^{-15}`. `KNOWN_ISSUES.md`: K16 (the weight-dependent fit does not converge) and K17
   (on a prerelease Julia the saddle fit does not always end stationary; reported as
   JuliaGNI/GeometricSolvers.jl#124).
+- The test of the seeded controls at `x_h = π` also compares control A and control B with the
+  `θ = 0` result of the same run (the widened fill range of control B admits the 0.47 of
+  `θ = 0`): the fill above that of `θ = 0` plus 0.07, the charge residual above 2 times and
+  `max |ln(w′/w*)|` above 2.5 times. The empty disk is not compared (control B's 1.51–1.98 holds
+  1.88). The manual states it.
 - The manual page *Structural statements and target weights after a push* quotes the mass error
   of the BUG solution at the fixed rank one as below `10^{-12}` (was `1.1·10^{-13}`): the
   number is at the level of rounding, 1.1e-13 on macOS with Julia 1.13, 1.6e-13 with Julia 1.14,
