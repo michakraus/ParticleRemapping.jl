@@ -94,8 +94,10 @@ makedocs(;
     plugins = [BIB],
     # no source or edit links
     remotes = nothing,
-    # VitePress builds the site into docs/build/1. An animation is written next to its page and
-    # embedded as `./<name>.mp4`, which VitePress bundles with the page.
+    # VitePress builds one site per deploy base: docs/build/1 for a local build, a push to main or
+    # a pull request, and docs/build/1, docs/build/2, … for the aliases of a release tag. An
+    # animation is written next to its page and embedded as `./<name>.mp4`, which VitePress
+    # bundles with the page.
     format = DocumenterVitepress.MarkdownVitepress(;
         repo = "github.com/michakraus/ParticleRemapping.jl",
         devbranch = "main",
