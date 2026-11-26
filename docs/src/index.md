@@ -146,7 +146,7 @@ The package root holds three environments besides the package itself. From the p
 
 ```
 julia --startup-file=no --project=test test/runtests.jl            # all test files
-julia --startup-file=no --project=test test/runtests.jl core       # without the two slow files
+julia --startup-file=no --project=test test/runtests.jl core       # without the three slow files
 julia --startup-file=no --project=test test/remapping/gauge.jl     # one test file
 julia --startup-file=no --project=scripts scripts/sliced/verify_sliced_redistribution.jl
 julia --startup-file=no --project=scripts scripts/projection/make_figures.jl
@@ -154,7 +154,8 @@ julia --startup-file=no --project=docs docs/make.jl                # this manual
 ```
 
 The group `core` runs in about 5 minutes; the group `slow` holds the two experiments of the
-Hamiltonian particle projection and runs in about 21 minutes. Each construction has scripts in
-`scripts/<construction>/` that print every number of its chapter next to the value of its source
-and check them, and a `make_figures.jl` that writes the figures and animations to
-`results/<construction>/`. The [verification](@ref verification) chapter lists them all.
+Hamiltonian particle projection and the standard experiments, and runs in about 21 minutes. Each
+construction has scripts in `scripts/<construction>/` that print every number of its chapter next
+to the value of its source and check them, and a `make_figures.jl` that writes the figures and
+animations to `results/<construction>/`. The [verification](@ref verification) chapter lists them
+all.

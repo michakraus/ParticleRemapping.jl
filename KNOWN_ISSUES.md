@@ -246,7 +246,7 @@
   NonSeparableParametrisation remap_stages: Any[Tuple{Vector{Float64}, Vector{Float64}}]
   NonSeparableParametrisation fit_remap_parameters: Any[@NamedTuple{θ::Vector{Float64}, F0::Float64, F::Float64, iterations::Int64, status::GeometricSolvers.SolverStatus{Float64}}]
   ```
-- **kind:** not verified
+- **kind:** defect
 - **found:** 2026-11-26
 
 ## SlicedRedistribution

@@ -21,7 +21,7 @@
 - One manual, built by `docs/make.jl`: foundations, a chapter for each construction in one
   notation, a comparison with the open questions, a verification chapter with the findings against
   the source notes, and a library page for each module.
-- A test suite of 45 test files in the groups `core` and `slow`, and scripts in
+- A test suite of 48 test files in the groups `core` and `slow`, and scripts in
   `scripts/<construction>/` that reproduce the numbers and figures of each note.
 - `KNOWN_ISSUES.md` with the entries K1–K7.
 - The states of a remap, common to every construction: `RemapStage`, `remap_states(method,
@@ -122,10 +122,11 @@
   stopped after 50 iterations and one took 29.
 - The table of checks on the verification page counts all 48 test files: it left out
   `test/common/svg.jl`, `test/algorithm_figures.jl` and `test/standard.jl`, and gave the gauge
-  rezoning and canonical transport 512 checks where a cold run gives 526. The page also says that
-  the group `slow` holds `test/standard.jl` beside the two projection experiments. The list of
-  known issues of the projection chapter names every entry of `KNOWN_ISSUES.md` that concerns it
-  (K10, K11, K12, K16, K17, K18, K19 and K20), not K10 alone.
+  rezoning and canonical transport 512 checks where a cold run gives 526. The page, the home page
+  of the manual and the README also say that the group `slow` holds `test/standard.jl` beside the
+  two projection experiments, and the `[Unreleased]` entry of the test suite counts 48 files, not
+  45. The list of known issues of the projection chapter names every entry of `KNOWN_ISSUES.md`
+  that concerns it (K10, K11, K12, K16, K17, K18, K19 and K20), not K10 alone.
 
 ### Changed
 
