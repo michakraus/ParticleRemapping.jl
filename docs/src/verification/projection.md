@@ -92,8 +92,9 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   with a hole: the objective drops, ``P`` and the total weight are kept, the result carries the
   positions modulo ``L``, the target weights and the momenta of the map; the option `charge`; the
   default target weights from the lumped projection; the guards of nonpositive target weights, of
-  an unknown variant and of markers that are not 1D-1V. Case that must fail: the target weights
-  alone miss the grid charge.
+  an unknown variant and of markers that are not 1D-1V; the return code `MAXITERS` after the
+  budget of each remap example of the manual. Case that must fail: the target weights alone miss
+  the grid charge.
 - **`test/projection/frames.jl`**: the states and the frames of the remaps on small runs
   ([`remap_states`](@ref ParticleRemapping.remap_states),
   [`remap_frames`](@ref ParticleRemapping.remap_frames)) for the kick–drift map, the
@@ -140,13 +141,14 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   ``\theta = 0`` do not shrink the hole beyond the reweighting alone; the kicks and drifts at the
   saddle do not fill the hole at ``x_h = \pi``; the target weights alone miss the grid charge;
   the sensitivities without the terms of the shift and the boost miss the derivatives.
-- **`test/projection/experiments/dlra_weights.jl`** (about 3 minutes): the
+- **`test/projection/experiments/dlra_weights.jl`** (about 10 minutes): the
   [target weights after a push](@ref projection-push-test). It checks the push (largest speed,
   empty disk, fill and density deviation of the pushed markers), that no target weight of any
   source is negative, ``P`` and the grid charge after the correction, every number of the two
-  tables with the digits it is quoted with but the mass error of the fixed rank one, which is at
-  the level of rounding and is checked below ``10^{-12}``, and that the weight error falls with
-  ``\vartheta`` in every band. Case that must fail: the fixed rank one misses the sheared density.
+  tables with the digits or the range it is quoted with but the mass error of the fixed rank one,
+  which is at the level of rounding and is checked below ``10^{-12}``, the return code of each
+  fit, and that the weight error falls with ``\vartheta`` in every band. Case that must fail: the
+  fixed rank one misses the sheared density.
 
 ## Scripts
 
@@ -168,9 +170,10 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   to 10, with each end rounded outward to the quoted digits, and checks that it lies within the
   quoted range. Run it on Julia 1.13 and on Julia 1.14; the quoted ranges also hold the values of
   the CI runners.
-- **`scripts/projection/dlra_weights.jl`** (about 3 minutes): prints the two tables of the target
-  weights after a push and checks every number against the value of the source note but the mass
-  error of the fixed rank one, which it checks below ``10^{-12}``.
+- **`scripts/projection/dlra_weights.jl`** (about 14 minutes): prints the two tables of the
+  target weights after a push and checks every number against the value that the manual quotes
+  but the mass error of the fixed rank one, which it checks below ``10^{-12}``, and the return
+  code of each fit.
 - **`scripts/projection/higher_dimensions.jl`** (seconds): prints the numbers of parameters,
   nodes and basis functions of the [higher dimensions](@ref projection-higher-dimensions) for
   ``d = 1, 2, 3`` and checks the column ``d = 1`` against the code.
@@ -183,17 +186,19 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
 ## The numbers of the source note
 
 The numbers of the note *Hamiltonian particle projection: a symplectic redistribution of weighted
-markers* are the numbers of the tables on
-[Structural statements and target weights after a push](@ref projection-checks). The tables on
-[Hole filling](@ref projection-hole-filling) differ from the note in value: the note's fit is
-Levenberg–Marquardt, and the tables give the Gauss–Newton fit with the return code of each row,
-the mirror-symmetric saddle that it reaches from ``\theta = 0`` at ``x_h = \pi``, and the ranges of
-the seeded fits there.
-The two experiment scripts hold the numbers of both pages in their tables `NOTE_*` and `NOTE`,
-and the two experiment tests in `TABLES`, `WEIGHT_TABLE` and `REMAP_TABLE`; a measured number
-agrees with a quoted one when it lies within half a unit of the last quoted digit. A quoted range
-holds a number of the script between its ends, and a number of the test within the range widened
-on each side by its width. The experiment tests check every number of the tables in this way.
+markers* are the numbers of the first table on
+[Structural statements and target weights after a push](@ref projection-checks). The second table
+there, of the remaps, and the tables on [Hole filling](@ref projection-hole-filling) differ from
+the note in value: the note's fit is a damped least-squares method, and the tables give the
+Gauss–Newton fit with the return code of each row, and those on hole filling also the
+mirror-symmetric saddle that it reaches from ``\theta = 0`` at ``x_h = \pi`` and the ranges of the
+seeded fits there.
+The two experiment scripts hold the numbers of both pages in their tables `NOTE_WEIGHTS`,
+`REMAP_TABLE` and `NOTE`, and the two experiment tests in `TABLES`, `WEIGHT_TABLE` and
+`REMAP_TABLE`; a measured number agrees with a quoted one when it lies within half a unit of the
+last quoted digit. A quoted range holds a number of the script between its ends, and a number of
+the test within the range widened on each side by its width. The experiment tests check every
+number of the tables in this way.
 Three points differ in form, not in value:
 
 - The note quotes the relative error of the projected target weights at ``x_h = \pi`` only. At

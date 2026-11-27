@@ -12,26 +12,23 @@ mk = prob.markers
 hp = HatProjection(12, 13)
 
 @testset "Remap methods" begin
+    # the four methods with the default solver, Gauss–Newton
     methods = (KickDriftRemap(; nξ = 8, nv = 10, nw = 4, projection = hp, maxit = 5),
         KickDriftRemap(; variant = :control_B, nξ = 8, nv = 10, projection = hp, maxit = 5),
         NonSeparableRemap(; nξ = 6, nv = 7, nℓ = 3, projection = hp, maxit = 5),
         NonSeparableRemap(; nξ = 6, nv = 7, nℓ = 3, projection = hp, maxit = 5,
-            weighted = false),
-        KickDriftRemap(; nξ = 8, nv = 10, nw = 4, projection = hp, maxit = 5,
-            solver = :gauss_newton),
-        NonSeparableRemap(; nξ = 6, nv = 7, nℓ = 3, projection = hp, maxit = 5,
-            solver = :gauss_newton))
+            weighted = false))
     for method in methods
-        @testset "$(nameof(typeof(method))) $(method.solver)" begin
+        variant = method isa KickDriftRemap ? method.variant :
+                  "weighted = $(method.weighted)"
+        @testset "$(nameof(typeof(method))) $variant" begin
             r = remap(method, mk)
             i = r.info
             @test i.F < i.F0 && i.objective_ratio ≈ i.F / i.F0
-            if method.solver === :gauss_newton
-                @test nameof(typeof(i.status)) === :SolverStatus
-                @test i.iterations == i.status.iterations <= 5
-            else
-                @test i.status === nothing
-            end
+            @test method.solver === :gauss_newton
+            @test i.status !== nothing
+            @test nameof(typeof(i.status)) === :SolverStatus
+            @test i.iterations == i.status.iterations <= 5
             @test i.momentum_change < 1e-14
             @test i.weight_change < 1e-14
             @test total_momentum(r.markers) ≈ total_momentum(mk) atol = 1e-14 *
@@ -102,10 +99,12 @@ hp = HatProjection(12, 13)
         @test NonSeparableRemap(; seed = Int32(3)).seed === 3
         @test KickDriftRemap(; seed = 0).seed === 0 &&
               NonSeparableRemap(; seed = 0).seed === 0
-        @test KickDriftRemap().solver === :levenberg_marquardt
-        @test NonSeparableRemap().solver === :levenberg_marquardt
+        @test KickDriftRemap().solver === :gauss_newton
+        @test NonSeparableRemap().solver === :gauss_newton
         for M in (KickDriftRemap, NonSeparableRemap)
-            @test_throws r"^ArgumentError: unknown solver :newton; use :levenberg_marquardt or :gauss_newton$" M(;
+            @test_throws r"^ArgumentError: unknown solver :levenberg_marquardt; use :gauss_newton$" M(;
+                solver = :levenberg_marquardt)
+            @test_throws r"^ArgumentError: unknown solver :newton; use :gauss_newton$" M(;
                 solver = :newton)
             @test_throws r"^ArgumentError: the seed must be non-negative, got -1$" M(;
                 seed = -1)
@@ -115,5 +114,26 @@ hp = HatProjection(12, 13)
         end
         @test_throws r"^ArgumentError: the Hamiltonian particle projection acts on 1D-1V" remap(
             KickDriftRemap(), Markers(rand(2, 3), rand(2, 3), rand(3)))
+    end
+
+    # The remap examples of the manual, as the pages run them: each fit ends after its budget,
+    # with the return code `MAXITERS` that the page states.
+    @testset "the examples of the manual" begin
+        maxiters(r, budget) = string(r.info.status.code) == "MAXITERS" &&
+                              !r.info.status.stationary && r.info.iterations == budget
+        # the home page
+        home = remap(
+            NonSeparableRemap(; nξ = 6, nv = 7, nℓ = 3, projection = hp, maxit = 5), mk)
+        @test maxiters(home, 5)
+        # the algorithm page and the overview of the projection
+        Random.seed!(20261119)
+        small = hole_filling_problem(; hole_x = π / 2, nL = 24, hole_a = 0.9, hole_b = 0.8)
+        algorithm = remap(KickDriftRemap(; projection = hp, maxit = 10), small.markers)
+        @test maxiters(algorithm, 10)
+        overview = remap(
+            KickDriftRemap(; projection = hp, maxit = 20,
+                density = (xs, vs) -> small.density.(xs, vs)),
+            small.markers)
+        @test maxiters(overview, 20)
     end
 end

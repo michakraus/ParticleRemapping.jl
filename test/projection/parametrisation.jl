@@ -131,7 +131,7 @@ end
     end
 end
 
-@testset "fit with a chosen solver" begin
+@testset "fit with Gauss–Newton" begin
     # the small problem of `remap.jl` with the targets of the exact density on hats 12 × 13
     sp = hole_filling_problem(; nL = 16, hole_a = 0.9, hole_b = 0.8)
     xs, ps, ws, ms = sp.x0, sp.p0, sp.w0, sp.m
@@ -163,19 +163,20 @@ end
     g0 = norm(gradient(kds, zeros(n), 0))
     code(fr) = string(fr.status.code)
 
-    @testset "the default is Levenberg–Marquardt" begin
+    @testset "the default is Gauss–Newton" begin
         for par in (kds, nss)
             a = fit(par; maxit = 5)
-            b = fit(par; maxit = 5, solver = :levenberg_marquardt)
+            b = fit(par; maxit = 5, solver = :gauss_newton)
             @test a.θ == b.θ && a.F == b.F && a.iterations == b.iterations
-            @test a.status === nothing && b.status === nothing
+            @test nameof(typeof(a.status)) === :SolverStatus && a.status !== nothing
             @test a.F < a.F0
-            @test 1 <= a.iterations <= 5
+            @test 1 <= a.iterations == a.status.iterations <= 5
             @test a.F ≈ objective(par, a.θ, 1e-3) rtol = 1e-12
         end
     end
 
-    fgn = fit(kds; solver = :gauss_newton, maxit = 20)
+    # the default solver, with the budget of the fit tests
+    fgn = fit(kds; maxit = 20)
     @testset "Gauss–Newton with DogLeg" begin
         @test code(fgn) == "SUCCESS"
         @test fgn.status.stationary
@@ -205,11 +206,10 @@ end
         @test f3.iterations == 3
     end
 
-    @testset "the start and the zero budget, $solver" for solver in (
-        :levenberg_marquardt, :gauss_newton)
+    @testset "the start and the zero budget" begin
         θ0 = 1e-3 .* randn(Xoshiro(7), n)
-        f0 = fit(kds; solver, maxit = 0, θ0)
-        fz = fit(kds; solver, maxit = 0)
+        f0 = fit(kds; maxit = 0, θ0)
+        fz = fit(kds; maxit = 0)
         @test f0.θ == θ0
         @test f0.θ !== θ0
         @test fz.θ == zeros(n)
@@ -218,36 +218,29 @@ end
         @test fz.F == fz.F0
         @test f0.F ≈ objective(kds, θ0, 1e-3) rtol = 1e-12
         @test f0.F != f0.F0
-        if solver === :gauss_newton
-            @test code(f0) == "MAXITERS" && f0.status.iterations == 0
-        end
+        @test code(f0) == "MAXITERS" && f0.status.iterations == 0
         # a Float32 start is converted to Float64
-        f32 = fit(kds; solver, maxit = 0, θ0 = Float32.(θ0))
+        f32 = fit(kds; maxit = 0, θ0 = Float32.(θ0))
         @test f32.θ isa Vector{Float64} && f32.θ == Float32.(θ0)
         # iterations is returned as an Int for every integer type of maxit
         for cap in (Int32(0), false, Int128(0))
-            @test fit(kds; solver, maxit = cap).iterations === 0
+            @test fit(kds; maxit = cap).iterations === 0
         end
         for cap in (Int32(1), true, Int128(1))
-            @test fit(kds; solver, maxit = cap).iterations === 1
+            @test fit(kds; maxit = cap).iterations === 1
         end
     end
 
-    @testset "non-finite start objective, $solver" for solver in (
-        :levenberg_marquardt, :gauss_newton)
+    @testset "non-finite start objective" begin
         nss1 = NonSeparableParametrisation(ws; sp.L, sp.V, nξ = 6, nv = 7, nℓ = 3,
             iteration_limit = 1)
         θbad = randn(Xoshiro(11), remap_parameter_count(nss1))
-        fbad = fit(nss1; solver, maxit = 5, θ0 = θbad)
+        fbad = fit(nss1; maxit = 5, θ0 = θbad)
         @test fbad.θ == θbad && fbad.θ !== θbad
         @test isfinite(fbad.F0)
         @test isnan(fbad.F)
         @test fbad.iterations === 0
-        if solver === :gauss_newton
-            @test code(fbad) == "NONFINITE"
-        else
-            @test fbad.status === nothing
-        end
+        @test code(fbad) == "NONFINITE"
     end
 
     @testset "trace output" begin
@@ -273,35 +266,35 @@ end
     end
 
     @testset "invalid arguments" begin
-        @test_throws r"^ArgumentError: unknown solver :newton; use :levenberg_marquardt or :gauss_newton$" fit(
-            kds; solver = :newton)
-        for solver in (:levenberg_marquardt, :gauss_newton)
-            @test_throws Regex("^DimensionMismatch: θ0 has length $(n + 1), the " *
-                               "parametrisation has $n parameters\$") fit(
-                kds; solver, θ0 = zeros(n + 1))
-            @test_throws r"^ArgumentError: θ0 must be finite$" fit(
-                kds; solver, θ0 = [NaN; zeros(n - 1)])
-            @test_throws r"^ArgumentError: θ0 must be finite$" fit(
-                kds; solver, θ0 = [zeros(n - 1); -Inf])
-            @test_throws r"^ArgumentError: maxit must be non-negative, got -1$" fit(
-                kds; solver, maxit = -1)
-            @test_throws r"^ArgumentError: β must be finite and non-negative, got -1.0$" fit(
-                kds; solver, β = -1.0)
-            @test_throws r"^ArgumentError: β must be finite and non-negative, got NaN$" fit(
-                kds; solver, β = NaN)
-            @test_throws r"^ArgumentError: β must be finite and non-negative, got Inf$" fit(
-                kds; solver, β = Inf)
-            @test_throws r"^ArgumentError: β must be finite and non-negative, got -Inf$" fit(
-                kds; solver, β = -Inf)
-            # β = 0 is allowed: the regularisation rows are zero rows
-            @test fit(kds; solver, maxit = 0, β = 0).iterations == 0
+        # Gauss–Newton is the one solver; every other symbol is refused before any evaluation
+        for solver in (:levenberg_marquardt, :newton)
+            @test_throws Regex("^ArgumentError: unknown solver :$solver; use :gauss_newton\$") fit(
+                kds; solver)
         end
-        @test_throws r"^ArgumentError: maxit must be at most 2147483647 for :gauss_newton, got 2147483648$" fit(
-            kds; solver = :gauss_newton, maxit = Int(typemax(Int32)) + 1)
-        # the bound holds for Gauss–Newton only: the length guard answers first here
-        @test_throws DimensionMismatch fit(kds; maxit = Int(typemax(Int32)) + 1,
-            θ0 = zeros(n + 1))
-        # maxit is an integer for both solvers; the test runs the default solver
+        @test_throws Regex("^DimensionMismatch: θ0 has length $(n + 1), the " *
+                           "parametrisation has $n parameters\$") fit(
+            kds; θ0 = zeros(n + 1))
+        @test_throws r"^ArgumentError: θ0 must be finite$" fit(
+            kds; θ0 = [NaN; zeros(n - 1)])
+        @test_throws r"^ArgumentError: θ0 must be finite$" fit(
+            kds; θ0 = [zeros(n - 1); -Inf])
+        @test_throws r"^ArgumentError: maxit must be non-negative, got -1$" fit(
+            kds; maxit = -1)
+        @test_throws r"^ArgumentError: β must be finite and non-negative, got -1.0$" fit(
+            kds; β = -1.0)
+        @test_throws r"^ArgumentError: β must be finite and non-negative, got NaN$" fit(
+            kds; β = NaN)
+        @test_throws r"^ArgumentError: β must be finite and non-negative, got Inf$" fit(
+            kds; β = Inf)
+        @test_throws r"^ArgumentError: β must be finite and non-negative, got -Inf$" fit(
+            kds; β = -Inf)
+        # β = 0 is allowed: the regularisation rows are zero rows
+        @test fit(kds; maxit = 0, β = 0).iterations == 0
+        @test_throws r"^ArgumentError: maxit must be at most 2147483647, got 2147483648$" fit(
+            kds; maxit = Int(typemax(Int32)) + 1)
+        # the maxit guards run before the length guard
+        @test_throws r"^ArgumentError: maxit must be at most 2147483647" fit(
+            kds; maxit = Int(typemax(Int32)) + 1, θ0 = zeros(n + 1))
         @test_throws TypeError fit(kds; maxit = 3.0)
     end
 end

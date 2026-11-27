@@ -5,16 +5,16 @@
 """
     KickDriftRemap(; variant = :weight_dependent, L = 2π, V = 4, nξ = 32, nv = 40, nw = 16,
         stages = 2, projection = HatProjection(32, 33), moser_steps = 40, β = 1e-3, maxit = 40,
-        density = nothing, charge = nothing, solver = :levenberg_marquardt, seed = nothing)
+        density = nothing, charge = nothing, solver = :gauss_newton, seed = nothing)
 
 The Hamiltonian particle projection with the kick–drift map of [`KickDriftParametrisation`](@ref)
 (`variant`, `nξ`, `nv`, `nw`, `stages`). The target points come from the density-interpolation
 flow on the hats `projection` with `moser_steps` Runge–Kutta steps, the target weights from the
 lumped projection `f_h` (`density = nothing`) or from `density(xs, vs)`; the fit is
 [`fit_remap_parameters`](@ref) with the regularisation `β`, at most `maxit` iterations and the
-`solver` (`:levenberg_marquardt` or `:gauss_newton`). It starts at `θ = 0` for `seed = nothing`,
+`solver` (`:gauss_newton`, the one solver). It starts at `θ = 0` for `seed = nothing`,
 and at `θ0 = 1e-3 .* randn(Xoshiro(seed), n)`, with `n` the number of parameters, for a
-non-negative integer `seed`, stored as an `Int`. An unknown `solver`, or a `seed` that is
+non-negative integer `seed`, stored as an `Int`. Another `solver`, or a `seed` that is
 negative or above `typemax(Int)`, throws an `ArgumentError`. With `charge` a
 [`ChargeConservingReweighting`](@ref), its weights replace the target weights.
 
@@ -25,7 +25,7 @@ runs the algorithm on 1D-1V markers. Precomputed `targets` (a `NamedTuple` `(; x
 `reference_charge`, by default the grid charge of `markers`. The result holds the markers
 `(x′ mod L, p′/(m w′), w′)`; `info` holds the parameters `θ`, the objective `F0` at `θ = 0` and
 `F` after the fit, `objective_ratio = F/F0`, the fit `iterations`, its `status` (the
-`SolverStatus` of `:gauss_newton`, `nothing` for `:levenberg_marquardt`), the lifted positions
+`SolverStatus` of the solver, with the return code), the lifted positions
 `X` and momenta `P` after the map, the `targets`, the parametrisation, the largest number of
 fixed-point iterations of a stage (`stage_iterations`, `nothing` for explicit stages), the times
 of the fit and of one map, the relative changes of the total momentum and of the total weight,
@@ -64,7 +64,7 @@ end
 function KickDriftRemap(; variant::Symbol = :weight_dependent, L = 2π, V = 4.0, nξ = 32,
         nv = 40, nw = 16, stages = 2, projection = HatProjection(32, 33), moser_steps = 40,
         β = 1e-3, maxit = 40, density = nothing, charge = nothing,
-        solver::Symbol = :levenberg_marquardt, seed::Union{Nothing, Integer} = nothing)
+        solver::Symbol = :gauss_newton, seed::Union{Nothing, Integer} = nothing)
     KickDriftRemap(
         variant, float(L), float(V), nξ, nv, nw, stages, projection, moser_steps,
         float(β), maxit, density, charge, _check_solver(solver), _remap_seed(seed))
@@ -73,7 +73,7 @@ end
 """
     NonSeparableRemap(; L = 2π, V = 4, nξ = 16, nv = 17, nℓ = 6, stages = 2, weighted = true,
         iteration_limit = 50, projection = HatProjection(32, 33), moser_steps = 40, β = 1e-3,
-        maxit = 40, density = nothing, charge = nothing, solver = :levenberg_marquardt,
+        maxit = 40, density = nothing, charge = nothing, solver = :gauss_newton,
         seed = nothing)
 
 The Hamiltonian particle projection with the non-separable implicit-midpoint stages of
@@ -102,7 +102,7 @@ end
 function NonSeparableRemap(; L = 2π, V = 4.0, nξ = 16, nv = 17, nℓ = 6, stages = 2,
         weighted::Bool = true, iteration_limit = 50, projection = HatProjection(32, 33),
         moser_steps = 40, β = 1e-3, maxit = 40, density = nothing, charge = nothing,
-        solver::Symbol = :levenberg_marquardt, seed::Union{Nothing, Integer} = nothing)
+        solver::Symbol = :gauss_newton, seed::Union{Nothing, Integer} = nothing)
     NonSeparableRemap(float(L), float(V), nξ, nv, nℓ, stages, weighted, iteration_limit,
         projection, moser_steps, float(β), maxit, density, charge, _check_solver(solver),
         _remap_seed(seed))

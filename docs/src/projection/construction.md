@@ -364,13 +364,11 @@ The code ([`fit_remap_parameters`](@ref)) minimises ``J`` from ``\theta = 0`` wi
 ``\ell_x = L/32``, ``\ell_v = 2V/32``, the widths of the hats. Its Jacobian is the forward-mode
 Jacobian of the residual for the kicks and drifts, and comes from the linearised step equations
 for the [non-separable stages](@ref projection-nonseparable). The kinetic-energy constraint is not
-implemented. Two methods are available, chosen by `solver`. The default, `:levenberg_marquardt`,
-is the Levenberg–Marquardt method. It stops after the budget, after 20 rejected trial steps, or
-when one step lowers ``J`` by less than ``10^{-6}`` relative. `:gauss_newton` is the Gauss–Newton
-method with a dogleg trust region of GeometricSolvers on the residual
-``[r; \sqrt\beta\,\theta]``. It stops on GeometricSolvers' convergence tests, among them a
-stationarity test, after the budget, or when its step rule fails, and returns the solver's status
-with its return code. The methods [`KickDriftRemap`](@ref) and [`NonSeparableRemap`](@ref) pass
+implemented. The method, `solver = :gauss_newton`, is the Gauss–Newton method with a dogleg
+trust region of GeometricSolvers on the residual ``[r; \sqrt\beta\,\theta]``; each step factors
+its Jacobian by QR. It stops on GeometricSolvers' convergence tests, among them a stationarity
+test, after the budget, or when its step rule fails, and returns the solver's status with its
+return code. The methods [`KickDriftRemap`](@ref) and [`NonSeparableRemap`](@ref) pass
 `solver` to the fit; with an integer `seed` they start it at ``\theta_0 = 10^{-3}\,\xi`` with
 ``\xi`` a standard normal draw of `Xoshiro(seed)` instead of at ``\theta = 0``.
 

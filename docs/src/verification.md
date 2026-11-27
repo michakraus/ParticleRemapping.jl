@@ -32,7 +32,7 @@ julia --startup-file=no --project=scripts scripts/<construction>/<file>.jl
 
 `test/runtests.jl` runs every file in a `@safetestset` of its own. The group `slow` holds the two
 experiments of the Hamiltonian particle projection, `test/projection/experiments/hole_filling.jl`
-and `test/projection/experiments/dlra_weights.jl`, of about 18 and 3 minutes; the group `core`
+and `test/projection/experiments/dlra_weights.jl`, of about 18 and 10 minutes; the group `core`
 holds every other file and runs in about 5 minutes.
 
 A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:
@@ -42,11 +42,11 @@ A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:
 | quality: Aqua, explicit imports | 2 | 13 |
 | common layer | 6 | 136 |
 | gauge rezoning and canonical transport | 7 | 512 |
-| Hamiltonian particle projection, group `core` | 9 | 494 |
-| Hamiltonian particle projection, group `slow` | 2 | 358 |
+| Hamiltonian particle projection, group `core` | 9 | 606 |
+| Hamiltonian particle projection, group `slow` | 2 | 371 |
 | spline-projection redistribution | 8 | 190 |
 | sliced redistribution | 11 | 315 |
-| **total** | **45** | **2018** |
+| **total** | **45** | **2143** |
 
 ## The common layer and the foundations
 
@@ -127,8 +127,9 @@ agreement ``7 \times 10^{-16}`` of the Schur-complement step with the full KKT s
   for the hole at ``x_h = \pi``; at ``x_h = \pi/2`` two bands differ in the second digit
   ([verification of the projection](@ref projection-verification)).
 - The section on the fit describes a minimum-image distance, an adjoint recursion and a
-  kinetic-energy constraint. The code fits the lifted positions by the Levenberg–Marquardt method
-  with forward-mode Jacobians and has no kinetic-energy constraint ([the fit](@ref projection-fit)).
+  kinetic-energy constraint. The code fits the lifted positions by the Gauss–Newton method with a
+  dogleg trust region and forward-mode Jacobians, and has no kinetic-energy constraint
+  ([the fit](@ref projection-fit)).
 
 **Symplectic redistribution of weighted particles in phase space** (the note and its script
 `verify_symplectic_redistribution.jl`). The script never passes in a cold process: 27 passes, 2

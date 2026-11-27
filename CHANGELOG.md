@@ -88,19 +88,17 @@
   columns of its spline cells: the Hessian is singular up to round-off).
 - Tests: the remap states (`test/projection/frames.jl`) use 8 instead of 16 charge splines, which
   on 16 marker columns made the case of K12, and check that the charge step converged.
-- A second method for the fit of the projection: `fit_remap_parameters(...; solver =
+- A new method for the fit of the projection: `fit_remap_parameters(...; solver =
   :gauss_newton)` runs GeometricSolvers' `GaussNewton(; globalization = DogLeg())` on the
   regularised residual `[r; √β θ]`, with the budget `maxit` and GeometricSolvers' default
-  tolerances, its stationarity test among them. The Levenberg–Marquardt fit stays the default with
-  the same iteration, so no quoted number moves; both methods refuse a `β` that is negative,
-  infinite or `NaN`, and a non-integer or negative `maxit`, which the Levenberg–Marquardt fit
-  accepted before (negative `maxit` returned negative `iterations`); `:gauss_newton` also refuses
-  `maxit > typemax(Int32)`. The fit takes a start `θ0`, stops at `iterations = 0` when `J(θ0)` is
-  not finite, and returns `iterations` as an `Int` and `status`: the solver's `SolverStatus` for
-  `:gauss_newton`, `nothing` for `:levenberg_marquardt` (K13). `KickDriftRemap` and
-  `NonSeparableRemap` gain a fourth type parameter `S <: Union{Nothing, Int}` and take `solver` and
-  `seed`; a non-negative integer `seed` starts the fit at `1e-3 .* randn(Xoshiro(seed), n)`, and
-  the `info` of `remap` holds `status`. Tests: both solvers, the start and the zero budget,
+  tolerances, its stationarity test among them. The fit refuses a `β` that is negative, infinite
+  or `NaN`, a non-integer or negative `maxit`, which the Levenberg–Marquardt fit accepted before
+  (negative `maxit` returned negative `iterations`), and `maxit > typemax(Int32)`. The fit takes a
+  start `θ0`, stops at `iterations = 0` when `J(θ0)` is not finite, and returns `iterations` as an
+  `Int` and `status`, the solver's `SolverStatus`. `KickDriftRemap` and `NonSeparableRemap` gain a
+  fourth type parameter `S <: Union{Nothing, Int}` and take `solver` and `seed`; a non-negative
+  integer `seed` starts the fit at `1e-3 .* randn(Xoshiro(seed), n)`, and the `info` of `remap`
+  holds `status`. Tests: the solver, the start and the zero budget,
   non-finite starts, `Int` iterations, trace output, the invalid arguments and the seed
   (`test/projection/parametrisation.jl`, `test/projection/remap.jl`).
 
@@ -161,8 +159,7 @@
   rises from 1.12 to 1.13, the floor of GeometricSolvers, and the ForwardDiff floor from 1 to
   1.4, the floor that GeometricSolvers needs.
 - The hole-filling experiment of the projection fits by GeometricSolvers' Gauss–Newton method with
-  `DogLeg`: `hole_filling_experiment` takes `solver` (default `:gauss_newton`; the methods
-  `KickDriftRemap` and `NonSeparableRemap` keep their Levenberg–Marquardt default), `seed` for the
+  `DogLeg`: `hole_filling_experiment` takes `solver` (default `:gauss_newton`), `seed` for the
   start `1e-3 .* randn(Xoshiro(seed), n)` of every fit, and precomputed `targets`; each entry of
   `results` holds the `status` of its fit, and `verbose = true` prints its return code. On Linux
   the Levenberg–Marquardt fit at `x_h = π` left the saddle of the weight-dependent fit that it
@@ -230,6 +227,19 @@
 - The README now links to the dev manual (`docs-dev` badge), lists the four modules in the
   manual's chapter order (`Projection`, `Redistribution`, `Remapping`, `SlicedRedistribution`),
   and demonstrates `NonSeparableRemap` (`Projection`) in the quick start.
+- The numbers of the projection's fits with the Gauss–Newton method: the remap table of the
+  target weights after a push (*Structural statements and target weights after a push*), and the
+  checkerboard, the long run and the non-separable remap history with the positive density
+  (*Numerical experiments* of the projection, *Comparison*). Each table gives the return code of
+  its fits, and a number whose digits move with the targets moved by `1e-13` relative or between
+  Julia 1.13 and 1.14 is quoted as the range over those runs. The weight in `Q_2 ∪ Q_4` of the
+  checkerboard falls from 0.348 to 0.1875 (kick–drift) and from 0.393 to 0.3625
+  (non-separable), and both maps leave cells empty in the long run (3–6 and 12, were 0 and 7).
+  The kick–drift remap history fails at `t = 10` on Julia 1.13 and at `t = 15` on Julia 1.14
+  (was `t = 15`), and the script accepts either outcome.
+  `scripts/standard/standard_experiments.jl` checks these numbers and the return codes,
+  `test/projection/experiments/dlra_weights.jl` and `scripts/projection/dlra_weights.jl` the
+  return code of each fit of the remap table.
 
 ### Removed
 
@@ -239,3 +249,13 @@
   of the gauge rezoning: `remap_states`, `remap_frames`, `plot_stages`, `animate_stages` and
   `plot_remap` with `targets` replace them. The projection adds `experiment_remap` for the remaps
   of `hole_filling_experiment`.
+- Breaking: the Levenberg–Marquardt fit of the projection. `fit_remap_parameters`,
+  `KickDriftRemap` and `NonSeparableRemap` default to `solver = :gauss_newton`, GeometricSolvers'
+  `GaussNewton(; globalization = DogLeg())`, and refuse `solver = :levenberg_marquardt` and every
+  other symbol with `ArgumentError("unknown solver :<name>; use :gauss_newton")`. Every fit
+  returns a `SolverStatus` as `status`, and `info.status` of `remap` is never `nothing`, which
+  closes K13 (the return type of the fit was a union over the two solvers). A call that passed no
+  `solver` gets another fit and other numbers. The manual states the method, its QR step and its
+  cost per iteration. The remap examples of the home page and of the projection's overview and
+  algorithm pages show the return code of their fit, which `test/projection/remap.jl` checks; the
+  text beside the figures of the steps of the kick–drift and the non-separable map names it.

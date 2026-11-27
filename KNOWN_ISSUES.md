@@ -147,14 +147,16 @@
 
 - **location:** `src/projection/targets.jl`
 - **problem:** for a marker with `|v| > V`, the density-interpolation flow of `projection_targets`
-  is not defined, and its target moves far out of the box; in a run with repeated remaps the
-  speeds that the gauge step gives grow from remap to remap until the density underflows at a
-  target and `remap` stops with a zero target weight.
+  is not defined, and its target moves far out of the box; in a run with repeated remaps a remap
+  that leaves markers outside the box sends their targets out of it at the next remap, where the
+  density underflows at a target and `remap` stops with a zero target weight; where the target
+  weight underflows without vanishing, the run goes on as K18 says.
 - **evidence:** `standard_remap_history(:projection; variant = :positive)` (the long run of the
-  standard experiments, box `V = 3`): after the first remap at `t = 5` the largest speed is 6.48;
-  the largest target speed is 2.94 at `t = 5`, 12.3 at `t = 10` and `7.5·10²⁹` at `t = 15`, where
-  `remap` throws `DomainError with 0.0: the target weights must be positive`. The same holds for
-  `:nonseparable`.
+  standard experiments, box `V = 3`) on macOS with Julia 1.13.4: the fit of the first remap at
+  `t = 5` ends `MAXITERS` after its 20 iterations, and the largest speed after it is 34.46; at
+  `t = 10` the largest speed of a target is 34.4, and `remap` throws `DomainError with 0.0: the
+  target weights must be positive`. With `:nonseparable` the largest speed after the first remap
+  is 31.44, and the run ends as K18 says.
 - **kind:** defect
 - **found:** 2026-11-22
 
@@ -176,23 +178,6 @@
 - **kind:** defect
 - **found:** PR 3
 
-### K13 · The return type of `fit_remap_parameters` is a union over the two solvers
-
-- **location:** `src/projection/fit.jl`
-- **problem:** the field `status` is a `SolverStatus` for `:gauss_newton` and `nothing` for
-  `:levenberg_marquardt`, so the inferred return type of `fit_remap_parameters`, and the `info` of
-  `remap`, is a `Union` of two `NamedTuple` types for a `solver` that is not a constant; no test
-  measures what this costs.
-- **evidence:** `Base.return_types` of a call with a `Symbol` argument `solver` and a
-  `KickDriftParametrisation`, Julia 1.13:
-  `Union{NamedTuple{(:θ, :F0, :F, :iterations, :status), <:Tuple{Vector{Float64}, Any, Any, Int64,
-  GeometricSolvers.SolverStatus{Float64}}}, NamedTuple{(:θ, :F0, :F, :iterations, :status),
-  <:Tuple{Any, Any, Any, Int64, Nothing}}}`. The `Any` fields come from `remap_stages` of the
-  kick–drift map, which infers `Tuple{Any, Any}`; with a `NonSeparableParametrisation` both
-  members are concrete.
-- **kind:** not verified
-- **found:** 2026-11-23
-
 ### K16 · The weight-dependent fit of the hole-filling experiment does not converge
 
 - **location:** `src/projection/experiments/hole_filling.jl`
@@ -211,6 +196,41 @@
   `‖g‖/‖g0‖ = 1.779`, `|θ| = 43.72`.
 - **kind:** found late
 - **found:** 2026-11-23
+
+### K18 · A target weight near the underflow threshold passes the weight check of `remap`
+
+- **location:** `src/projection/remap.jl:148`
+- **problem:** `remap` of `KickDriftRemap` and `NonSeparableRemap` refuses only target weights
+  that are not positive; a positive target weight near the underflow threshold passes, the
+  velocity `P/(m w)` of its marker comes near `floatmax`, the objective `½|r|²` of the fit
+  overflows to `Inf` at every `θ`, so that `objective_ratio` is `NaN`, and the next remap computes
+  `NaN` target weights from these markers and throws `DomainError with NaN`.
+- **evidence:** `standard_remap_history(:nonseparable; variant = :positive)` on macOS with Julia
+  1.13.4: at the remap at `t = 10` the smallest target weight is `5.2·10⁻³⁰⁷`; the fit ends
+  `MAXITERS` after its 5 iterations with a finite `θ`, `|θ| = 7.52`, the residual norm of its
+  status is `6.9·10³⁰³`, `F0 = F = Inf`, and the largest speed after the remap is `2.6·10³⁰³`; the
+  remap at `t = 15` throws `DomainError with NaN: the target weights must be positive`.
+  `standard_remap_history(:projection; variant = :positive)` on macOS with Julia 1.14.0-beta1,
+  with the targets moved by `1e-13` relative (`Xoshiro(5)` and `Xoshiro(6)`): at the remap at
+  `t = 10` three of the 900 target weights are below `10⁻²⁰⁰`, the smallest `1.3·10⁻²⁷³` and
+  `6.4·10⁻²⁷⁵`; the residual norm of the fit at `θ = 0` is `3.4·10²⁷⁰` and `6.8·10²⁷¹`, one
+  step lowers it to `8.3·10²⁵⁵` and `2.2·10²⁵⁷`, and the fit returns `SUCCESS`, not
+  stationary, after 1 iteration through the relative residual test of GeometricSolvers, with a
+  finite `θ` (`|θ| = 8.87` and `10.0`) and `F0 = F = Inf`; the largest speed after the remap is
+  `3.1·10²⁵⁵` and `8.4·10²⁵⁶`, and the remap at `t = 15` throws `DomainError with NaN`.
+- **kind:** defect
+- **found:** 2026-11-26
+
+### K19 · No test checks the numbers of the standard experiments with the positive density
+
+- **location:** `scripts/standard/standard_experiments.jl`
+- **problem:** the numbers of the kick–drift and the non-separable projection with the positive
+  density that the pages *Numerical experiments* of the projection and *Comparison* quote are
+  checked by `scripts/standard/standard_experiments.jl` only; `test/standard.jl` runs the
+  represented density, which stops before the fit, so the suite does not check these numbers.
+- **evidence:** the script runs about 15 minutes (its header), too long for the suite.
+- **kind:** missing test
+- **found:** 2026-11-26
 
 ## SlicedRedistribution
 

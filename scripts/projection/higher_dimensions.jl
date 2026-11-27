@@ -51,7 +51,7 @@ for (k, name) in (:kick_drift => "kick–drift parameters, two stages",
     @printf("%-40s %14d %14d %14d\n", name, (getfield(sizes(d), k) for d in 1:3)...)
 end
 s3 = sizes(3)
-@printf("\nd = 3: the normal matrix of the fit has %.2e entries (kick–drift), %.2e (non-separable)\n",
+@printf("\nd = 3: the regularisation rows of the Jacobian of the fit have %.2e entries (kick–drift), %.2e (non-separable)\n",
     Float64(s3.kick_drift)^2, Float64(s3.non_separable)^2)
 @printf("d = 3: the dense Laplacian of the density-interpolation flow has %.2e entries\n",
     Float64(s3.hat_nodes)^2)

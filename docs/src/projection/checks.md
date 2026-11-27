@@ -9,7 +9,7 @@ Every statement of this chapter has a test under `test/projection/`, and each te
 that must fail. Derivatives are computed by forward-mode automatic differentiation, so the
 tolerances are set by rounding error. The script `scripts/projection/checks.jl` runs the tests of
 the structural statements and prints the measured numbers of the first table; the script
-`scripts/projection/dlra_weights.jl` (about 3 minutes) prints the tables of the push experiment and
+`scripts/projection/dlra_weights.jl` (about 14 minutes) prints the tables of the push experiment and
 checks every number against the value quoted here.
 
 ## The structural statements
@@ -68,20 +68,27 @@ over the whole domain ([`largest_empty_disk`](@ref)), the fill of the image of t
 root mean square deviation of the marker density from its mean ([`density_discrepancy`](@ref));
 then the same with the charge-conserving weights, the grid-charge residual of ``w^*``, and
 ``\max_a |\ln (w'_a / w^*_a)|``. The pushed markers before the map have the empty disk ``1.38``,
-the fill ``0`` and the density deviation ``0.099``.
+the fill ``0`` and the density deviation ``0.099``. The fit is GeometricSolvers' Gauss–Newton
+method with the `DogLeg` globalisation, at most 40 iterations, from ``\theta = 0``; the column
+stop gives its return code: `MAXITERS` after the 40 iterations, and `LINESEARCH_FAILED` where
+`DogLeg` finds no acceptable step. No fit ends on the stationarity test, so each row gives the
+values where the fit stops, not at a minimum. A number is quoted with its digits where, with the
+targets moved by ``10^{-13}`` relative and on Julia 1.13 and 1.14, it does not move at these
+digits and stays at least a tenth of a unit of its last digit from a rounding boundary; otherwise
+it is quoted as the range over these runs.
 
-|  | with ``w^*``: empty disk | fill | density | charge-conserving: empty disk | fill | charge | ``\max\lvert\ln\rvert`` |
-|:--|--:|--:|--:|--:|--:|--:|--:|
-| ``f(T)`` | 1.05 | 0.82 | 0.113 | 1.06 | 0.74 | ``2.4 \cdot 10^{-2}`` | 0.036 |
-| ``\vartheta = 10^{-3}`` | 1.30 | 1.33 | 0.364 | 1.28 | 1.25 | ``1.8 \cdot 10^{-2}`` | 0.021 |
-| ``\vartheta = 10^{-4}`` | 1.46 | 1.05 | 0.369 | 1.42 | 1.09 | ``1.3 \cdot 10^{-2}`` | 0.021 |
-| ``\vartheta = 10^{-5}`` | 1.05 | 0.82 | 0.114 | 1.06 | 0.74 | ``2.4 \cdot 10^{-2}`` | 0.037 |
-| ``\vartheta = 10^{-6}`` | 1.05 | 0.82 | 0.113 | 1.06 | 0.74 | ``2.4 \cdot 10^{-2}`` | 0.036 |
-| rank one | 1.10 | 0.97 | 0.330 | 3.33 | 0.86 | ``1.7 \cdot 10^{-1}`` | 0.271 |
-| projection | 2.67 | 0.78 | 0.510 | 2.74 | 0.74 | ``2.1 \cdot 10^{-2}`` | 0.043 |
+|  | with ``w^*``: empty disk | fill | density | charge-conserving: empty disk | fill | charge | ``\max\lvert\ln\rvert`` | stop |
+|:--|--:|--:|--:|--:|--:|--:|--:|:--|
+| ``f(T)`` | 1.05 | 0.82 | 0.113 | 1.066 | 0.74 | ``2.4 \cdot 10^{-2}`` | 0.035–0.036 | `MAXITERS` |
+| ``\vartheta = 10^{-3}`` | 1.43 | 1.13 | 0.308–0.309 | 1.52–1.53 | 1.21 | ``3.3 \cdot 10^{-2}`` | 0.039 | `LINESEARCH_FAILED` |
+| ``\vartheta = 10^{-4}`` | 1.23 | 1.01 | 0.317 | 1.27 | 0.936 | ``1.7 \cdot 10^{-2}`` | 0.027 | `LINESEARCH_FAILED` |
+| ``\vartheta = 10^{-5}`` | 1.05 | 0.86 | 0.114 | 1.064 | 0.74 | ``2.4 \cdot 10^{-2}`` | 0.032 | `MAXITERS` |
+| ``\vartheta = 10^{-6}`` | 1.05 | 0.82 | 0.113 | 1.066 | 0.78 | ``2.5 \cdot 10^{-2}`` | 0.035 | `LINESEARCH_FAILED` |
+| rank one | 1.06 | 0.975 | 0.332 | 2.74 | 0.90 | ``1.75 \cdot 10^{-1}`` | 0.258 | `LINESEARCH_FAILED` |
+| projection | 2.96–2.97 | 0.35 | 0.519 | 3.05 | 0.31 | ``7.9 \cdot 10^{-2}`` | 0.0986 | `LINESEARCH_FAILED` |
 
-In every run ``|\Delta P| / \sum_a |p_a| \leq 3.5 \cdot 10^{-17}``, and the grid charge after the
-correction is exact to ``2.9 \cdot 10^{-14}``. The results are:
+In every run ``|\Delta P| / \sum_a |p_a|`` is below ``10^{-12}``, and so is the grid-charge
+residual after the correction. The results are:
 
 1. The weight error of ``f_r`` falls with ``\vartheta`` in every band, at ranks between 4 and 13:
    by about one order of magnitude per order of ``\vartheta`` for ``|v| < 1``, by less in the
@@ -89,18 +96,21 @@ correction is exact to ``2.9 \cdot 10^{-14}``. The results are:
    ``|v|``, by a factor of about 100 from ``|v| < 1`` to ``|v| \in [3, 4)`` at
    ``\vartheta = 10^{-6}``: the truncation bounds an absolute error, and ``f`` is small in the
    tails.
-2. At ``\vartheta \leq 10^{-5}`` the remap agrees with the remap with the weights of ``f(T)`` to
-   the digits of the table. At ``\vartheta = 10^{-4}`` and ``10^{-3}`` the velocities inherit the
-   weight errors, and the density deviation triples, although the error in the core is
-   ``3 \cdot 10^{-3}`` at ``\vartheta = 10^{-4}``; the error in the tails dominates.
+2. At ``\vartheta \leq 10^{-5}`` the empty disks and the density deviation of the remap agree
+   with those with the weights of ``f(T)`` to within two units of the last digit of the table,
+   and the fills differ by up to ``0.04``. At ``\vartheta = 10^{-4}`` and ``10^{-3}`` the
+   velocities inherit the weight errors, and the density deviation nearly triples, although the
+   error in the core is ``3 \cdot 10^{-3}`` at ``\vartheta = 10^{-4}``; the error in the tails
+   dominates.
 3. The lumped projection gives weight errors of the size of those at ``\vartheta = 10^{-3}`` and
-   leaves the largest empty disk at ``2.67``.
+   leaves the largest empty disk at ``2.96``–``2.97``.
 4. The charge-conserving reweighting changes the weights by at most ``4 \%`` for every source
-   except rank one. As in the hole-filling experiment, it lowers the fill of the image of the
-   hole, here from ``0.82`` to ``0.74`` with the weights of ``f(T)``. For rank one it changes the
-   weights by up to ``31 \%``, and the largest empty disk grows to ``3.33``.
+   except rank one and the lumped projection, which it changes by up to ``10 \%``. With the
+   weights of ``f(T)`` it lowers the fill of the image of the hole from ``0.82`` to ``0.74``. For
+   rank one it changes the weights by up to ``29 \%``, and the largest empty disk grows from
+   ``1.06`` to ``2.74``.
 5. In the run of the script, one BUG solve to ``T = 3`` takes about ``0.1`` s at every tolerance
-   once compiled; the fit of the map takes 16 to 36 s.
+   once compiled.
 
 The field is weak and fixed, and the dimension is one, so the ranks are small. A self-consistent
 field and ``d = 3`` are not tested.

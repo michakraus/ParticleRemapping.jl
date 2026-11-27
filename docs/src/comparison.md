@@ -18,13 +18,16 @@ close the chapter.
 Every construction remaps the same markers ([standard experiments](@ref standard-experiments));
 the page *Numerical experiments* of each chapter gives the figures and the details. "fails" names
 the reason the construction stops; "rep." and "pos." are the represented and the positive density,
-which matter only for the projection and the transport.
+which matter only for the projection and the transport. The fits of the two projection maps end
+on their iteration budgets (`MAXITERS`), so their rows give the values after the budget, not at a
+minimum; a range is the range over the runs with the targets moved by ``10^{-13}`` relative and
+on Julia 1.13 and 1.14.
 
 | | checkerboard: quadrants after (before ``200, 0, 200, 0``) | weight in ``Q_2 \cup Q_4`` (exact: 0 rep., 1/2 pos.) | long run: empty cells (before 14) | long run: relative std (before 0.598) | remaps every 100 steps: mean relative std, ``t \ge 5`` (no remap 0.587) |
 |:--|:--|--:|--:|--:|--:|
 | [kick–drift projection](@ref projection-experiments), rep. | fails: zero target weights | | fails | fails | |
-| kick–drift projection, pos. | ``131, 73, 130, 66`` | 0.348 | 0 | 0.475 | fails at ``t = 15``: markers outside the box |
-| non-separable projection, pos. | ``123, 76, 120, 81`` | 0.393 | 7 | 0.937 | fails |
+| kick–drift projection, pos. | ``160, 40, 165, 35`` | 0.1875 | 3–6 | 0.808–0.837 | fails at ``t = 10`` (Julia 1.13) or ``t = 15`` (1.14): markers outside the box, a zero or underflowing target weight |
+| non-separable projection, pos. | ``127, 72, 128, 73`` | 0.3625 | 12 | 1.01 | fails |
 | [spline redistribution](@ref rd-experiments) | fails: relaxation leaves the box (K2) | | fails (K2) | fails (K2) | |
 | [gauge rezoning](@ref remap-experiments) | ``200, 0, 200, 0`` | 0 | 13 | 0.559 | 0.550 |
 | canonical transport, ``\psi = \mathrm{id}``, rep. | ``200, 0, 200, 0`` | 0 | 15 | 0.572 | 0.597 |
@@ -114,7 +117,7 @@ what binds first in 3d3v.
 
 | | in the package | the step that binds in 3d3v | a route the chapter derives |
 |:--|:--|:--|:--|
-| [Hamiltonian particle projection](@ref projection-higher-dimensions) | stages in any ``d``, the rest in 1D-1V | the grid in ``2d`` dimensions (``1.2 \cdot 10^9`` hat nodes), its Poisson problem (K10), and the parameters (``3.1 \cdot 10^6`` kick–drift, ``2.4 \cdot 10^8`` non-separable) with their normal equations | transform-based Poisson solver, low-rank target weights, adjoint gradients with L-BFGS or matrix-free Gauss–Newton, a sparse or low-rank parametrisation |
+| [Hamiltonian particle projection](@ref projection-higher-dimensions) | stages in any ``d``, the rest in 1D-1V | the grid in ``2d`` dimensions (``1.2 \cdot 10^9`` hat nodes), its Poisson problem (K10), and the parameters (``3.1 \cdot 10^6`` kick–drift, ``2.4 \cdot 10^8`` non-separable) with the dense Jacobian of their fit | transform-based Poisson solver, low-rank target weights, adjoint gradients with L-BFGS or matrix-free Gauss–Newton, a sparse or low-rank parametrisation |
 | [spline-projection redistribution](@ref redistribution-higher-dimensions) | 1D-1V | the pairwise basis, ``N_\theta \approx 3 \cdot 10^9`` parameters, the ``O(N^2)`` pair sums and the dense ``2Nd \times 2Nd`` Newton matrix | the coarse collective (Fourier-moment) basis with the Tikhonov solve and the velocity recovery along the fold; a relaxation with a kernel cutoff |
 | [gauge rezoning](@ref remapping-higher-dimensions) | 1D-1V | the Schur complement on ``n_K N_g^d`` multipliers, solved dense (K9): ``1.9 \cdot 10^{14}`` operations for ``N_g = 32``, ``n_K = 2`` | a sparse solve of the Schur complement (``27``-node stencil); the stretch per marker and the diagonal Hessian stay as in 1D; the stretch cannot change the direction of ``v`` |
 | [canonical transport](@ref remapping-higher-dimensions) | 1D-1V | the discrete matching: the continuum matching holds along rays, a discrete one does not exist | direction bins, the radial cumulative current, canonical maps that keep the direction-resolved current |

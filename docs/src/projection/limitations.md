@@ -17,7 +17,7 @@ CurrentModule = ParticleRemapping.Projection
 | represented density (consistency) | up to the fit residual and the projection error of ``f_h`` (consistency, below) |
 | equidistribution and hole filling | up to the fit residual and the resolution of the hats of the density-interpolation flow; at the hole of the experiment where ``\partial_x W = 0``, the fit of the kicks and drifts from ``\theta = 0`` ends on a mirror-symmetric saddle that leaves the hole open, and they fill it once the fit breaks the symmetry; the non-separable stages fill it from ``\theta = 0`` ([hole filling](@ref projection-hole-filling)) |
 | parameters computed from the state | the target points (density-interpolation flow), the target weights, the parameters ``\theta`` (least-squares fit) and the multipliers ``\lambda`` of the charge-conserving reweighting |
-| cost of one remap | linear in ``N`` for the projection, the flow, the map and the reweighting; the fit costs ``O(N n_\theta^2 + n_\theta^3)`` per Levenberg–Marquardt iteration with ``n_\theta`` parameters, and the Poisson problem of the flow ``O(M^3)`` on its ``M`` nodes ([the cost in 3d3v](@ref projection-cost-3d3v)) |
+| cost of one remap | linear in ``N`` for the projection, the flow, the map and the reweighting; the fit costs ``O(N n_\theta^2 + n_\theta^3)`` per Gauss–Newton iteration with ``n_\theta`` parameters, the QR factorisation of its ``(2dN + n_\theta) \times n_\theta`` Jacobian, and the Poisson problem of the flow ``O(M^3)`` on its ``M`` nodes ([the cost in 3d3v](@ref projection-cost-3d3v)) |
 | dimensions implemented in the package | the stages (kicks, drifts, non-separable stages) in any ``d``, tested for ``d = 1, 2``; the whole algorithm for ``d = 1`` ([what the package implements](@ref projection-implemented)) |
 
 **Consistency.** The new weight is ``w'_a = c f_h(y^*_a)``, while the new marker is at
@@ -102,7 +102,7 @@ The entries of `KNOWN_ISSUES.md` of the package that concern this chapter:
 - **A parametrisation for ``d = 3``.** The tensor product of the non-separable stages has
   ``n_\xi^d n_v^d n_\ell`` parameters per stage, ``2.4 \cdot 10^8`` for two stages in 3d3v with the
   bases of the experiment; a sparse or low-rank parametrisation is needed there.
-- **A fit for many parameters.** The Levenberg–Marquardt fit forms the normal matrix of all
+- **A fit for many parameters.** The Gauss–Newton fit forms and factors the dense Jacobian of all
   parameters; whether the adjoint gradient with L-BFGS or a matrix-free Gauss–Newton method reaches
   the same objective is untested.
 - **The projection of the weights.** A dynamical low-rank density at ``\vartheta \leq 10^{-5}``
@@ -199,11 +199,11 @@ The steps of one remap cost:
 4. **Map.** ``O(S N d \, 4^{d+1})`` for the kicks and drifts; ``O(S N n_{\mathrm{it}} d \,
    4^{2d+1})`` for the non-separable stages, plus a ``2d \times 2d`` solve per marker and
    iteration.
-5. **Fit.** The Levenberg–Marquardt method forms the Jacobian of the ``2dN`` residuals with
-   respect to the ``n_\theta`` parameters, the normal matrix with ``n_\theta^2`` entries and its
-   factorisation, ``O(N d \, n_\theta^2 + n_\theta^3)`` per iteration. In 3d3v the normal matrix
-   has ``9.6 \cdot 10^{12}`` entries for the kicks and drifts and ``5.8 \cdot 10^{16}`` for the
-   non-separable stages.
+5. **Fit.** The Gauss–Newton method forms the Jacobian of the ``2dN`` residuals and the
+   ``n_\theta`` regularisation rows with respect to the ``n_\theta`` parameters and factors it by
+   QR, ``O(N d \, n_\theta^2 + n_\theta^3)`` per iteration; it forms no normal matrix. In 3d3v the
+   regularisation rows of the Jacobian alone have ``9.6 \cdot 10^{12}`` entries for the kicks and
+   drifts and ``5.8 \cdot 10^{16}`` for the non-separable stages.
 6. **Charge-conserving reweighting.** ``O(N 4^{2d})`` per Newton iteration for the assembly of the
    Hessian, with ``7^d`` nonzeros per row, and a sparse solve of ``n_g^d`` unknowns.
 7. **Low-rank target weights.** The full grid of the [test after a push](@ref projection-push-test)
@@ -222,11 +222,11 @@ The steps of one remap cost:
 - **The parameters.** The tensor products give ``3.1 \cdot 10^6`` parameters for the kicks and
   drifts and ``2.4 \cdot 10^8`` for the non-separable stages in 3d3v. A sparse or low-rank
   parametrisation of ``\psi_s`` is open.
-- **The fit.** The normal equations do not fit into memory in 3d3v. The adjoint recursion of
+- **The fit.** The dense Jacobian does not fit into memory in 3d3v. The adjoint recursion of
   [the fit](@ref projection-fit) gives the gradient of the objective at the cost of one sweep
   forward and one backward through the stages, ``O(S N d \, 4^{d+1})`` for the kicks and drifts,
   independent of ``n_\theta``; with it, L-BFGS or a matrix-free Gauss–Newton method (Jacobian
-  products by one forward and one adjoint sweep) replaces the dense normal matrix.
+  products by one forward and one adjoint sweep) replaces the dense Jacobian.
 - **The target weights.** The lumped projection on the ``2d``-dimensional grid shares the storage
   of the first item. The [low-rank density](@ref projection-lowrank) is the route of this chapter
   for ``d = 3``: its storage grows with ``n_x^d + n_v^d`` instead of their product, and the target

@@ -64,8 +64,8 @@ example of its overview page, and X1 on its page *Numerical experiments*; each n
 S2. The kinds C, E, N and D differ between the constructions, because each shows the steps and
 facts of its own construction. The long run with repeated remaps (L) of the standard experiments
 runs for the gauge rezoning, the canonical transport and the sliced redistribution; the
-projection fails at its third remap, and the spline-projection redistribution does not reach the
-marker counts of the run with its defaults (K2).
+projection fails at its second or third remap, and the spline-projection redistribution does not
+reach the marker counts of the run with its defaults (K2).
 
 ### Hamiltonian particle projection
 

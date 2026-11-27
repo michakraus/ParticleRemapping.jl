@@ -34,8 +34,7 @@ function hole_filling_problem(; hole_x = π, hole_v = 1.2, hole_a = 0.45, hole_b
 end
 
 # The return code of a fit: the code of the solver's status, with "stationary" where the solver's
-# stationarity test ended it; "no status" for the Levenberg–Marquardt fit, which returns none.
-_fit_stop(::Nothing) = "no status"
+# stationarity test ended it.
 _fit_stop(status) = string(status.code) * (status.stationary ? ", stationary" : "")
 
 # The diagnostics of markers (x, v) of the hole problem.
@@ -86,9 +85,9 @@ momenta `P`, the velocities `v1 = P/(m w*)` and `vc = P/(m w′)`, the charge-co
 `wc`, the diagnostics with `w*` (`diagnostics`) and with `w′` (`diagnostics_charge`), the grid
 charge residuals `charge_res` of `w*` and `charge_res_c` of `w′`, `charge_ok`, `charge_its`,
 `dlnw = max |ln(w′/w*)|`, and for the maps `θ`, `ratio` (objective after the fit relative to
-`θ = 0`), `iterations`, `status` (the `SolverStatus` of the fit, `nothing` for
-`solver = :levenberg_marquardt`), `ΔP`, `Δw`, `fit_time`, `map_time`, `stage_iterations`, the
-`parametrisation` and the `method` ([`experiment_remap`](@ref)).
+`θ = 0`), `iterations`, `status` (the `SolverStatus` of the fit), `ΔP`, `Δw`, `fit_time`,
+`map_time`, `stage_iterations`, the `parametrisation` and the `method`
+([`experiment_remap`](@ref)).
 """
 function hole_filling_experiment(; hole_x = π, weights::Symbol = :exact,
         variants = (:weight_dependent, :control_A, :control_B, :non_separable, :control_C),

@@ -95,9 +95,10 @@ semi-axes ``0.9`` and ``0.8`` around ``(\pi/2, 1.2)`` removes some of them
 kick–drift map with two stages remaps them
 ([`KickDriftRemap`](@ref ParticleRemapping.Projection.KickDriftRemap)): the targets come from the
 density-interpolation flow on ``12 \times 13`` hat functions, the target weights are ``c f`` at the
-targets, so that the example shows the map and not the error of a projection, and the fit stops
-after 20 iterations. The result reports the number of markers, the objective after the fit
-relative to ``\theta = 0`` and the relative changes of the total momentum and the total weight.
+targets, so that the example shows the map and not the error of a projection, and the fit ends
+after its budget of 20 iterations, with the return code `MAXITERS`. The result reports the number
+of markers, the objective after the fit relative to ``\theta = 0``, the return code of the fit and
+the relative changes of the total momentum and the total weight.
 The same example gives the figures `projection-remap.pdf`, `projection-stages.pdf` and the
 animation `projection-stages.mp4` of `scripts/projection/make_figures.jl`.
 
@@ -108,7 +109,7 @@ small = hole_filling_problem(; hole_x = π / 2, nL = 24, hole_a = 0.9, hole_b = 
 method = KickDriftRemap(; projection = HatProjection(12, 13), maxit = 20,
     density = (xs, vs) -> small.density.(xs, vs))
 result = remap(method, small.markers)
-(; N = small.N, objective_ratio = result.info.objective_ratio,
+(; N = small.N, objective_ratio = result.info.objective_ratio, code = result.info.status.code,
     momentum_change = result.info.momentum_change, weight_change = result.info.weight_change)
 ```
 

@@ -14,8 +14,7 @@ import ..ParticleRemapping: remap
 
 using ForwardDiff: ForwardDiff
 using GeometricSolvers: DogLeg, GaussNewton, LeastSquaresProblem, solve
-using LinearAlgebra: Diagonal, I, Symmetric, det, diag, dot, isposdef, norm, pinv, qr, svd,
-                     tr
+using LinearAlgebra: Diagonal, I, Symmetric, det, dot, isposdef, norm, pinv, qr, svd, tr
 using Printf: @printf
 using Random: Random, AbstractRNG, Xoshiro
 
