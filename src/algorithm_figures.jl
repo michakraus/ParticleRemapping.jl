@@ -1,7 +1,6 @@
 # The graphical introductions of the overview pages: the steps of each algorithm on a small
 # example, as one SVG panel per step and an SVG animation through the steps.
 
-using .Projection: EllipticHole, hole_filling_problem
 using .Redistribution: redistribution_example
 using .Remapping: eight_marker_example, quantile_matching_setup
 using .SlicedRedistribution: sliced_stages_example
@@ -13,14 +12,6 @@ function _arrows(a::Markers, x, v; tol = 1e-3, period = nothing)
     [svg_arrow(a.x[k], a.v[k], a.x[k] + dx[k], v[k])
      for k in eachindex(x)
      if hypot(dx[k], v[k] - a.v[k]) > tol]
-end
-
-# the outline of an elliptic hole as a closed polygon of lines
-function _ellipse(h::EllipticHole; n = 48)
-    t = range(0, 2π; length = n + 1)
-    xs, vs = h.x .+ h.a .* cos.(t), h.v .+ h.b .* sin.(t)
-    [svg_line(xs[k], vs[k], xs[k + 1], vs[k + 1]; color = "#404040", width = 1.2)
-     for k in 1:n]
 end
 
 _vlines(xs, v1, v2; kw...) = [svg_line(x, v1, x, v2; kw...) for x in xs]
@@ -36,11 +27,12 @@ function _slice_of(bins, N)
 end
 
 function _projection_steps()
-    prob = hole_filling_problem(; hole_x = π / 2, nL = 10, hole_a = 0.9, hole_b = 0.8)
+    ex = lattice_example(; nL = 10)
     hats = HatProjection(8, 9)
-    method = KickDriftRemap(; projection = hats, maxit = 20,
-        density = (xs, vs) -> prob.density.(xs, vs))
-    mk = prob.markers
+    method = KickDriftRemap(; L = ex.L, V = ex.V, projection = hats,
+        nξ = 16, nv = 20, nw = 8, maxit = 20, solver = :gauss_newton,
+        density = (xs, vs) -> ex.density.(xs, vs))
+    mk = ex.markers
     r = remap(method, mk)
     S = remap_states(method, mk, r)
     tg = (r.info.targets.x, r.info.targets.v)
@@ -56,11 +48,11 @@ function _projection_steps()
         RemapStage(S[4].markers, "3. fitted map: kick 2"),
         RemapStage(S[5].markers, "3. fitted map: drift 2"),
         RemapStage(S[6].markers, "4. gauge step: target weights")]
-    hole = _ellipse(prob.hole)
-    overlays = [vcat(grid, hole), vcat(hole, _arrows(mk, tg...; period = 2π)), hole, hole,
-        hole, hole, hole]
+    overlays = [grid, _arrows(mk, tg...; period = 2π), [], [], [], [], []]
     targets = [nothing, tg, tg, tg, tg, tg, tg]
-    (; stages, overlays, targets, colors = nothing, window = (0, 2π, -4, 4), columns = 4,
+    # the kicks and drifts leave the box |v| ≤ V; the window holds every stage
+    W = max(ex.V, 1.1 * maximum(maximum(abs, s.markers.v) for s in stages))
+    (; stages, overlays, targets, colors = nothing, window = (0, 2π, -W, W), columns = 4,
         animated = 1:7)
 end
 
@@ -178,9 +170,9 @@ The graphical introduction to the algorithm of the construction `key` on a small
 panel for each step of the algorithm (`panels`) and an SVG animation through the steps
 (`animation`), both [`SVGFigure`](@ref)s. The keys and the examples:
 
-- `:projection`: the kick–drift map on 96 markers of a ``10 \\times 10`` lattice with an
-  elliptic hole ([`hole_filling_problem`](@ref)); hat grid, target points, the two kicks and
-  drifts, the gauge step;
+- `:projection`: the kick–drift map on the 100 markers of the mildly deformed
+  ``10 \\times 10`` lattice ([`lattice_example`](@ref)); hat grid, target points, the two kicks
+  and drifts, the gauge step;
 - `:spline`: the spline-projection redistribution of [`redistribution_example`](@ref); spline
   grid, relaxed targets, KKT weights, the symplectic step, the gauge step;
 - `:gauge`: the gauge rezoning of [`eight_marker_example`](@ref); cells and rays, target speeds,

@@ -124,3 +124,13 @@ standard_checkerboard
 standard_long_time
 standard_remap_history
 ```
+
+## The examples of the projection chapter
+
+The two marker sets of the projection chapter, each with its exact density: a mildly deformed
+lattice, and the clustered markers of the spline-projection redistribution.
+
+```@docs
+lattice_example
+clustered_example
+```
