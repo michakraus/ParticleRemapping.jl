@@ -77,6 +77,20 @@ end
         nL = -1)
 end
 
+# nL^2 overflows in Int8 and in Int16 at these sizes
+@testset "lattice_example: a narrow Integer nL" begin
+    for nL in (Int8(12), Int16(200))
+        ex, ref = lattice_example(; nL), lattice_example(; nL = Int(nL))
+        @test ex.N == ref.N == Int(nL)^2
+        for (p, q) in ((ex.markers, ref.markers), (ex.initial, ref.initial))
+            @test isapprox(p.x, q.x; rtol = 8eps())
+            @test isapprox(p.v, q.v; rtol = 8eps())
+            @test isapprox(p.w, q.w; rtol = 8eps())
+        end
+        @test all(>(0), ex.markers.w)
+    end
+end
+
 @testset "lattice_example: the bounds of a and b" begin
     ma(s) = Regex("^ArgumentError: lattice_example needs \\|a\\| < 1 for a monotone map in x, " *
                   "got a = $(s)\$")
@@ -132,6 +146,7 @@ end
     for (kw, Lx, nx0, nv0) in (((;), 2π, 24, 24), ((; nx0 = 10, nv0 = 10), 2π, 10, 10),
         ((; nx0 = 6, nv0 = 4, Lx = 4.0), 4.0, 6, 4))
         ex = clustered_example(; kw...)
+        @test ex.L ≈ Lx
         Δx, Δv = Lx / nx0, 4.8 / nv0
         @test isapprox(ex.density.(ex.markers.x, ex.markers.v) .* Δx .* Δv, ex.markers.w;
             rtol = 1e-12)
@@ -154,6 +169,15 @@ end
         rtol = 1e-12)
     ex = clustered_example(; nx0 = 6, nv0 = 4)
     @test ex.N == 24
+    @test isapprox(ex.density.(ex.markers.x, ex.markers.v) .* (2π / 6) .* (4.8 / 4),
+        ex.markers.w; rtol = 1e-12)
+end
+
+@testset "clustered_example: a mass other than the default" begin
+    ex = clustered_example(; nx0 = 6, nv0 = 4, m = 2.0)
+    ref = redistribution_example(; nx0 = 6, nv0 = 4, m = 2.0)
+    @test ex.m == 2.0 == ex.markers.m == ex.initial.m
+    @test ex.markers.x == ref.markers.x && ex.markers.v == ref.markers.v
     @test isapprox(ex.density.(ex.markers.x, ex.markers.v) .* (2π / 6) .* (4.8 / 4),
         ex.markers.w; rtol = 1e-12)
 end
@@ -195,10 +219,10 @@ end
 end
 
 # the method of the SVG steps of the projection
-function steps_method(ex; kw...)
+function steps_method(ex)
     KickDriftRemap(; L = ex.L, V = ex.V,
         projection = HatProjection(8, 9), nξ = 16, nv = 20, nw = 8, maxit = 20,
-        solver = :gauss_newton, density = (xs, vs) -> ex.density.(xs, vs), kw...)
+        solver = :gauss_newton, density = (xs, vs) -> ex.density.(xs, vs))
 end
 
 @testset "the remap of the 10 × 10 lattice example" begin

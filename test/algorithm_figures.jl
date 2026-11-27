@@ -19,17 +19,22 @@ end
 
 @test_throws r"^ArgumentError: unknown construction :other" algorithm_svg(:other)
 
+# the steps of the projection, which the three testsets below read
+const STEPS = ParticleRemapping._projection_steps()
+
 # the kicks and drifts of the projection leave the box |v| ≤ 4: the window holds every stage
 @testset "the window of the projection's steps" begin
-    s = ParticleRemapping._projection_steps()
+    s = STEPS
     @test s.window[3] == -s.window[4]
     @test s.window[4] >= 4
     @test all(abs(v) < s.window[4] for st in s.stages for v in st.markers.v)
+    vmax = maximum(abs(v) for st in s.stages for v in st.markers.v)
+    @test s.window[4] ≈ max(4, 1.1 * vmax)
 end
 
 # the hat grid in panel 1, an arrow from each marker to its target in panel 2, no hole outline
 @testset "the overlays of the projection's steps" begin
-    s = ParticleRemapping._projection_steps()
+    s = STEPS
     @test length(s.overlays[1]) == 9 + 9
     @test all(o -> o.kind === :line, s.overlays[1])
     @test length(s.overlays[2]) == 100
@@ -39,7 +44,7 @@ end
 
 # the last stage is the remap of the deformed 10 × 10 lattice by the method of the steps
 @testset "the method of the projection's steps" begin
-    s = ParticleRemapping._projection_steps()
+    s = STEPS
     ex = lattice_example(; nL = 10)
     method = KickDriftRemap(;
         L = ex.L, V = ex.V, projection = HatProjection(8, 9), nξ = 16,

@@ -30,7 +30,7 @@ function lattice_example(; nL::Integer = 24, a::Real = 0.2, b::Real = 0.3)
     L, V, m = 2π, 4.0, 1.0
     density(x, v) = (1 + 0.3 * cos(x)) * exp(-v^2 / 2) / sqrt(2π)
     dx, dv = L / nL, 2V / nL
-    c = L * 2V / nL^2
+    c = L * 2V / Int(nL)^2  # Int: nL^2 overflows in a narrow integer type
     ξ = [(i - 0.5) * dx for i in 1:nL for j in 1:nL]
     η = [-V + (j - 0.5) * dv for i in 1:nL for j in 1:nL]
     x = mod.(ξ .+ a .* sin.(ξ .- 0.5), L)

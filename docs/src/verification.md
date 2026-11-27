@@ -82,14 +82,16 @@ A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:
 - **`test/algorithm_figures.jl`**: [`algorithm_svg`](@ref) for every construction: the panels,
   the markers in every panel, an animated position per marker, no `NaN`, and the guard for an
   unknown key.
-  For the projection also the window, which holds every stage, the hat grid and the arrows to
-  the targets, and the last stage against the remap by the method of the steps.
+  For the projection also the window, which holds every stage, its half-width
+  `max(4, 1.1 max |v|)` over the stages, the hat grid and the arrows to the targets, and the last
+  stage against the remap by the method of the steps.
 - **`test/projection_examples.jl`**: the two examples of the projection chapter.
   [`lattice_example`](@ref): the deformed markers and their weights against the map and its
   Jacobian, the total weight, the wrap of `x`, the plain lattice against the hole problem's
-  lattice and density, a `1 × 1` lattice, and the guards for an empty lattice and for `a` and `b`
-  outside the monotone maps. [`clustered_example`](@ref): the markers of
-  [`redistribution_example`](@ref), the density as the exact inverse of the clustering at the
+  lattice and density, a `1 × 1` lattice, a narrow integer `nL`, and the guards for an empty
+  lattice and for `a` and `b` outside the monotone maps. [`clustered_example`](@ref): the markers
+  of [`redistribution_example`](@ref), also for a mass other than the default, the box `L` for
+  `Lx ≠ 2π`, the density as the exact inverse of the clustering at the
   markers (also for `Lx ≠ 2π`) and along 50 random characteristics, the cases without force and
   without steps, the density outside the box, and the guards for an empty lattice and a box that
   does not hold the markers. The remaps: the deformed `10 × 10` lattice by the method of the SVG
