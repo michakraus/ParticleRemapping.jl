@@ -52,8 +52,9 @@ code implements the whole algorithm for ``d = 1``.
 
 ## The algorithm step by step
 
-The figures follow the steps on 96 markers of a ``10 \times 10`` lattice with an elliptic hole
-(dark outline), remapped by the kick–drift map with two stages on ``8 \times 9`` hat functions
+The figures follow the steps on 100 markers of the ``10 \times 10`` lattice whose cells a mild
+smooth map moved ([`lattice_example`](@ref ParticleRemapping.lattice_example)`(; nL = 10)`),
+remapped by the kick–drift map with two stages on ``8 \times 9`` hat functions
 ([`algorithm_svg`](@ref ParticleRemapping.algorithm_svg)). The markers are coloured and sized by
 weight; open circles are the target points.
 
@@ -62,7 +63,7 @@ weight; open circles are the target points.
 2. **Targets.** Integrate the density-interpolation flow from ``g_h`` to ``\bar{g}``. It gives
    the target points ``y^*_a``, the target weights ``w^*_a`` and the target momenta
    ``p^*_a = m w^*_a v^*_a`` (panel 2, the arrows point from each marker to its target). The
-   targets cover the hole.
+   targets move the markers toward an even spacing.
 3. **Fit and map.** Fit ``\theta`` so that ``R_\theta`` moves each marker close to its target,
    and apply ``R_\theta``, the canonical map ``\psi``, at the old weights: each kick moves the
    markers in ``v`` only, each drift in ``x`` only (panels 3 to 6). The stages depend on the
@@ -88,29 +89,33 @@ The [algorithm](@ref projection-algorithm) page gives the steps in full.
 
 ## [Example](@id projection-example)
 
-The markers sit on a ``24 \times 24`` lattice in ``[0, 2\pi) \times [-4, 4]``, with the weights
-``w = c f`` for ``f = (1 + 0.3 \cos x)(2\pi)^{-1/2} e^{-v^2/2}``, and an elliptic hole with the
-semi-axes ``0.9`` and ``0.8`` around ``(\pi/2, 1.2)`` removes some of them
-([`hole_filling_problem`](@ref ParticleRemapping.Projection.hole_filling_problem)). The
-kick–drift map with two stages remaps them
+The markers start at the cell centres ``(\xi, \eta)`` of a ``24 \times 24`` lattice in
+``[0, 2\pi) \times [-4, 4]`` with the density
+``f = (1 + 0.3 \cos x)(2\pi)^{-1/2} e^{-v^2/2}``, moved by the mild smooth map
+``x = (\xi + 0.2 \sin(\xi - 0.5)) \bmod 2\pi``,
+``v = \eta + 0.3 \sin(\pi (\eta + 4) / 8)`` with the weights ``w = c f J``, where ``J`` is the
+Jacobian of the map ([`lattice_example`](@ref ParticleRemapping.lattice_example)). The kick–drift
+map with two stages remaps them
 ([`KickDriftRemap`](@ref ParticleRemapping.Projection.KickDriftRemap)): the targets come from the
-density-interpolation flow on ``12 \times 13`` hat functions, the target weights are ``c f`` at the
-targets, so that the example shows the map and not the error of a projection, and the fit ends
-after its budget of 20 iterations, with the return code `MAXITERS`. The result reports the number
-of markers, the objective after the fit relative to ``\theta = 0``, the return code of the fit and
-the relative changes of the total momentum and the total weight.
-The same example gives the figures `projection-remap.pdf`, `projection-stages.pdf` and the
-animation `projection-stages.mp4` of `scripts/projection/make_figures.jl`.
+density-interpolation flow on ``12 \times 13`` hat functions, the target weights are ``c f`` from
+the exact density at the targets, so that the example shows the map and not the error of a
+projection, and the fit ends after its budget of ``20`` iterations, with the return code
+`MAXITERS`. The result reports the number of markers, the objective after the fit relative to
+``\theta = 0``, the return code of the fit, the number of iterations, and the relative changes of
+the total momentum and the total weight. The same example gives the figures `projection-remap.pdf`,
+`projection-stages.pdf` and the animation `projection-stages.mp4` of
+`scripts/projection/make_figures.jl`.
 
 ```@example projection-index
 using ParticleRemapping, CairoMakie, Random
 Random.seed!(20261119)
-small = hole_filling_problem(; hole_x = π / 2, nL = 24, hole_a = 0.9, hole_b = 0.8)
-method = KickDriftRemap(; projection = HatProjection(12, 13), maxit = 20,
-    density = (xs, vs) -> small.density.(xs, vs))
-result = remap(method, small.markers)
-(; N = small.N, objective_ratio = result.info.objective_ratio, code = result.info.status.code,
-    momentum_change = result.info.momentum_change, weight_change = result.info.weight_change)
+ex = lattice_example()
+method = KickDriftRemap(; L = ex.L, V = ex.V, projection = HatProjection(12, 13),
+    nξ = 16, nv = 20, nw = 8, maxit = 20, density = (xs, vs) -> ex.density.(xs, vs))
+result = remap(method, ex.markers)
+(; N = ex.N, objective_ratio = result.info.objective_ratio, code = result.info.status.code,
+    iterations = result.info.iterations, momentum_change = result.info.momentum_change,
+    weight_change = result.info.weight_change)
 ```
 
 The markers before and after the remap, coloured and sized by weight, with the target points as
@@ -118,7 +123,7 @@ open circles:
 
 ```@example projection-index
 targets = (result.info.targets.x, result.info.targets.v)
-plot_remap(small.markers, result.markers; titles = ("(a) before", "(b) after the remap"),
+plot_remap(ex.markers, result.markers; titles = ("(a) before", "(b) after the remap"),
     targets, period = (0, 2π))
 ```
 
@@ -126,12 +131,11 @@ The states of the remap ([`remap_states`](@ref ParticleRemapping.remap_states)):
 after each kick and each drift at the old weights, with the velocities ``p / (m w)``, and after
 the gauge step to the target weights, with the targets in the last panel. A kick moves the markers
 only in ``v``, a drift only in ``x``; the gauge step keeps ``(x, p)`` and changes each velocity by
-the factor ``w / w^*``. The view is ``|v| \leq 5``.
+the factor ``w / w^*``. The view is ``|v| \leq 6``.
 
 ```@example projection-index
-states = remap_states(method, small.markers, result)
-hole! = (ax, _) -> plot_hole_outline!(ax, small.hole)
-plot_stages(states; columns = 3, period = (0, 2π), window = (0, 2π, -5, 5), decorate! = hole!,
+states = remap_states(method, ex.markers, result)
+plot_stages(states; columns = 3, period = (0, 2π), window = (0, 2π, -6, 6),
     targets, target_panels = [length(states)])
 ```
 
@@ -141,8 +145,8 @@ drift scaled from zero to their fitted values, one after the other, then the gau
 ``(x, p)``.
 
 ```@example projection-index
-animate_stages("projection-stages.mp4", remap_frames(method, small.markers, result);
-    period = (0, 2π), decorate! = hole!)
+animate_stages("projection-stages.mp4", remap_frames(method, ex.markers, result);
+    period = (0, 2π))
 nothing # hide
 ```
 
@@ -155,13 +159,65 @@ relative changes of the grid moments on 12 linear shape functions in ``x``
 ([`conservation_report`](@ref ParticleRemapping.conservation_report)):
 
 ```@example projection-index
-conservation_report(small.markers, result.markers; grid = PeriodicGrid(2π, 12))
+conservation_report(ex.markers, result.markers; grid = PeriodicGrid(2π, 12))
 ```
 
-The total weight and the total momentum are kept to round-off. The kinetic energy, the grid charge
-and the grid current change: the map moves the markers and the target weights differ from the old
-weights. The [charge-conserving reweighting](@ref projection-charge) keeps the grid charge on its
-own spline basis.
+The total weight and the total momentum are kept to round-off. The fit ends with `MAXITERS` after
+``20`` iterations at ``F / F_0 =`` ``0.220``. The kinetic energy, the grid charge and the grid
+current change: the kinetic energy changes by ``0.431`` from ``3.138``, because the map moves the
+markers and the target weights differ from the old weights. After the remap, ``7`` of the 576
+markers lie slightly outside the velocity box ``|v| \leq 4``, with largest ``|v|`` equal to
+``4.5`` (`scripts/projection/example.jl`). The
+[charge-conserving reweighting](@ref projection-charge) keeps the grid charge on its own spline
+basis.
+
+## [A second example: clustered markers](@id projection-clustered-example)
+
+The second example takes the clustered markers of the spline chapter
+([`redistribution_example`](@ref ParticleRemapping.Redistribution.redistribution_example)) on a
+``24 \times 24`` lattice (576 markers, mass ``m = 1.5``) in ``[0, 2\pi) \times [-2.4, 2.4]``,
+evolved by 60 leapfrog steps of length ``0.05`` in the static force
+``1.4 \sin(x - 0.5) + 0.8 \sin 2x``, embedded in the velocity box ``[-3.5, 3.5]`` with the exact
+density ``f_0 \circ \Phi^{-1}`` given by the inverse of the leapfrog steps
+([`clustered_example`](@ref ParticleRemapping.clustered_example)). Remapping them with the same
+kick–drift method on their own box and density sends the velocity tails far outside the box, so
+that the axes of the figure and the animation span the escaped markers and the bulk appears as a
+narrow band near ``v = 0``:
+
+```@example projection-index
+cl = clustered_example()
+method2 = KickDriftRemap(; L = cl.L, V = cl.V, projection = HatProjection(12, 13),
+    nξ = 16, nv = 20, nw = 8, maxit = 20, density = (xs, vs) -> cl.density.(xs, vs))
+r2 = remap(method2, cl.markers)
+targets2 = (r2.info.targets.x, r2.info.targets.v)
+plot_remap(cl.markers, r2.markers;
+    titles = ("(a) before: clustered markers", "(b) after the remap"),
+    targets = targets2, period = (0, cl.L))
+```
+
+```@example projection-index
+animate_stages("projection-clustered.mp4", remap_frames(method2, cl.markers, r2);
+    period = (0, cl.L))
+nothing # hide
+```
+
+```@raw html
+<video src="./projection-clustered.mp4" controls loop muted playsinline style="width:100%"></video>
+```
+
+Over the run and two runs with the positions moved by ``10^{-13}`` relative, ``213``–``224`` of
+the 576 markers leave ``|v| \leq 3.5`` after the remap, reaching ``|v|`` up to ``150``–``180`` and
+carrying ``0.099``–``0.11`` of the total weight (`scripts/projection/example.jl`).
+
+The cause is the gauge step at small target weights. The density-interpolation flow spreads the
+clustered markers over the whole box ``[0, 2\pi) \times [-3.5, 3.5]``, where the targets in the
+velocity tails receive target weights down to ``2.9 \cdot 10^{-6}`` with a median of
+``1.2 \cdot 10^{-4}``–``1.4 \cdot 10^{-4}`` among the escaped markers, against a mean weight of
+``1.7 \cdot 10^{-3}`` before the remap. The gauge step ``v' = p' / (m w^*)`` divides the momentum
+error of the fit by those small weights and amplifies it into large velocities; this behaviour is
+recorded as K21 under [known issues](@ref projection-known-issues). Without the exact density, the
+lumped projection on ``12 \times 13`` hat functions vanishes at a target of these markers, so
+`remap` refuses them with a `DomainError`.
 
 ## The pages of this chapter
 
@@ -178,10 +234,10 @@ own spline basis.
   weights from the lumped projection, and the states of the kick–drift map.
 - [Numerical experiments](@ref projection-experiments): the standard experiments, which every
   construction runs.
-- [Structural statements and target weights after a push](@ref projection-checks): the checks of
-  every statement and the target weights from a low-rank density after a push.
+- [Structural statements](@ref projection-checks): the checks of every statement.
 - [Hole filling](@ref projection-hole-filling): the hole-filling experiment with five
-  parametrisations and the charge-conserving reweighting.
+  parametrisations, the charge-conserving reweighting, and the target weights from a low-rank
+  density after a push.
 - [Properties, limitations and higher dimensions](@ref projection-properties): what the map keeps
   exactly and what approximately, what it cannot do, the known issues, the open questions, and the
   sizes and costs in 3d3v.
@@ -201,7 +257,11 @@ for the first two, [`remap_frames`](@ref ParticleRemapping.remap_frames):
 - [`ChargeConservingReweighting`](@ref ParticleRemapping.Projection.ChargeConservingReweighting):
   the charge-conserving choice of the final weights.
 
-The experiments are functions with the parameters of this chapter as defaults:
+The two examples of the overview are
+[`lattice_example`](@ref ParticleRemapping.lattice_example) and
+[`clustered_example`](@ref ParticleRemapping.clustered_example), and
+`scripts/projection/example.jl` prints and checks their quoted numbers. The experiments are
+functions with the parameters of this chapter as defaults:
 [`hole_filling_experiment`](@ref ParticleRemapping.Projection.hole_filling_experiment) and
 [`dlra_weights_experiment`](@ref ParticleRemapping.Projection.dlra_weights_experiment);
 [`experiment_remap`](@ref ParticleRemapping.Projection.experiment_remap) gives the states and the
