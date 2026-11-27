@@ -63,9 +63,9 @@ const QUOTED_MAIN = (
 )
 
 const QUOTED_CLUSTERED = (
-    outside = "213–224",
-    max_v = "150–180",
-    weight_share = "0.099–0.11",
+    outside = "210–224",
+    max_v = "130–180",
+    weight_share = "0.094–0.11",
     min_target_w = "2.9e-6",
     median_target_w = "1.2e-4–1.4e-4",
     mean_w = "1.7e-3"

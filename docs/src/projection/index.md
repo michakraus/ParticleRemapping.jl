@@ -205,9 +205,10 @@ nothing # hide
 <video src="./projection-clustered.mp4" controls loop muted playsinline style="width:100%"></video>
 ```
 
-Over the run and two runs with the positions moved by ``10^{-13}`` relative, ``213``–``224`` of
-the 576 markers leave ``|v| \leq 3.5`` after the remap, reaching ``|v|`` up to ``150``–``180`` and
-carrying ``0.099``–``0.11`` of the total weight (`scripts/projection/example.jl`).
+Over the run, two runs with the positions moved by ``10^{-13}`` relative, and the CI runners,
+``210``–``224`` of the 576 markers leave ``|v| \leq 3.5`` after the remap, reaching ``|v|`` up to
+``130``–``180`` and carrying ``0.094``–``0.11`` of the total weight
+(`scripts/projection/example.jl`).
 
 The cause is the gauge step at small target weights. The density-interpolation flow spreads the
 clustered markers over the whole box ``[0, 2\pi) \times [-3.5, 3.5]``, where the targets in the

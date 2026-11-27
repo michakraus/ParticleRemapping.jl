@@ -264,14 +264,16 @@
   (`lattice_example()`) as the main example instead of the hole problem, with the clustered markers
   (`clustered_example()`) added as a second example on the projection overview (`K21` cited there
   and listed in `docs/src/projection/limitations.md`); `scripts/projection/example.jl` and
-  `test/projection/example.jl` (group `core`) print and check every quoted number of both examples.
-  The target-flow and hole-stage panels and the *Target weights after a push* section move to
-  `docs/src/projection/holes.md` (`docs/src/projection/checks.md` is now *Structural statements*),
-  and the 2D-2V hole-between-the-axes example moves from `docs/src/sliced/limitations.md` to
+  `test/projection/example.jl` (group `core`) print and check every quoted number of both examples
+  (with the clustered ranges covering the perturbed runs and the x86_64 CI runners), and
+  `test/projection/remap.jl` checks the updated manual examples. The target-flow and hole-stage
+  panels and the *Target weights after a push* section move to `docs/src/projection/holes.md`
+  (`docs/src/projection/checks.md` is now *Structural statements*), and the 2D-2V
+  hole-between-the-axes example moves from `docs/src/sliced/limitations.md` to
   `docs/src/sliced/holes.md`, with all links and `docs/src/figures.md` updated.
-  `plot_lumped_projection` and `plot_target_flow` in `ParticleRemappingMakieExt` draw the hole
-  outline only where `problem` has a `hole` field, and they and `moser_flow_history` read the
-  markers from `problem.markers`; `scripts/projection/make_figures.jl` draws the overview and
+  `plot_lumped_projection` and `plot_target_flow` (docstrings and `ParticleRemappingMakieExt`) draw
+  the hole outline only where `problem` has a `hole` field, and they and `moser_flow_history` read
+  the markers from `problem.markers`; `scripts/projection/make_figures.jl` draws the overview and
   construction figures from `lattice_example()`.
 
 ### Removed
