@@ -59,6 +59,7 @@ export Remapping, Projection, Redistribution, SlicedRedistribution
 
 # the standard experiments, which every construction runs
 include("standard.jl")
+# the examples of the projection chapter, and the graphical introductions of the overview pages
 include("projection_examples.jl")
 include("algorithm_figures.jl")
 
