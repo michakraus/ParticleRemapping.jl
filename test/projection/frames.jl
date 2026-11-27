@@ -140,6 +140,18 @@ end
               ["density-interpolation flow, t = 0.0", "density-interpolation flow, t = 1.0"]
         @test hist[1].markers.x ≈ prob.x0 rtol = 8eps()
         @test all(h.markers.w == prob.w0 for h in hist)
+
+        ex = lattice_example(; nL = 10)
+        hist_ex = moser_flow_history(ex; projection = HatProjection(8, 9), steps = 4)
+        @test length(hist_ex) == 5
+        @test [h.label for h in hist_ex[[1, end]]] ==
+              ["density-interpolation flow, t = 0.0", "density-interpolation flow, t = 1.0"]
+        @test hist_ex[1].markers.x ≈ ex.markers.x rtol = 8eps()
+        @test hist_ex[1].markers.v ≈ ex.markers.v rtol = 8eps()
+        @test hist_ex[1].markers.w == ex.markers.w
+        @test all(h.markers.w == ex.markers.w for h in hist_ex)
+        @test hist_ex[end].markers.x != hist_ex[1].markers.x ||
+              hist_ex[end].markers.v != hist_ex[1].markers.v
     end
 
     @testset "DLRA push" begin

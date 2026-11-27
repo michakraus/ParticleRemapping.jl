@@ -167,24 +167,24 @@ end
 
 function _Pr.plot_lumped_projection(problem = _Pr.hole_filling_problem();
         projection = _Pr.HatProjection(32, 33), size = (1060, 330))
-    hp, L, V = projection, problem.L, problem.V
-    s, r = problem.x0 ./ L, problem.v0 ./ V
-    fh = _Pr.lumped_projection(hp, s, r, problem.w0) ./ (L * V)
+    hp, L, V, mk = projection, problem.L, problem.V, problem.markers
+    s, r = mk.x ./ L, mk.v ./ V
+    fh = _Pr.lumped_projection(hp, s, r, mk.w) ./ (L * V)
     gh = _Pr.lumped_projection(hp, s, r, ones(length(s))) ./ (L * V)
     xs = (0:(hp.nX - 1)) .* (L / hp.nX)
     vs = range(-V, V; length = hp.nV)
     fig = Figure(; size)
     ax = Axis(fig[1, 1]; title = "(a) markers", xlabel = L"x", ylabel = L"v",
         limits = (0, L, -V, V))
-    sc = ParticleRemapping.plot_markers!(ax, problem.markers)
-    _Pr.plot_hole_outline!(ax, problem.hole)
+    sc = ParticleRemapping.plot_markers!(ax, mk)
+    hasproperty(problem, :hole) && _Pr.plot_hole_outline!(ax, problem.hole)
     Colorbar(fig[1, 2], sc; label = "weight w")
     for (k, (title, G)) in enumerate(((L"(b) $f_h$, lumped projection of $f$", fh),
         (L"(c) $g_h$, lumped marker density", gh)))
         ax = Axis(fig[1, 2k + 1]; title, xlabel = L"x", yticklabelsvisible = false,
             limits = (0, L, -V, V))
         hm = heatmap!(ax, xs, vs, G; colormap = _FIELD_CMAP)
-        _Pr.plot_hole_outline!(ax, problem.hole)
+        hasproperty(problem, :hole) && _Pr.plot_hole_outline!(ax, problem.hole)
         Colorbar(fig[1, 2k + 2], hm)
     end
     colgap!(fig.layout, 2, 30)
@@ -192,23 +192,21 @@ function _Pr.plot_lumped_projection(problem = _Pr.hole_filling_problem();
 end
 
 function _Pr.plot_target_flow(problem, targets; window = nothing, size = (620, 480))
-    L, V = problem.L, problem.V
+    L, V, mk = problem.L, problem.V, problem.markers
+    x, v, w = mk.x, mk.v, mk.w
     lim = window === nothing ? (0, L, -V, V) : window
     fig = Figure(; size)
     ax = Axis(fig[1, 1]; title = "density-interpolation flow: markers to targets",
         xlabel = L"x", ylabel = L"v", limits = lim)
-    seg = [Point2f(problem.x0[k], problem.v0[k]) => Point2f(targets.x[k], targets.v[k])
-           for k in eachindex(problem.x0)]
+    seg = [Point2f(x[k], v[k]) => Point2f(targets.x[k], targets.v[k]) for k in eachindex(x)]
     linesegments!(ax, seg; color = _SEGMENT_COLOR, linewidth = 0.7)
     # the marker sizes suit the markers in view
     inview = count(
-        k -> lim[1] <= problem.x0[k] <= lim[2] && lim[3] <= problem.v0[k] <= lim[4],
-        eachindex(problem.x0))
+        k -> lim[1] <= x[k] <= lim[2] && lim[3] <= v[k] <= lim[4], eachindex(x))
     _targets!(ax, (targets.x, targets.v), inview)
-    w = problem.w0
-    sc = ParticleRemapping.plot_markers!(ax, problem.markers;
+    sc = ParticleRemapping.plot_markers!(ax, mk;
         markersize = _weight_markersize(w, maximum(w), inview))
-    _Pr.plot_hole_outline!(ax, problem.hole)
+    hasproperty(problem, :hole) && _Pr.plot_hole_outline!(ax, problem.hole)
     Colorbar(fig[1, 2], sc; label = "weight w")
     fig
 end

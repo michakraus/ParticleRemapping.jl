@@ -128,11 +128,11 @@ targets.
 function moser_flow_history(
         problem = hole_filling_problem(); projection = HatProjection(32, 33),
         steps = 40)
+    mk = problem.markers
     history = Tuple{Vector{Float64}, Vector{Float64}}[]
-    moser_targets(
-        projection, problem.x0 ./ problem.L, problem.v0 ./ problem.V; steps, history)
+    moser_targets(projection, mk.x ./ problem.L, mk.v ./ problem.V; steps, history)
     n = length(history) - 1
-    [RemapStage(Markers(problem.L .* s, problem.V .* r, problem.w0; problem.m),
+    [RemapStage(Markers(problem.L .* s, problem.V .* r, mk.w; problem.m),
          "density-interpolation flow, t = $(round((k - 1) / n; digits = 3))")
      for (k, (s, r)) in enumerate(history)]
 end
