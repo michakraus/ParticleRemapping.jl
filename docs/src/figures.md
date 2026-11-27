@@ -75,16 +75,22 @@ reach the marker counts of the run with its defaults (K2).
 | before, kicks, drifts, gauge step | S2 | [`plot_stages`](@ref) | [overview](@ref projection-example) | `fig:standard-stages` | `projection-stages.pdf` | yes |
 | animation with the stage parameters scaled from zero | A1 | [`animate_stages`](@ref) | [overview](@ref projection-example) | named | `projection-stages.mp4` | yes |
 | conserved quantities | T1 | [`conservation_report`](@ref) | [overview](@ref projection-example) | text | — | — |
+| clustered markers before and after, with targets | S1 | [`plot_remap`](@ref) | [clustered markers](@ref projection-clustered-example) | — | — | yes |
+| clustered markers, animated | A1 | [`animate_stages`](@ref) | [clustered markers](@ref projection-clustered-example) | — | `projection-clustered.mp4` | yes |
 | markers, ``f_h`` and ``g_h`` | C | `plot_lumped_projection` | [construction](@ref projection-construction) | — | `projection-projection.pdf` | yes in (a); (b), (c) are fields |
 | markers, targets and displacements | C | `plot_target_flow` | [construction](@ref projection-construction) | — | `projection-target-flow.pdf` | yes |
 | the density-interpolation flow | C | [`animate_stages`](@ref) | [construction](@ref projection-construction) | named | `projection-moser-targets.mp4` | yes |
-| kick–drift stages near the hole, ``x_h = \pi/2`` | E | `plot_hole_stages` | [algorithm](@ref projection-algorithm) | — | `projection-stages-kick-drift-pi2.pdf` | yes |
-| non-separable stages near the hole, ``x_h = \pi`` | E | `plot_hole_stages` | [non-separable stages](@ref projection-nonseparable) | — | `projection-stages-non-separable-pi.pdf` | yes |
+| deformed lattice with the lumped projection | C | [`plot_remap`](@ref) | [algorithm](@ref projection-algorithm) | — | — | yes |
+| kick–drift stages on the deformed lattice, charge-conserving | C | [`plot_stages`](@ref) | [algorithm](@ref projection-algorithm) | — | — | yes |
+| non-separable stages on the deformed lattice, charge-conserving | C | [`plot_stages`](@ref) | [non-separable stages](@ref projection-nonseparable) | — | — | yes |
 | hole filling, ``x_h = \pi/2`` and ``x_h = \pi`` | E | `plot_hole_filling` | [hole filling](@ref projection-hole-filling) | `fig:hole-pi2`, `fig:hole-pi` | `projection-hole-pi2.pdf`, `projection-hole-pi.pdf` | yes |
 | the charge correction | E | `plot_charge_correction` | [hole filling](@ref projection-hole-filling) | `fig:charge` | `projection-charge.pdf` | no: the colour marks the run |
+| target flow near the hole, ``x_h = \pi`` | E | `plot_target_flow` | [hole filling](@ref projection-hole-filling) | — | — | yes |
+| kick–drift stages near the hole, ``x_h = \pi/2`` | E | `plot_hole_stages` | [hole filling](@ref projection-hole-filling) | — | `projection-stages-kick-drift-pi2.pdf` | yes |
+| non-separable stages near the hole, ``x_h = \pi`` | E | `plot_hole_stages` | [hole filling](@ref projection-hole-filling) | — | `projection-stages-non-separable-pi.pdf` | yes |
 | the hole-filling remaps, animated | E | [`animate_stages`](@ref) | [hole filling](@ref projection-hole-filling) | named | `projection-remap-kick-drift-pi2.mp4`, `projection-remap-non-separable-pi.mp4` | yes |
-| target weights after a push | E | `plot_dlra_weights` | [structural statements](@ref projection-push-test) | `fig:dlra` | `projection-dlra.pdf` | yes in (a), (b); (c) is a signed field, (d), (e) are series |
-| the low-rank density along the push | E | `animate_dlra` | [structural statements](@ref projection-push-test) | named | `projection-dlra.mp4` | no: the density is the point |
+| target weights after a push | E | `plot_dlra_weights` | [hole filling](@ref projection-push-test) | `fig:dlra` | `projection-dlra.pdf` | yes in (a), (b); (c) is a signed field, (d), (e) are series |
+| the low-rank density along the push | E | `animate_dlra` | [hole filling](@ref projection-push-test) | named | `projection-dlra.mp4` | no: the density is the point |
 | a mean-field step and the image of a hole | D | `plot_mean_field_step` | [obstructions](@ref obstructions) | `fig:structure` | `projection-mean-field.pdf` | no: the markers carry no weights |
 | the fold of the implicit weight | D | `plot_implicit_weight_fold` | [non-separable stages](@ref projection-nonseparable) | `fig:structure` | `projection-fold.pdf` | — (a curve) |
 | the coupling of ``+v`` and ``-v`` | D | `plot_pm_v_coupling` | [non-separable stages](@ref projection-nonseparable) | `fig:structure` | `projection-pm-v.pdf` | — (curves) |
@@ -147,4 +153,4 @@ reach the marker counts of the run with its defaults (K2).
 | a remap in the long run, markers and cell counts | E | `plot_wave_remap` | [long-time run](@ref sliced-long-time-page) | `fig:wave-remap` | `wave-remap.pdf` | yes; the counts are a field |
 | empty cells and spread of the counts over time | L | `plot_cell_count_history` | [long-time run](@ref sliced-long-time-page) | `fig:history` | `cell-count-history.pdf` | — (curves) |
 | the long runs with and without remaps | L | `animate_long_time_run` | [long-time run](@ref sliced-long-time-page) | named | `long-time-run.mp4`, `long-time-run-no-remap.mp4` | yes |
-| per-axis lifts on a hole between the axes | D | table of an `@example` | [higher dimensions](@ref sliced-higher-dimensions) | numbers | — | — |
+| per-axis lifts on a hole between the axes | D | table of an `@example` | [hole filling](@ref sliced-hole-between-axes) | numbers | — | — |

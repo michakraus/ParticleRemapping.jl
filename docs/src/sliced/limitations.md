@@ -116,41 +116,8 @@ product kernel in all ``2d`` coordinates and squeezes every axis with them
 2D-2V.
 
 Each lift reads its slices and targets from the two-dimensional marginal ``(x_\ell, v_\ell)``
-only, so the lifts cannot see a hole in the joint distribution of different axes, such as in
-``(x_1, x_2)``, ``(v_1, v_2)`` or ``(x_1, v_2)``. The analogue of the
-[checkerboard](@ref sliced-checkerboard) one dimension up shows it: 360 equal-weight markers in
-2D-2V fill the quadrants ``Q_1`` and ``Q_3`` of the ``(x_1, x_2)`` plane, with velocities
-uniform on ``[-1, 1]^2`` and independent of the positions, so every marginal
-``(x_\ell, v_\ell)`` is even. The checkerboard of the same markers in ``(x_1, v_1)`` is the
-control:
-
-```@example sliced-limitations
-using ParticleRemapping
-using Random: MersenneTwister
-rng = MersenneTwister(7)
-N, h = 360, 180
-method = SlicedQuantileRemap(; B_v = 6, B_x = 36)
-x = hcat(π .* rand(rng, 2, h), -π .* rand(rng, 2, h))
-v = 2 .* rand(rng, 2, N) .- 1
-r = remap(method, Markers(x, v, fill(1 / N, N)))
-x1 = vcat(π .* rand(rng, h), -π .* rand(rng, h))
-v1 = vcat(rand(rng, h), -rand(rng, h))
-r1 = remap(SlicedQuantileRemap(; B_v = 6, B_x = 36, Vmax = 1.0),
-    Markers(x1, v1, fill(1 / N, N)))
-x̄ = periodic_wrap.(r.markers.x, π)
-(; x1_v1_before = phase_quadrant_counts(x[1, :], v[1, :]),
-    x1_x2_before = phase_quadrant_counts(x[1, :], x[2, :]),
-    x1_x2_after_lifts = phase_quadrant_counts(r.info.q̂[1, :], r.info.q̂[2, :]),
-    x1_x2_after_remap = phase_quadrant_counts(x̄[1, :], x̄[2, :]),
-    control_x1_v1_after_lifts = phase_quadrant_counts(r1.info.q̂, r1.info.p̂))
-```
-
-The per-axis lifts leave most markers in the quadrants ``Q_1`` and ``Q_3`` of ``(x_1, x_2)``,
-while the same lifts fill the checkerboard in ``(x_1, v_1)``. After the squeeze the counts are
-more even, but not by the lifts: the multipliers come from the density ratio in all four
-coordinates, which is small in the empty quadrants, and the squeeze moves the markers of those
-slots far from their anchors and across the periodic box (K6). `test/sliced/peraxis.jl` checks
-the counts after the lifts.
+only, so the lifts cannot see a hole in the joint distribution of different axes
+([a hole between the axes](@ref sliced-hole-between-axes)).
 
 ### [The cost in 3d3v](@id sliced-cost-3d3v)
 
@@ -187,6 +154,7 @@ of the box, the expected number of markers within one kernel width in all ``2d``
 (``h_x = 0.45``, ``h_v = 0.35``, ``L_x = \pi``, ``V_{\max} = 2.25``):
 
 ```@example sliced-limitations
+using ParticleRemapping
 m = SlicedQuantileRemap()
 per_axis = m.hx / (2m.Lx) * m.hv / (2m.Vmax)
 slicing = [(; d, B, slices = B^(2d - 1), markers_for_10_per_slice = 10 * B^(2d - 1))
