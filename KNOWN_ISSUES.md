@@ -252,6 +252,25 @@
 - **kind:** defect
 - **found:** 2026-11-26
 
+### K21 · The remap of the clustered example sends its velocity tails far outside the box
+
+- **location:** `src/projection/remap.jl:161`
+- **problem:** the targets of the density-interpolation flow spread the clustered markers of
+  `clustered_example` over the whole box, the targets in the tails get weights down to `3e-6`, and
+  the gauge step `v = P / (m w*)` (`P ./ (m .* tg.w)`) divides the momentum error of the fit by
+  them, so that after the remap about a third of the markers lie far outside `|v| ≤ V`, where
+  `lattice_example` on the same hats keeps all but a few inside.
+- **evidence:** `remap(KickDriftRemap(; L = ex.L, V = ex.V, projection = HatProjection(12, 13),
+  nξ = 16, nv = 20, nw = 8, maxit = 20, solver = :gauss_newton, density = (xs, vs) ->
+  ex.density.(xs, vs)), ex.markers)` on macOS with Julia 1.13.4, over runs with the targets
+  moved by `1e-13` relative: with `ex = clustered_example()` the fit ends `MAXITERS` with
+  `F/F0` `0.0999`–`0.1187`, the smallest target weight is `2.9e-6`, and after the remap 212–224
+  of the 576 markers lie outside `|v| ≤ 3.5`, with `|v|` up to `153`–`172` and `9.9 %` of the
+  weight; with `ex = lattice_example()` the fit ends `MAXITERS` with `F/F0 = 0.220038`, and 7 of
+  the 576 markers lie outside `|v| ≤ 4`, the largest `|v|` `4.50`, with `0.003 %` of the weight.
+- **kind:** defect
+- **found:** 2026-11-23
+
 ## SlicedRedistribution
 
 ### K5 · The long-time sliced remap is canonical only for frozen multipliers

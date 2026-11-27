@@ -108,6 +108,15 @@
 - `KNOWN_ISSUES.md`: K20 (the kick–drift map does not infer its return type, so the fields `F0`
   and `F` of `fit_remap_parameters` with a `KickDriftParametrisation` infer `Any`; no test
   measures what this costs).
+- Two examples of the projection chapter, each with its exact density
+  (`src/projection_examples.jl`): `lattice_example(; nL = 24, a = 0.2, b = 0.3)`, the lattice of
+  the hole problem without a hole, its cells moved by a mild smooth map and weighted by the
+  Jacobian of the map, and `clustered_example()`, the clustered markers of
+  `redistribution_example` on a `24 × 24` lattice, whose density is the exact inverse of the
+  leapfrog steps. Both return `(; initial, markers, density, L, V, m, N)`. Tests:
+  `test/projection_examples.jl`.
+- `KNOWN_ISSUES.md`: K21 (the remap of the clustered example sends its velocity tails far
+  outside the box).
 
 ### Fixed
 
@@ -247,6 +256,10 @@
   `scripts/standard/standard_experiments.jl` checks these numbers and the return codes,
   `test/projection/experiments/dlra_weights.jl` and `scripts/projection/dlra_weights.jl` the
   return code of each fit of the remap table.
+- `algorithm_svg(:projection)` draws the steps of the kick–drift map on the 100 markers of
+  `lattice_example(; nL = 10)` instead of the hole problem, with the map `nξ = 16, nv = 20,
+  nw = 8`, no hole outline, and a velocity window that holds every stage, because the kicks and
+  drifts move markers out of the box `|v| ≤ 4`.
 
 ### Removed
 
