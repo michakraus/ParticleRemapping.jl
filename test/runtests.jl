@@ -13,6 +13,7 @@ if "core" in GROUPS
     @safetestset "Remap stages" include("common/stages.jl")
     @safetestset "SVG pictures" include("common/svg.jl")
     @safetestset "Algorithm figures" include("algorithm_figures.jl")
+    @safetestset "Projection examples" include("projection_examples.jl")
     @safetestset "Remapping: symplecticity condition" include("remapping/canonicity.jl")
     @safetestset "Remapping: gauge rezoning" include("remapping/gauge.jl")
     @safetestset "Remapping: gauge worked examples" include("remapping/gauge_examples.jl")
