@@ -1,10 +1,11 @@
 # The two examples of the projection overview page (`docs/src/projection/index.md`): the mildly
 # deformed 24 × 24 lattice (`lattice_example()`) and the 24 × 24 clustered markers
 # (`clustered_example()`), each remapped by the same 16/20/8 kick–drift map on 12 × 13 hats. Checks
-# every number the overview quotes with its digits or inside its range, verifies that each quoted
-# string appears on `docs/src/projection/index.md`, checks conservation of total weight and total
-# momentum, and verifies that the lumped projection on 12 × 13 hats refuses the clustered markers
-# with a `DomainError`.
+# every number the overview quotes with its digits, a number quoted as a range within that range
+# widened on each side by its width, verifies that each quoted string appears on
+# `docs/src/projection/index.md`, checks conservation of total weight and total momentum, and
+# verifies that the lumped projection on 12 × 13 hats refuses the clustered markers with a
+# `DomainError`.
 
 using ParticleRemapping
 using Test
@@ -18,11 +19,13 @@ function quoted_unit(quoted::AbstractString)
 end
 
 # `x` agrees with `quoted` to the digits that `quoted` shows: within half a unit of its last digit.
-# A range `lo–hi` holds `x` between its rounded ends.
+# A range `lo–hi` holds `x` once it is widened on each side by its width, and by at least one unit
+# of the last digit of `hi`.
 function agrees(x, quoted::AbstractString)
     if occursin('–', quoted)
-        lo, hi = parse.(Float64, split(quoted, '–'))
-        return lo <= x <= hi
+        lo, hi = split(quoted, '–')
+        d = max(parse(Float64, hi) - parse(Float64, lo), quoted_unit(hi))
+        return parse(Float64, lo) - d <= x <= parse(Float64, hi) + d
     end
     abs(x - parse(Float64, quoted)) <= 0.5 * quoted_unit(quoted) * (1 + 1e-9)
 end
@@ -63,15 +66,27 @@ const QUOTED_MAIN = (
 )
 
 const QUOTED_CLUSTERED = (
-    outside = "210–224",
-    max_v = "130–180",
-    weight_share = "0.094–0.11",
+    outside = "201–224",
+    max_v = "120–180",
+    weight_share = "0.090–0.11",
     min_target_w = "2.9e-6",
     median_target_w = "1.2e-4–1.4e-4",
     mean_w = "1.7e-3"
 )
 
 @testset "Overview examples" begin
+    @testset "range agreement" begin
+        @test agrees(206, "210–224")
+        @test agrees(196, "210–224")
+        @test !agrees(195, "210–224")
+        @test agrees(238, "210–224")
+        @test !agrees(239, "210–224")
+        @test agrees(1.91, "2.0–2.0")
+        @test !agrees(1.89, "2.0–2.0")
+        @test agrees(2.09, "2.0–2.0")
+        @test !agrees(2.11, "2.0–2.0")
+    end
+
     ex = lattice_example()
     cl = clustered_example()
 

@@ -2,14 +2,15 @@
 # deformed 24 × 24 lattice (`lattice_example()`) and the 24 × 24 clustered markers
 # (`clustered_example()`), each remapped by the same 16/20/8 kick–drift map on 12 × 13 hats.
 # Prints every quoted number and T1 (`conservation_report` on `PeriodicGrid(2π, 12)`) of the main
-# example, remaps each example again with the positions moved by 1e-13 relative (`Xoshiro(1)` and
-# `Xoshiro(2)`), checks that each perturbed `θ` differs from the unperturbed one, checks that every
-# run agrees with each quoted number or lies inside its quoted range, and verifies that the lumped
-# projection on 12 × 13 hats refuses the clustered markers with a `DomainError`.
+# example, remaps the main example again with the positions moved by 1e-13 relative (`Xoshiro(1)`
+# and `Xoshiro(2)`) and the clustered example with ten such runs (`Xoshiro(1)` to `Xoshiro(10)`),
+# checks that each perturbed `θ` differs from the unperturbed one, checks that every run agrees
+# with each quoted number or lies inside its quoted range, and verifies that the lumped projection
+# on 12 × 13 hats refuses the clustered markers with a `DomainError`.
 #
 #   julia --startup-file=no --project=scripts scripts/projection/example.jl
 #
-# Runtime: about 15 seconds.
+# Runtime: about 35 seconds.
 
 using ParticleRemapping
 using Printf
@@ -51,9 +52,9 @@ const QUOTED_MAIN = (
 )
 
 const QUOTED_CLUSTERED = (
-    outside = "210–224",
-    max_v = "130–180",
-    weight_share = "0.094–0.11",
+    outside = "201–224",
+    max_v = "120–180",
+    weight_share = "0.090–0.11",
     min_target_w = "2.9e-6",
     median_target_w = "1.2e-4–1.4e-4",
     mean_w = "1.7e-3"
@@ -113,7 +114,7 @@ function run_clustered()
 
     @testset "clustered example: unperturbed and perturbed runs" begin
         @test agrees(wmean, QUOTED_CLUSTERED.mean_w)
-        for s in 0:2
+        for s in 0:10
             r = s == 0 ? r0 :
                 remap(method,
                 Markers(mk.x .* (1 .+ 1e-13 .* randn(Xoshiro(s), cl.N)),

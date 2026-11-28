@@ -115,10 +115,11 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   [overview](@ref projection-example), [`lattice_example`](@ref ParticleRemapping.lattice_example)
   and [`clustered_example`](@ref ParticleRemapping.clustered_example), remapped with the overview's
   kick–drift map on ``12 \times 13`` hat functions: the sizes and boxes, the return code
-  `MAXITERS` and 20 iterations, every quoted number with its digits or inside its range, the
-  conservation of total weight and total momentum to ``10^{-13}`` for the main example, and that
-  each quoted string appears on `docs/src/projection/index.md`. Case that must fail: the lumped
-  projection on ``12 \times 13`` hats throws a `DomainError` on the clustered markers.
+  `MAXITERS` and 20 iterations, every quoted number with its digits or, where it is quoted as a
+  range, within that range widened on each side by its width, the conservation of total weight and
+  total momentum to ``10^{-13}`` for the main example, and that each quoted string appears on
+  `docs/src/projection/index.md`. Case that must fail: the lumped projection on ``12 \times 13``
+  hats throws a `DomainError` on the clustered markers.
 
 ## Test files of the group `slow`
 
@@ -161,11 +162,12 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
 
 ## Scripts
 
-- **`scripts/projection/example.jl`** (about 15 seconds): remaps the deformed lattice and the
+- **`scripts/projection/example.jl`** (about 35 seconds): remaps the deformed lattice and the
   clustered markers of the [overview](@ref projection-example), prints every quoted number and T1
-  of the main example, runs each again with positions moved by ``10^{-13}`` relative (`Xoshiro(1)`
-  and `Xoshiro(2)`), checks that each perturbed ``\theta`` moves, checks every quoted number across
-  the three runs, and verifies that the lumped projection refuses the clustered markers.
+  of the main example, runs the main example again with positions moved by ``10^{-13}`` relative
+  (`Xoshiro(1)` and `Xoshiro(2)`) and the clustered example with ten such runs (`Xoshiro(1)` to
+  `Xoshiro(10)`), checks that each perturbed ``\theta`` moves, checks every quoted number across
+  every run, and verifies that the lumped projection refuses the clustered markers.
 - **`scripts/projection/checks.jl`** (about one minute): runs `structure.jl`, `stages.jl`,
   `charge.jl` and `lowrank.jl` of `test/projection/`, each in a module of its own, and prints the
   measured numbers of the table of structural statements.
