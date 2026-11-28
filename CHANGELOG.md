@@ -117,6 +117,16 @@
   `test/projection_examples.jl`.
 - `KNOWN_ISSUES.md`: K21 (the remap of the clustered example sends its velocity tails far
   outside the box).
+- Interactive Vue/SVG algorithm player for the four overview pages: `svg_player_json`
+  (`src/common/svg.jl`) serialises stage states, overlays, targets, radii and normalised `#rrggbb`
+  colours to strict UTF-8 JSON with input validation; `write_algorithm_player`
+  (`src/algorithm_figures.jl`) writes `algorithm-<key>.json` beside each page;
+  `docs/src/components/AlgorithmPlayer.vue` and `docs/src/components/useFigureAnimation.js`
+  (registered in `docs/src/.vitepress/theme/index.ts` and styled in `custom.css`) play
+  automatically, pause off screen and under `prefers-reduced-motion: reduce`, and offer
+  play/pause and previous/next step controls. `JSON` (`compat = "1"`) is added to
+  `test/Project.toml` to verify the emitted JSON in `test/common/svg.jl` and
+  `test/algorithm_figures.jl`.
 
 ### Fixed
 
@@ -278,6 +288,11 @@
   they and `moser_flow_history` read the markers from `problem.markers`;
   `scripts/projection/make_figures.jl` draws the overview and construction figures from
   `lattice_example()`.
+- `algorithm_svg(key)` now returns `(; key, panels, player)` with JSON player data in place of the
+  SMIL `animation` field; the four overview pages (`projection`, `redistribution`, `remapping`,
+  `sliced`) import their generated `algorithm-<key>.json` in `<script setup>` and embed
+  `<AlgorithmPlayer>` above the static panels, with `figures.md`, `library.md` and
+  `verification.md` updated accordingly.
 
 ### Removed
 
@@ -297,3 +312,6 @@
   cost per iteration. The remap examples of the home page and of the projection's overview and
   algorithm pages show the return code of their fit, which `test/projection/remap.jl` checks; the
   text beside the figures of the steps of the kick–drift and the non-separable map names it.
+- Breaking: `svg_stage_animation` (`src/common/svg.jl`), its `_fmt4` helper, the `.animation`
+  field of `algorithm_svg`, and the SMIL animations of the four overview pages; `svg_player_json`,
+  `write_algorithm_player` and `AlgorithmPlayer` replace them.
