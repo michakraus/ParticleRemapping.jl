@@ -75,14 +75,24 @@ weight; open circles are the target points.
 ```@example projection-steps
 using ParticleRemapping
 steps = algorithm_svg(:projection)
-steps.panels
+write_algorithm_player(".", steps) # hide
+nothing # hide
 ```
 
-The animation runs through the same steps; between two steps the positions, the velocities and
-the weights change linearly:
+```@raw html
+<script setup>
+import projection from './algorithm-projection.json'
+</script>
+```
+
+The player runs through the steps automatically; pause it or step back and forward through them:
+
+```@raw html
+<AlgorithmPlayer :player="projection" />
+```
 
 ```@example projection-steps
-steps.animation
+steps.panels
 ```
 
 The [algorithm](@ref projection-algorithm) page gives the steps in full.

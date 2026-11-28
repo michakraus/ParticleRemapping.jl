@@ -51,11 +51,25 @@ speeds.
 ```@example remap-steps
 using ParticleRemapping
 gauge_steps = algorithm_svg(:gauge)
-gauge_steps.panels
+write_algorithm_player(".", gauge_steps) # hide
+nothing # hide
+```
+
+```@raw html
+<script setup>
+import gauge from './algorithm-gauge.json'
+import transport from './algorithm-transport.json'
+</script>
+```
+
+The player runs through the steps automatically; pause it or step back and forward through them:
+
+```@raw html
+<AlgorithmPlayer :player="gauge" />
 ```
 
 ```@example remap-steps
-gauge_steps.animation
+gauge_steps.panels
 ```
 
 **Canonical transport** ([`CurrentQuantileMatching`](@ref)). The figures follow the steps on 48
@@ -72,11 +86,18 @@ markers in two cells with the admissible cotangent lift of the
 
 ```@example remap-steps
 transport_steps = algorithm_svg(:transport)
-transport_steps.panels
+write_algorithm_player(".", transport_steps) # hide
+nothing # hide
+```
+
+The player runs through the steps automatically; pause it or step back and forward through them:
+
+```@raw html
+<AlgorithmPlayer :player="transport" />
 ```
 
 ```@example remap-steps
-transport_steps.animation
+transport_steps.panels
 ```
 
 Steps 2 and 3 of the transport are a gauge step. The velocities they give can serve as targets

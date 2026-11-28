@@ -17,7 +17,7 @@ and lists every figure and animation of the manual and of the notes.
 | A1 | the animation of S2: the markers move through the stages | [`animate_stages`](@ref) of [`remap_frames`](@ref) |
 | T1 | the changes of the conserved quantities, as a table | [`conservation_report`](@ref) |
 | G1 | the steps of the algorithm on a small example: one SVG panel per step, with the overlays of the step (grids, slices, rays, targets, arrows) | `algorithm_svg(key).panels` ([`algorithm_svg`](@ref)) |
-| G2 | the SVG animation through the steps of G1 (SMIL, no script) | `algorithm_svg(key).animation` |
+| G2 | the interactive Vue/SVG player (`AlgorithmPlayer`) through the steps of G1, fed from JSON | `algorithm_svg(key).player`, [`write_algorithm_player`](@ref) |
 | X1 | the markers before and after the remap of each [standard experiment](@ref standard-experiments), and the cell counts of the run with repeated remaps | [`plot_remap`](@ref), `plot_cell_count_history` |
 
 Between two states, the animation changes the positions, the momenta ``p = m w v`` and the

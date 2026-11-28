@@ -1,5 +1,5 @@
-# SVG pictures of the steps of a remap: one panel per state, and one animated panel that moves
-# the markers from state to state (SMIL, no script). They need no plotting package.
+# SVG pictures of the steps of a remap: one panel per state, and JSON data for the Vue/SVG
+# algorithm player. They need no plotting package.
 
 """
     SVGFigure(svg::String)
@@ -20,7 +20,7 @@ Base.write(io::IO, f::SVGFigure) = write(io, f.svg)
     svg_text(x, v, text; color = "#404040", size = 11)
     svg_arrow(x1, v1, x2, v2; color = "#808080", width = 1)
 
-The overlays of [`svg_stage_panels`](@ref) and [`svg_stage_animation`](@ref), in the
+The overlays of [`svg_stage_panels`](@ref) and [`svg_player_json`](@ref), in the
 coordinates `(x, v)` of the markers: a line, a filled rectangle with the corner `(x, v)`, a text
 centred at `(x, v)`, and a line with an arrow head at `(x2, v2)`.
 """
@@ -143,7 +143,7 @@ _colors(f::Function, k) = f(k)
 
 One colour of Wong's palette for each entry of `categories` (integers from 1), cycling through
 the seven colours, for the keyword `colors` of [`svg_stage_panels`](@ref) and
-[`svg_stage_animation`](@ref).
+[`svg_player_json`](@ref).
 """
 function svg_category_colors(categories::AbstractVector{<:Integer})
     palette = ("#0072B2", "#E69F00", "#009E73", "#CC79A7", "#56B4E9", "#D55E00", "#F0E442")
@@ -221,91 +221,232 @@ function svg_stage_panels(stages::AbstractVector{<:RemapStage}; window,
     SVGFigure(String(take!(io)))
 end
 
-"""
-    svg_stage_animation(stages; window, panel = (420, 300), hold = 1.2, move = 1.6,
-                        overlays = nothing, targets = nothing, colors = nothing, rmax = 7,
-                        titles = [s.label for s in stages])
+# JSON serialisation helpers for `svg_player_json` (no JSON dependency in the package).
+_json_num(x::Real) = string(round(Float64(x); digits = 4))
 
-An animated SVG of the markers through the states of `stages`: each state shows for `hold`
-seconds, and between two states the markers move for `move` seconds, with the positions, the
-velocities, the colours and the radii interpolated linearly; the animation repeats. The overlays,
-the targets and the title of a state show while its state is held and while the markers move
-towards it. The other keywords are those of [`svg_stage_panels`](@ref). Returns an
-[`SVGFigure`](@ref).
-"""
-function svg_stage_animation(
-        stages::AbstractVector{<:RemapStage}; window, panel = (420, 300),
-        hold::Real = 1.2, move::Real = 1.6, overlays = nothing, targets = nothing,
-        colors = nothing, rmax::Real = 7, titles = [s.label for s in stages])
-    n = length(stages)
-    N = length(stages[1].markers)
-    all(s -> length(s.markers) == N, stages) ||
-        throw(DimensionMismatch("every state must hold the same markers"))
-    p = _Panel(30.0, 24.0, Float64(panel[1]), Float64(panel[2]), Float64.(Tuple(window)))
-    W, H = p.w + 50, p.h + 54
-    # the last move returns to the first state
-    dur = n * (hold + move)
-    # the times at which state k starts and ends to be held
-    t_on = [(k - 1) * (hold + move) for k in 1:n]
-    t_off = t_on .+ hold
-    kt = Float64[]
-    for k in 1:n
-        push!(kt, t_on[k] / dur, t_off[k] / dur)
-    end
-    push!(kt, 1.0)
-    keytimes = join(_fmt4.(kt), ";")
-    styles = _marker_styles(stages, colors, rmax)
-    anim(attr, vals) = "<animate attributeName=\"$attr\" dur=\"$(_fmt(dur))s\" " *
-                       "repeatCount=\"indefinite\" keyTimes=\"$keytimes\" values=\"" *
-                       join(vcat([[v, v] for v in vals]..., vals[1]), ";") * "\"/>"
-    # without animation, only the first state shows
-    group(k) = k == 1 ? "<g>" : "<g opacity=\"0\">"
-    # a group visible while the markers move towards state k and while state k is held
-    function visible(k)
-        n == 1 && return ""
-        ts, vs = k == 1 ? ([0, t_off[1], t_off[n]] ./ dur, (1, 0, 1)) :
-                 ([0, t_off[k - 1], t_off[k]] ./ dur, (0, 1, 0))
-        "<animate attributeName=\"opacity\" dur=\"$(_fmt(dur))s\" repeatCount=\"indefinite\" " *
-        "calcMode=\"discrete\" keyTimes=\"$(join(_fmt4.(ts), ";"))\" values=\"$(join(vs, ";"))\"/>"
-    end
-    io = IOBuffer()
-    print(io,
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 $(_fmt(W)) $(_fmt(H))\" ",
-        "width=\"100%\" style=\"max-width:$(round(Int, W))px\" font-family=\"sans-serif\">",
-        _SVG_DEFS)
-    _frame(io, p)
-    _clip_open(io, p)
-    for k in 1:n
-        print(io, group(k), visible(k))
-        foreach(s -> _overlay(io, p, s), _overlays(overlays, k))
-        t = _targets(targets, k)
-        if t !== nothing
-            for (xt, vt) in zip(t...)
-                print(io, "<circle cx=\"$(_fmt(_px(p, xt)))\" cy=\"$(_fmt(_py(p, vt)))\" ",
-                    "r=\"$(_fmt(0.6rmax))\" fill=\"none\" stroke=\"#D55E00\"/>")
-            end
+function _json_escape(io::IO, s::AbstractString)
+    print(io, '"')
+    for c in s
+        if c == '"'
+            print(io, "\\\"")
+        elseif c == '\\'
+            print(io, "\\\\")
+        elseif c == '\b'
+            print(io, "\\b")
+        elseif c == '\f'
+            print(io, "\\f")
+        elseif c == '\n'
+            print(io, "\\n")
+        elseif c == '\r'
+            print(io, "\\r")
+        elseif c == '\t'
+            print(io, "\\t")
+        elseif UInt32(c) < 0x20
+            print(io, "\\u", string(UInt32(c); base = 16, pad = 4))
+        else
+            print(io, c)
         end
-        print(io, "</g>")
     end
-    for a in 1:N
-        xs = [_fmt(_px(p, s.markers.x[a])) for s in stages]
-        vs = [_fmt(_py(p, s.markers.v[a])) for s in stages]
-        rs = [_fmt(styles[k][2][a]) for k in 1:n]
-        cs = [styles[k][1][a] for k in 1:n]
-        print(
-            io, "<circle cx=\"$(xs[1])\" cy=\"$(vs[1])\" r=\"$(rs[1])\" fill=\"$(cs[1])\" ",
-            "fill-opacity=\"0.85\">", anim("cx", xs), anim("cy", vs), anim("r", rs),
-            anim("fill", cs), "</circle>")
-    end
-    print(io, "</g>")
-    for k in 1:n
-        print(io, group(k), visible(k), _title(p, titles[k]), "</g>")
-    end
-    print(io, "</svg>")
-    SVGFigure(String(take!(io)))
+    print(io, '"')
 end
 
-_fmt4(t) = string(round(t; digits = 4))
+function _json_hex_color(c::AbstractString, k::Int)
+    s = String(c)
+    if occursin(r"^#[0-9a-fA-F]{6}\z", s)
+        return lowercase(s)
+    end
+    m = match(r"^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)\z", s)
+    if m !== nothing
+        rgb = [tryparse(Int, cap) for cap in m.captures]
+        if all(v -> v !== nothing && 0 <= v <= 255, rgb)
+            return sprint() do io
+                print(io, '#')
+                for v in rgb
+                    print(io, string(something(v); base = 16, pad = 2))
+                end
+            end
+        end
+    end
+    throw(ArgumentError(
+        "svg_player_json: the colour $(repr(s)) of state $k is not #rrggbb or rgb(r,g,b)"))
+end
+
+function _json_numbers(io::IO, xs)
+    print(io, '[')
+    for (i, x) in enumerate(xs)
+        i > 1 && print(io, ',')
+        print(io, _json_num(x))
+    end
+    print(io, ']')
+end
+
+function _json_strings(io::IO, xs)
+    print(io, '[')
+    for (i, x) in enumerate(xs)
+        i > 1 && print(io, ',')
+        _json_escape(io, x)
+    end
+    print(io, ']')
+end
+
+function _check_overlay(o, k::Int)
+    if o.kind === :line || o.kind === :arrow
+        all(isfinite, (o.x1, o.v1, o.x2, o.v2, o.width)) ||
+            throw(ArgumentError("svg_player_json: a non-finite number in state $k"))
+    elseif o.kind === :rect
+        all(isfinite, (o.x, o.v, o.Δx, o.Δv, o.opacity)) ||
+            throw(ArgumentError("svg_player_json: a non-finite number in state $k"))
+    elseif o.kind === :text
+        all(isfinite, (o.x, o.v, o.size)) ||
+            throw(ArgumentError("svg_player_json: a non-finite number in state $k"))
+    else
+        throw(ArgumentError(
+            "svg_player_json: an overlay of state $k has the unknown kind $(repr(o.kind))"))
+    end
+end
+
+function _json_overlay(io::IO, o)
+    if o.kind === :line
+        print(io, "{\"kind\":\"line\",\"x1\":", _json_num(o.x1), ",\"v1\":",
+            _json_num(o.v1), ",\"x2\":", _json_num(o.x2), ",\"v2\":", _json_num(o.v2),
+            ",\"color\":")
+        _json_escape(io, string(o.color))
+        print(io, ",\"width\":", _json_num(o.width), ",\"dash\":",
+            Bool(o.dash) ? "true" : "false", '}')
+    elseif o.kind === :arrow
+        print(io, "{\"kind\":\"arrow\",\"x1\":", _json_num(o.x1), ",\"v1\":",
+            _json_num(o.v1), ",\"x2\":", _json_num(o.x2), ",\"v2\":", _json_num(o.v2),
+            ",\"color\":")
+        _json_escape(io, string(o.color))
+        print(io, ",\"width\":", _json_num(o.width), '}')
+    elseif o.kind === :rect
+        print(io, "{\"kind\":\"rect\",\"x\":", _json_num(o.x), ",\"v\":", _json_num(o.v),
+            ",\"dx\":", _json_num(o.Δx), ",\"dv\":", _json_num(o.Δv), ",\"color\":")
+        _json_escape(io, string(o.color))
+        print(io, ",\"opacity\":", _json_num(o.opacity), '}')
+    else
+        print(io, "{\"kind\":\"text\",\"x\":", _json_num(o.x), ",\"v\":", _json_num(o.v),
+            ",\"text\":")
+        _json_escape(io, string(o.text))
+        print(io, ",\"color\":")
+        _json_escape(io, string(o.color))
+        print(io, ",\"size\":", _json_num(o.size), '}')
+    end
+end
+
+"""
+    svg_player_json(stages; window, id, overlays = nothing, targets = nothing,
+                    colors = nothing, rmax = 7, titles = [s.label for s in stages]) -> String
+
+Serialise the states of `stages` (a vector of [`RemapStage`](@ref)) as a UTF-8 JSON object for the
+Vue/SVG `AlgorithmPlayer` component, over the box `window = (xmin, xmax, vmin, vmax)` with key
+`id`. The markers share one colour range and one size reference across all states (radii in pixels
+for a `420 × 300` panel up to `rmax`, colours normalised to lowercase `#rrggbb`). `overlays`,
+`targets`, `colors` and `titles` accept the same forms as [`svg_stage_panels`](@ref). Every numeric
+value is checked finite and rounded to four decimals; invalid inputs throw `ArgumentError` or
+`DimensionMismatch`.
+"""
+function svg_player_json(
+        stages::AbstractVector{<:RemapStage}; window, id::AbstractString,
+        overlays = nothing, targets = nothing, colors = nothing, rmax::Real = 7,
+        titles = [s.label for s in stages])
+    Base.require_one_based_indexing(stages)
+    n = length(stages)
+    n > 0 || throw(ArgumentError("svg_player_json: no states"))
+    win = Float64.(Tuple(window))
+    (length(win) == 4 && all(isfinite, win) && win[1] < win[2] && win[3] < win[4]) ||
+        throw(ArgumentError(
+            "svg_player_json: the window must hold finite bounds with xmin < xmax and vmin < vmax"))
+    rmax_f = Float64(rmax)
+    (isfinite(rmax_f) && rmax_f > 0) ||
+        throw(ArgumentError("svg_player_json: rmax must be finite and positive, got $rmax"))
+    N = length(stages[1].markers)
+    all(s -> length(s.markers) == N, stages) ||
+        throw(DimensionMismatch("svg_player_json: every state must hold the same markers"))
+    N > 0 || throw(ArgumentError("svg_player_json: the states hold no markers"))
+    length(titles) == n ||
+        throw(DimensionMismatch("svg_player_json: titles must hold one caption per state"))
+    if targets isa AbstractVector && length(targets) != n
+        throw(DimensionMismatch("svg_player_json: targets must hold one entry per state"))
+    end
+    if overlays isa AbstractVector && length(overlays) != n
+        throw(DimensionMismatch("svg_player_json: overlays must hold one entry per state"))
+    end
+
+    checked = [begin
+                   cap = string(titles[k])
+                   isempty(strip(cap)) &&
+                       throw(ArgumentError("svg_player_json: the caption of state $k is empty"))
+                   mk = stages[k].markers
+                   (all(isfinite, mk.x) && all(isfinite, mk.v) && all(isfinite, mk.w)) ||
+                       throw(ArgumentError("svg_player_json: a non-finite number in state $k"))
+                   t = _targets(targets, k)
+                   if t !== nothing
+                       (length(t) == 2 && length(t[1]) == N && length(t[2]) == N) ||
+                           throw(DimensionMismatch(
+                               "svg_player_json: the targets of state $k must hold one point per marker"))
+                       (all(isfinite, t[1]) && all(isfinite, t[2])) ||
+                           throw(ArgumentError("svg_player_json: a non-finite number in state $k"))
+                   end
+                   ovs = _overlays(overlays, k)
+                   for o in ovs
+                       _check_overlay(o, k)
+                   end
+                   (cap, ovs)
+               end
+               for k in 1:n]
+
+    styles = _marker_styles(stages, colors, rmax_f)
+    hex_colors = Vector{Vector{String}}(undef, n)
+    for k in 1:n
+        fillc = styles[k][1]
+        length(fillc) == N ||
+            throw(DimensionMismatch(
+                "svg_player_json: the colours of state $k must hold one colour per marker"))
+        hex_colors[k] = [_json_hex_color(c, k) for c in fillc]
+    end
+
+    io = IOBuffer()
+    print(io, "{\"version\":1,\"id\":")
+    _json_escape(io, id)
+    print(io, ",\"window\":")
+    _json_numbers(io, win)
+    print(io, ",\"markers\":", N, ",\"steps\":[")
+    for k in 1:n
+        k > 1 && print(io, ',')
+        mk = stages[k].markers
+        cap, ovs = checked[k]
+        print(io, "{\"caption\":")
+        _json_escape(io, cap)
+        print(io, ",\"x\":")
+        _json_numbers(io, mk.x)
+        print(io, ",\"v\":")
+        _json_numbers(io, mk.v)
+        print(io, ",\"r\":")
+        _json_numbers(io, styles[k][2])
+        print(io, ",\"c\":")
+        _json_strings(io, hex_colors[k])
+        print(io, ",\"targets\":")
+        t = _targets(targets, k)
+        if t === nothing
+            print(io, "null")
+        else
+            print(io, "{\"x\":")
+            _json_numbers(io, t[1])
+            print(io, ",\"v\":")
+            _json_numbers(io, t[2])
+            print(io, '}')
+        end
+        print(io, ",\"overlays\":[")
+        for (i, o) in enumerate(ovs)
+            i > 1 && print(io, ',')
+            _json_overlay(io, o)
+        end
+        print(io, "]}")
+    end
+    print(io, "]}")
+    return String(take!(io))
+end
 
 export SVGFigure, svg_line, svg_rect, svg_text, svg_arrow, svg_category_colors,
-       svg_stage_panels, svg_stage_animation
+       svg_stage_panels, svg_player_json

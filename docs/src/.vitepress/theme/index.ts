@@ -8,6 +8,7 @@ import type { Theme as ThemeConfig } from 'vitepress'
 import 'virtual:mathjax-styles.css';
 
 // __DV_PLUGIN_COMPONENT_IMPORTS__
+import AlgorithmPlayer from '@/AlgorithmPlayer.vue'
 
 import { enhanceAppWithTabs } from 'vitepress-plugin-tabs/client'
 
@@ -20,6 +21,7 @@ export const Theme: ThemeConfig = {
   enhanceApp({ app }) {
     enhanceAppWithTabs(app);
     // __DV_PLUGIN_COMPONENT_REGISTRATIONS__
+    app.component('AlgorithmPlayer', AlgorithmPlayer)
   }
 }
 export default Theme

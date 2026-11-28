@@ -75,13 +75,18 @@ A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:
   stages, a gauge step keeps ``(x, p)`` in every frame, periodic positions move by the shorter way
   round (and cross the whole interval without a period, the control), and the guards for no
   stages and for stages of different sizes.
-- **`test/common/svg.jl`**: [`svg_stage_panels`](@ref) and [`svg_stage_animation`](@ref): the
+- **`test/common/svg.jl`**: [`svg_stage_panels`](@ref) and [`svg_player_json`](@ref): the
   number of markers, targets, clip paths and arrows, the position of a marker in pixels, the
-  category colours, the key times of the animation, the escaped titles, clip ids that differ
-  between two pictures, and the guard for states of different sizes.
-- **`test/algorithm_figures.jl`**: [`algorithm_svg`](@ref) for every construction: the panels,
-  the markers in every panel, an animated position per marker, no `NaN`, and the guard for an
-  unknown key.
+  category colours, escaped titles and distinct clip ids between two panel pictures, the JSON
+  player schema (shared colour range and size reference, targets, all four overlay kinds, string
+  escaping, colour normalisation, one-state input) and every refusal guard (non-finite numbers,
+  invalid window or `rmax`, no states, mismatched state sizes, empty states, empty captions,
+  mismatched target/title/overlay/colour counts, invalid colours, unknown overlay kinds).
+- **`test/algorithm_figures.jl`**: [`algorithm_svg`](@ref) and [`write_algorithm_player`](@ref)
+  for every construction: the panels, the markers in every panel, no `NaN`, the parsed player JSON
+  (key, marker count, step count, captions, targets, finite values, size bound of 150 000 bytes),
+  the guard for an unknown key, writing `algorithm-<key>.json` and its `SystemError` on a missing
+  directory, and the four overview pages' `<script setup>` imports, player tags and writer calls.
   For the projection also the window, which holds every stage, its half-width
   `max(4, 1.1 max |v|)` over the stages, the hat grid and the arrows to the targets, and the last
   stage against the remap by the method of the steps.

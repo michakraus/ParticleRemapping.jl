@@ -1,5 +1,5 @@
 # The graphical introductions of the overview pages: the steps of each algorithm on a small
-# example, as one SVG panel per step and an SVG animation through the steps.
+# example, as one SVG panel per step and JSON data for the Vue/SVG algorithm player.
 
 using .Redistribution: redistribution_example
 using .Remapping: eight_marker_example, quantile_matching_setup
@@ -164,11 +164,12 @@ function _sliced_steps()
 end
 
 """
-    algorithm_svg(key) -> (; panels, animation)
+    algorithm_svg(key) -> (; key, panels, player)
 
-The graphical introduction to the algorithm of the construction `key` on a small example: one SVG
-panel for each step of the algorithm (`panels`) and an SVG animation through the steps
-(`animation`), both [`SVGFigure`](@ref)s. The keys and the examples:
+The graphical introduction to the algorithm of the construction `key` on a small example: the key
+`key`, one SVG panel for each step of the algorithm (`panels`, an [`SVGFigure`](@ref)) and the JSON
+data for the Vue/SVG algorithm player (`player`, from [`svg_player_json`](@ref), written by
+[`write_algorithm_player`](@ref)). The keys and the examples:
 
 - `:projection`: the kick–drift map on the 100 markers of the mildly deformed
   ``10 \\times 10`` lattice ([`lattice_example`](@ref)); hat grid, target points, the two kicks
@@ -194,10 +195,23 @@ function algorithm_svg(key::Symbol)
     panels = svg_stage_panels(
         s.stages; s.window, s.columns, s.overlays, s.targets, s.colors)
     a = s.animated
-    animation = svg_stage_animation(s.stages[a]; s.window, overlays = s.overlays[a],
+    player = svg_player_json(s.stages[a]; s.window, id = string(key),
+        overlays = s.overlays[a],
         targets = s.targets isa AbstractVector ? s.targets[a] : s.targets,
         colors = s.colors isa Function ? (k -> s.colors(a[k])) : s.colors)
-    (; panels, animation)
+    (; key, panels, player)
 end
 
-export algorithm_svg
+"""
+    write_algorithm_player(dir, steps) -> String
+
+Write the player JSON `steps.player` returned by [`algorithm_svg`](@ref) to
+`joinpath(dir, "algorithm-\$(steps.key).json")` and return that path.
+"""
+function write_algorithm_player(dir::AbstractString, steps)
+    path = joinpath(dir, "algorithm-$(steps.key).json")
+    write(path, steps.player)
+    return path
+end
+
+export algorithm_svg, write_algorithm_player

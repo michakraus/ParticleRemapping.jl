@@ -60,11 +60,24 @@ The figures follow the stages on 40 markers after the long run of the
 ```@example sliced-steps
 using ParticleRemapping
 steps = algorithm_svg(:sliced)
-steps.panels
+write_algorithm_player(".", steps) # hide
+nothing # hide
+```
+
+```@raw html
+<script setup>
+import sliced from './algorithm-sliced.json'
+</script>
+```
+
+The player runs through the steps automatically; pause it or step back and forward through them:
+
+```@raw html
+<AlgorithmPlayer :player="sliced" />
 ```
 
 ```@example sliced-steps
-steps.animation
+steps.panels
 ```
 
 Stages 1–3 of the map are canonical maps of ``(x, p)``; the last stage is a gauge step, which any
