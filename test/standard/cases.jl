@@ -435,4 +435,14 @@ end
             shown(ArgumentError, () -> stress_case(name; V)))
     end
     @test length(stress_case(:S1; N = 7).markers) == 7
+    # a box whose mass g(V) lies below 1e-3 is refused before S1 draws; just above it S1 draws
+    @test occursin(
+        r"^ArgumentError: stress_case :S1 needs g\(V\) >= 0\.001, the mass of e\^\(-v\^2/2\)/sqrt\(2π\) on \[-V, V\], got g\(V\) = 0\.000797\d* at V = 0\.001$",
+        shown(ArgumentError, () -> stress_case(:S1; N = 7, V = 1e-3)))
+    @test length(stress_case(:S1; N = 7, V = 1.3e-3).markers) == 7
+    # parameters.V is the box of the case
+    @test stress_case(:S2).parameters == (; N = 144, seed = 0, V = 6.0)
+    @test stress_case(:S3).parameters == (; N = 144, seed = 0, V = 3.0)
+    @test stress_case(:S1).parameters.V == 4.0
+    @test stress_case(:S4).parameters.V == 3.5
 end
