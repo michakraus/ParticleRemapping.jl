@@ -301,7 +301,8 @@ end
 function _stress_s1(N, seed, V)
     nq = 10_000
     g = sum(exp(-(-V + (j - 0.5) * 2V / nq)^2 / 2) for j in 1:nq) / sqrt(2π) * 2V / nq
-    # a draw is accepted with probability g/1.1, so at the floor a marker takes about 1100 attempts on average
+    # a draw is accepted with probability g/1.1, so at the floor a marker takes about 1100
+    # attempts on average
     g >= 1e-3 || throw(ArgumentError(
         "stress_case :S1 needs g(V) >= 0.001, the mass of e^(-v^2/2)/sqrt(2π) on [-V, V], " *
         "got g(V) = $g at V = $V"))

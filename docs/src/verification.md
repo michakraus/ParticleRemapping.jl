@@ -114,19 +114,21 @@ A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:
   draws, the weights of S1 with the mass of the box, the images of the density of S3, the weights
   of S2, S4 against [`clustered_example`](@ref) and its box, and the guards. The two densities of
   each family and [`STANDARD_LADDERS`](@ref).
-- **`test/standard/measures.jl`** (group `slow`): the measures of the test set. [`case_evenness`](@ref) on the
-  box, on the support and on the old window; [`case_outside`](@ref) with markers outside the box,
-  on its edge and non-finite; [`case_representation`](@ref) and [`case_charge_noise`](@ref) within
-  bounds and at the values of the pilot for both variants, and the representation error against
-  a kernel sum written in the test; [`case_reference`](@ref) against the measures without it, as
-  the integrals that the measures take, and its refusals; [`case_weights`](@ref); [`case_conservation`](@ref) and [`case_displacement`](@ref)
-  against values computed in the test, finite where the per-node report divides by an empty node.
+- **`test/standard/measures.jl`** (group `slow`): the measures of the test set.
+  [`case_evenness`](@ref) on the box, on the support and on the old window;
+  [`case_outside`](@ref) with markers outside the box, on its edge and non-finite;
+  [`case_representation`](@ref) and [`case_charge_noise`](@ref) within bounds and at the values of
+  the pilot for both variants, and the representation error against a kernel sum written in the
+  test; [`case_reference`](@ref) against the measures without it, as the integrals that the
+  measures take, and its refusals; [`case_weights`](@ref); [`case_conservation`](@ref) and
+  [`case_displacement`](@ref) against values computed in the test, finite where the per-node
+  report divides by an empty node.
 - **`test/standard/reference.jl`**: [`GridResample`](@ref), lumped and exact: the lattice, the
   total weight, the weights against the density, the zero weights, a marker beyond the box, and
   the refusals.
-- **`test/standard/driver.jl`** (group `slow`): [`case_method`](@ref): the box of the case in every method, the
-  parameters of [`standard_method`](@ref), the grids of the gauge rezoning and the transport, the
-  slice counts of the sliced map and an unknown key.
+- **`test/standard/driver.jl`** (group `slow`): [`case_method`](@ref): the box of the case in
+  every method, the parameters of [`standard_method`](@ref), the grids of the gauge rezoning and
+  the transport, the slice counts of the sliced map and an unknown key.
   [`run_case`](@ref): the rows of the gauge rezoning, the transport, the sliced map and both
   references, the row of a non-separable fit, a recorded failure, an exception that is rethrown,
   a non-finite result, the reference of a row, and the warm-up.
