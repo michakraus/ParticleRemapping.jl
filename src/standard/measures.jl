@@ -102,7 +102,6 @@ computed once: the `ngrid × ngrid` matrix `smoothed` of `K * f` of
 """
 function case_reference(case::StandardCase, variant::Symbol; ngrid::Integer = 30,
         nq::Integer = 240, nq_charge::Integer = 960)
-    _check_variant(variant)
     (; variant, smoothed = _smoothed_density(case, variant, ngrid, nq),
         charge = _exact_charge(case, variant, nq_charge))
 end

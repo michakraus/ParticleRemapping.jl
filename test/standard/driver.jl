@@ -31,6 +31,14 @@ function ParticleRemapping.remap(::NotFinite, mk::Markers)
     v[2] = NaN
     RemapResult(Markers(copy(mk.x), v, copy(mk.w); m = mk.m), (;))
 end
+# a non-finite position at one marker and a non-finite weight at another
+struct NotFiniteXW <: AbstractRemap end
+function ParticleRemapping.remap(::NotFiniteXW, mk::Markers)
+    x, w = copy(mk.x), copy(mk.w)
+    x[3] = NaN
+    w[5] = Inf
+    RemapResult(Markers(x, copy(mk.v), w; m = mk.m), (;))
+end
 function ParticleRemapping.remap(c::Counting, mk::Markers)
     c.calls[] += 1
     RemapResult(copy(mk), (;))
@@ -72,6 +80,7 @@ end
     hole = hole_case()
     s = case_method(:sliced, hole)
     @test (s.Lx, s.Vmax, s.hx, s.hv, s.B_v, s.B_x) == (1, 1, 0.15, 0.15, 10, 20)
+    @test case_method(:spline, wave_case(; N = 900)).method.relax_step == 0.006
     sp = case_method(:spline, hole).method
     @test sp.relax_step == 0.006 && sp.Vmax == 1.0 && sp.σv == 0.5 && sp.Lx == 2.0
     p = case_method(:projection, hole)
@@ -223,6 +232,10 @@ end
     @test row.error_message ==
           "1 of 16 markers have a non-finite position, velocity or weight after the remap"
     @test row.after === nothing && row.solver === nothing
+    row = run_case(NotFiniteXW(), case)
+    @test row.error_class == "NonFiniteResult"
+    @test row.error_message ==
+          "2 of 16 markers have a non-finite position, velocity or weight after the remap"
 end
 
 @testset "the warm-up and the exported driver" begin
