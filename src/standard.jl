@@ -298,3 +298,4 @@ export ShiftedRemap, STANDARD_METHODS, checkerboard_density, electric_wave_densi
 # the standard test set: the cases, the measures, the reference and the driver
 include("standard/cases.jl")
 include("standard/measures.jl")
+include("standard/reference.jl")
