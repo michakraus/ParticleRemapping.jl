@@ -27,8 +27,9 @@ the step `dt = 0.1`, `steps = 400`, the fit `window = (10.0, 25.0)` and the refe
 VlasovMethods' `TWO_STREAM_RATE = 0.2592499317`.
 
 An `ArgumentError` refuses a loader other than `:lattice` and `:sample`, a lattice `N` that is
-no square `n²` with `n ≥ 1` and a lattice seed other than `0`, a sample `N < 1` and a negative
-sample seed; [`StandardCase`](@ref) refuses a box `V` that does not hold every marker.
+no square `n²` with `n ≥ 2` and a lattice seed other than `0`, a sample `N < 1` and a negative
+sample seed; [`StandardCase`](@ref) refuses a box `V` that does not hold every marker. An odd `n`
+puts its middle row on `v = 0`, where `f₀ = 0`: those `n` markers have weight `0` and stay.
 """
 function two_stream_case(; N::Integer = 900, loader::Symbol = :lattice, seed::Integer = 0,
         V::Real = 6.0)
@@ -36,8 +37,9 @@ function two_stream_case(; N::Integer = 900, loader::Symbol = :lattice, seed::In
     f0(x, v) = (1 + α * cos(k * (x + L / 2))) * v^2 * exp(-v^2 / 2) / sqrt(2π)
     markers = if loader === :lattice
         n = _lattice_side(N)
-        n === nothing && throw(ArgumentError(
-            "two_stream_case :lattice needs N = n^2 with n >= 1, got N = $N"))
+        # A single cell has its centre at v = 0, where f₀ = 0, so no c gives Σ w = L.
+        (n === nothing || n < 2) && throw(ArgumentError(
+            "two_stream_case :lattice needs N = n^2 with n >= 2, got N = $N"))
         seed == 0 || throw(ArgumentError(
             "two_stream_case :lattice is deterministic; its only seed is 0, got seed = $seed"))
         x, v = _cell_centres(L, VL, n)
@@ -116,12 +118,13 @@ else across the remap; `W[k + 1]` is then the field energy of the remapped state
 
 The row has the fields `label` (`"none"` without remaps), `family`, `parameters`, `N` (the
 markers of the case), `R`, `steps`, `variant`, `status` (`:success` or `:failure`),
-`error_class` and `error_message` (the class and the message of a failure), `failed_at` (its step), `t` (`t[k + 1] = k dt`), `W`, `rate`, `W_reference` and
+`error_class` and `error_message` (the class and the message of a failure), `failed_at` (its
+step), `t` (`t[k + 1] = k dt`), `W`, `rate`, `W_reference` and
 `rate_reference` (of the reference), `charge_noise` ([`case_charge_noise`](@ref) of the initial
 markers and `variant`), `charge_deviation` (`‖M_k − M_k^ref‖₂ / ‖M_k^ref‖₂` of the grid charge
 `M` on `PeriodicGrid(L, 16)` of the state after step `k` and `M^ref` of the reference, `NaN`
-past the last step of a reference that failed), `max_v` (the largest `|v|` of the initial
-markers and after every push and every remap), `remaps`, `time_push` and `time_remap`
+past the last step of a reference that failed), `max_v` (the largest `|v|` after every push
+and every remap), `remaps`, `time_push` and `time_remap`
 (the seconds of all steps and of all remaps), `julia`, `package` and `vlasovmethods` (the
 versions). Without remaps `R`, `W_reference`, `rate_reference` and `charge_deviation` are
 `nothing` and `remaps` is empty. `remaps` holds one `(; step, time, W_before, W_after,

@@ -100,10 +100,19 @@ end
 end
 
 @testset "P1: the guards" begin
-    @test shown(ArgumentError, () -> two_stream_case(; N = 901)) ==
-          "ArgumentError: two_stream_case :lattice needs N = n^2 with n >= 1, got N = 901"
-    @test shown(ArgumentError, () -> two_stream_case(; N = 0)) ==
-          "ArgumentError: two_stream_case :lattice needs N = n^2 with n >= 1, got N = 0"
+    for N in (901, 0, 1, true)
+        @test shown(ArgumentError, () -> two_stream_case(; N)) ==
+              "ArgumentError: two_stream_case :lattice needs N = n^2 with n >= 2, got N = $N"
+    end
+    four = two_stream_case(; N = 4).markers
+    @test length(four) == 4
+    @test all(>(0), four.w)
+    @test isapprox(sum(four.w), 4π; rtol = 1e-14)
+    nine = two_stream_case(; N = 9).markers  # the middle row of an odd n lies on v = 0
+    zero_weight = findall(==(0.0), nine.w)
+    @test length(zero_weight) == 3
+    @test all(==(0.0), nine.v[zero_weight])
+    @test isapprox(sum(nine.w), 4π; rtol = 1e-14)
     @test shown(ArgumentError, () -> two_stream_case(; seed = 1)) ==
           "ArgumentError: two_stream_case :lattice is deterministic; its only seed is 0, got seed = 1"
     @test shown(ArgumentError, () -> two_stream_case(; loader = :grid)) ==
@@ -185,6 +194,7 @@ end
     wide = pic_method(:projection, two_stream_case(; V = 7.0))
     @test wide.method.V == 7.0
     @test wide.method.density === nothing
+    @test pic_method(:nonseparable, two_stream_case(; V = 7.0)).method.V == 7.0
     # the comparison helper tells two boxes apart
     @test !samefields(pic_method(:sliced, two_stream_case(; V = 7.0)), sl)
 end

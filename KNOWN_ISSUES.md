@@ -303,6 +303,17 @@
 - **kind:** found late
 - **found:** 2026-11-20
 
+### K27 · `periodic_wrap` returns `Lx` for a position a few ulp below `−Lx`
+
+- **location:** `src/sliced/diagnostics.jl:8`
+- **problem:** `periodic_wrap(x, Lx) = mod(x + Lx, 2Lx) − Lx` rounds `mod` of a tiny negative
+  value up to `2Lx`, so the result is `Lx`, outside `[−Lx, Lx)`; `run_pic` wraps the march's
+  positions with it before each remap, so a march position a few ulp below `0` reaches the remap
+  at `L/2`, outside the case's box.
+- **evidence:** `periodic_wrap(-6.283185307179587, 2π)` returns `6.283185307179586`, Julia 1.13.4.
+- **kind:** defect
+- **found:** 2026-11-28
+
 ## Common
 
 ### K22 · `_marker_styles` throws `InexactError` for large equal or extreme weights
@@ -390,3 +401,49 @@
 - **evidence:** — (the run at `T = 4.6e17` was not run to its end)
 - **kind:** not verified
 - **found:** 2026-11-28
+
+### K28 · The growth rate of `run_pic` is `NaN` when the window holds a non-finite or a zero field energy
+
+- **location:** `ext/ParticleRemappingVlasovMethodsExt/run.jl:20`
+- **problem:** `_growth_rate` fits `log W` over every time of the window, so a `NonFiniteField`
+  failure exactly at the window's end, or a remap that zeroes every weight inside the window,
+  gives `rate = NaN` in place of a number or `nothing`; no clause decides either case.
+- **evidence:** on `two_stream_case()`, a remap that multiplies every weight by `1e200` with
+  `R = 250, steps = 250` gives `(:failure, "NonFiniteField", 250, NaN)` for
+  `(status, error_class, failed_at, rate)`, and one that multiplies every weight by `0` with
+  `R = 40` gives `(:success, NaN)` for `(status, rate)`, with `W[42] = 0.0`.
+- **kind:** found late
+- **found:** 2026-11-28
+
+### K29 · A remap that returns no markers makes `run_pic` throw a reduction error
+
+- **location:** `ext/ParticleRemappingVlasovMethodsExt/run.jl:84`
+- **problem:** `maximum(abs, v)` after a remap that returns zero markers throws
+  `ArgumentError: reducing over an empty collection`, outside the `try` of the remap, so the run
+  neither records a failure nor raises the remap's own error; every construction of
+  `PIC_METHODS` keeps `N`.
+- **evidence:** on `two_stream_case()` with `R = 40`, a remap that returns
+  `Markers(Float64[], Float64[], Float64[])` throws `ArgumentError: reducing over an empty
+  collection is not allowed`.
+- **kind:** found late
+- **found:** 2026-11-28
+
+### K30 · `bump_on_tail_case` throws `InexactError` for an `N` above `typemax(Int)`
+
+- **location:** `ext/ParticleRemappingVlasovMethodsExt/bump_on_tail.jl:14`
+- **problem:** `Int(N)` throws a raw `InexactError` for an `N` that no `Int` holds, in place of
+  the documented `ArgumentError`; such an `N` cannot be drawn in memory.
+- **evidence:** `bump_on_tail_case(; N = big(2)^70)` throws `InexactError`.
+- **kind:** found late
+- **found:** 2026-11-28
+
+### K31 · The density of P1 is `NaN` for `|v|` above about `1.34e154`
+
+- **location:** `src/standard/pic.jl:37`
+- **problem:** `v^2` overflows to `Inf` and `exp(-v^2 / 2)` underflows to `0`, so `f₀` is
+  `Inf · 0 = NaN` on a box `V` above about `1.34e154`, far outside the boxes of every run.
+- **evidence:** `case_density(two_stream_case(; V = 1e160), :positive)(0.0, 1e160)` returns
+  `NaN`.
+- **kind:** found late
+- **found:** 2026-11-28; the form `f₀(x, v) = (1 + α cos(k x)) v² e^{−v²/2}/√(2π)` of the
+  requirement *P1, the two-stream instability, on the lattice* of the family P

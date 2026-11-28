@@ -44,7 +44,7 @@ function _march(case::StandardCase, steps::Integer, method, R::Integer, Mref)
         t = Float64[], W = Float64[], M = Vector{Float64}[], deviation = Float64[],
         grid = PeriodicGrid(L, 16), dt, hL, Mref)
     _record!(history, 0, _fresh_energy(field, x, w, 0.0), x, v, w)
-    max_v = maximum(abs, v)
+    max_v = 0.0
     remaps = NamedTuple[]
     time_push = time_remap = 0.0
     failure = nothing
@@ -80,7 +80,6 @@ function _march(case::StandardCase, steps::Integer, method, R::Integer, Mref)
             x = after.x .+ hL
             v = copy(after.v)
             w = copy(after.w)
-            m = after.m
             length(a) == length(x) || (a = zeros(length(x)))
             max_v = max(max_v, maximum(abs, v))
             Wk = _fresh_energy(field, x, w, k * dt)

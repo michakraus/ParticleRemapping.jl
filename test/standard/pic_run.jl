@@ -373,6 +373,13 @@ end
     kick = run_pic(Recorder(true), case; R = 400)
     @test kick.max_v == 7.0
     @test P1_PLAIN.max_v < 6.0
+    # max_v counts the states after the pushes, not the initial markers: two like charges that
+    # approach each other both slow down in the first push, below their initial |v| = 5
+    pair = StandardCase(:P1, case.parameters, Markers([-1.0, 1.0], [5.0, -5.0], [2π, 2π]),
+        case.L, case.V, case.represented, case.positive, :wave)
+    slowed = run_pic(pair; steps = 1)
+    @test slowed.status === :success
+    @test 4.5 < slowed.max_v < 5.0
     # a non-finite position or weight of a remap result
     for (component, value) in ((:x, NaN), (:w, Inf))
         f = run_pic(OneNonFinite(component, value), case; R = 40)
