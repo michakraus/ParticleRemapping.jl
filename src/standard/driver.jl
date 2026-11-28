@@ -16,9 +16,9 @@ map, `Lx = case.L/2` for the sliced map, `vmax = case.V` for the target of the t
 the density [`case_density`](@ref)`(case, variant)`, shifted by `L/2` as `standard_method`
 shifts it. The projection, the non-separable stages and the spline-projection redistribution
 act inside a [`ShiftedRemap`](@ref); the spline-projection redistribution scales its
-relaxation step to `0.006 · 16 / N` below the full size (400 markers for the experiment
-`:checkerboard`, 900 for `:wave`). The sliced map takes for `B_v` and `B_x` the divisors of `N`
-nearest to `B_v0 √(N/N0)` and `B_x0 √(N/N0)`, ties to the smaller, with
+relaxation step to `0.006 · 16 / N` at every `N` other than the full size (400 markers for the
+experiment `:checkerboard`, 900 for `:wave`). The sliced map takes for `B_v` and `B_x` the
+divisors of `N` nearest to `B_v0 √(N/N0)` and `B_x0 √(N/N0)`, ties to the smaller, with
 `(B_v0, B_x0, N0) = (10, 20, 400)` for `:checkerboard` and `(15, 90, 900)` for `:wave`.
 `:grid_lumped` gives the [`GridResample`](@ref) of the box with the hats of `standard_method`,
 `:grid_exact` the same with the density of `variant`. An `ArgumentError` refuses any other key.

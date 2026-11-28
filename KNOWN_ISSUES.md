@@ -365,12 +365,15 @@
 - **problem:** `stress_case(:S1; V)` computes `g(V)`, the mass of `e^{−v²/2}/√(2π)` on
   `[−V, V]`, by the midpoint rule on 10 000 cells; on a large box the cells are wider than the
   Gaussian, so `g(V)` is far from 1, the weights `2π g(V)/N` are wrong, and above about
-  `V = 1e5` the floor `g(V) >= 1e-3` refuses a box whose true mass is 1; `erf(V/√2)`, or the
+  `V = 4.2e4` the floor `g(V) >= 1e-3` refuses a box whose true mass is 1; `erf(V/√2)`, or the
   quadrature cut at about `|v| = 40`, gives the mass on every box. The sweep's boxes 2.5–4 are
   not affected.
 - **evidence:** on macOS with Julia 1.13.4, `stress_case(:S1; N = 3, V)`:
   ```
   V = 10000.0  => case, sum w = 6.192809469133692   (2π = 6.283185307179586)
+  V = 41000.0  => case, sum w = 0.009197899539120619
+  V = 42000.0  => ArgumentError: stress_case :S1 needs g(V) >= 0.001, the mass of
+                  e^(-v^2/2)/sqrt(2π) on [-V, V], got g(V) = 0.0009902435383219736 at V = 42000.0
   V = 100000.0 => ArgumentError: stress_case :S1 needs g(V) >= 0.001, the mass of
                   e^(-v^2/2)/sqrt(2π) on [-V, V], got g(V) = 3.077839450682568e-21 at V = 100000.0
   ```

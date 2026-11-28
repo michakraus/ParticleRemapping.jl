@@ -104,9 +104,10 @@ A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:
   finer than their spacing, which need the example's density.
 - **`test/standard/cases.jl`**: the cases of the [standard test set](@ref standard-test-set).
   [`StandardCase`](@ref): the guard of the box, with its message for every refusal and the box
-  checked first. [`wave_case`](@ref): seed 0 against the old lattice and the old long run, one box
-  for every rung, the box as a keyword and its refusal at `V = 2`, the longest rungs inside the
-  default box, the stratified seeds against their draws, and the guards of `N`, `T` and the seed.
+  checked first. [`wave_case`](@ref): seed 0 against the lattice and the long run of the standard
+  wave experiment, one box for every rung, the box as a keyword and its refusal at `V = 2`, the
+  longest rungs inside the default box, the stratified seeds against their draws, and the guards
+  of `N`, `T` and the seed.
   [`hole_case`](@ref): `k = 2` against the checkerboard and its density on `41 × 41` points, the
   closed box, the other orders cell by cell, the draws of `k = 4`, the integral of the
   represented density, and the guards. [`lattice_case`](@ref): the plain and the deformed lattice
@@ -115,14 +116,14 @@ A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:
   of S2, S4 against [`clustered_example`](@ref) and its box, and the guards. The two densities of
   each family and [`STANDARD_LADDERS`](@ref).
 - **`test/standard/measures.jl`** (group `slow`): the measures of the test set.
-  [`case_evenness`](@ref) on the box, on the support and on the old window;
+  [`case_evenness`](@ref) on the box, on the support and on the window of the wave experiment;
   [`case_outside`](@ref) with markers outside the box, on its edge and non-finite;
-  [`case_representation`](@ref) and [`case_charge_noise`](@ref) within bounds and at the values of
-  the pilot for both variants, and the representation error against a kernel sum written in the
-  test; [`case_reference`](@ref) against the measures without it, as the integrals that the
-  measures take, and its refusals; [`case_weights`](@ref); [`case_conservation`](@ref) and
-  [`case_displacement`](@ref) against values computed in the test, finite where the per-node
-  report divides by an empty node.
+  [`case_representation`](@ref) and [`case_charge_noise`](@ref) within bounds and at recorded
+  values of four digits, to `rtol = 5e-3`, for both variants, and the representation error
+  against a kernel sum written in the test; [`case_reference`](@ref) against the measures without
+  it, as the integrals that the measures take, and its refusals; [`case_weights`](@ref);
+  [`case_conservation`](@ref) and [`case_displacement`](@ref) against values computed in the test,
+  finite where the per-node report divides by an empty node.
 - **`test/standard/reference.jl`**: [`GridResample`](@ref), lumped and exact: the lattice, the
   total weight, the weights against the density, the zero weights, a marker beyond the box, and
   the refusals.
