@@ -52,14 +52,21 @@ end
 # The midpoints of n equal cells of [a, b].
 _midpoints(a, b, n) = [a + (i - 0.5) * (b - a) / n for i in 1:n]
 
+# The period scale s = L/2π and the widths hx, hv of the kernel of the representation error, and
+# the ngrid × ngrid cell centres xg, vg of the box where it is evaluated.
+function _kernel_grid(case::StandardCase, ngrid::Integer)
+    L, V = case.L, case.V
+    s = L / 2π
+    (s, 0.45 * s, 0.35 * V / 2.25,
+        _midpoints(-L / 2, L / 2, ngrid), _midpoints(-V, V, ngrid))
+end
+
 # The kernel K * f of the representation error on the ngrid × ngrid cell centres of the box,
 # by the midpoint rule on nq × nq cells.
 function _smoothed_density(case::StandardCase, variant::Symbol, ngrid::Integer, nq::Integer)
     f = case_density(case, variant)
     L, V = case.L, case.V
-    s = L / 2π
-    hx, hv = 0.45 * s, 0.35 * V / 2.25
-    xg, vg = _midpoints(-L / 2, L / 2, ngrid), _midpoints(-V, V, ngrid)
+    s, hx, hv, xg, vg = _kernel_grid(case, ngrid)
     xq, vq = _midpoints(-L / 2, L / 2, nq), _midpoints(-V, V, nq)
     F = [f(a, b) for a in xq, b in vq] .* (L / nq) .* (2V / nq)
     Kx = [exp(-SlicedRedistribution._periodic_distance2(a - b, s) / hx^2 / 2)
@@ -130,10 +137,8 @@ function case_representation(case::StandardCase, mk::Markers, variant::Symbol;
             "$ngrid × $ngrid"))
         reference.smoothed
     end
-    L, V = case.L, case.V
-    s = L / 2π
-    inv_hx2, inv_hv2 = 1 / (0.45 * s)^2, 1 / (0.35 * V / 2.25)^2
-    xg, vg = _midpoints(-L / 2, L / 2, ngrid), _midpoints(-V, V, ngrid)
+    s, hx, hv, xg, vg = _kernel_grid(case, ngrid)
+    inv_hx2, inv_hv2 = 1 / hx^2, 1 / hv^2
     fm = [sum(mk.w[c] *
               exp(-(SlicedRedistribution._periodic_distance2(a - mk.x[c], s) * inv_hx2 +
                     (b - mk.v[c])^2 * inv_hv2) / 2) for c in eachindex(mk.w))

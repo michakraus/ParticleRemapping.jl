@@ -50,8 +50,7 @@ function remap(method::GridResample, mk::Markers)
         "GridResample places an n × n lattice, so N must be a square n^2 >= 1, got N = $N"))
     L, V, hp = method.L, method.V, method.projection
     dx, dv = L / n, 2V / n
-    x = [-L / 2 + (i - 0.5) * dx for i in 1:n for j in 1:n]
-    v = [-V + (j - 0.5) * dv for i in 1:n for j in 1:n]
+    x, v = _cell_centres(L, V, n)
     f = if method.density === nothing
         g = lumped_projection(hp, mk.x ./ L, mk.v ./ V, mk.w)
         [hat_interpolate(hp, g, x[k] / L, v[k] / V) / (L * V) for k in eachindex(x)]

@@ -48,9 +48,9 @@ function case_method(key::Symbol, case::StandardCase; variant::Symbol = :positiv
                 relax...),
             shift, L)
     elseif key === :gauge
-        GaugeRezoning(PeriodicGrid(L, cb ? 8 : 16))
+        GaugeRezoning(PeriodicGrid(L, _case_nodes(case)))
     elseif key === :transport
-        grid = PeriodicGrid(L, cb ? 8 : 16)
+        grid = PeriodicGrid(L, _case_nodes(case))
         CurrentQuantileMatching(grid, (x, p) -> (copy(x), copy(p)),
             DensityTarget(grid, (x, v) -> f(periodic_wrap(x, L / 2), v); vmax = V))
     elseif key === :sliced

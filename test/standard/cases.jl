@@ -197,6 +197,8 @@ end
         ((; T = 0.07), "wave_case needs T >= 0 on the step grid T = 0.05 k, got T = 0.07"),
         ((; T = NaN), "wave_case needs T >= 0 on the step grid T = 0.05 k, got T = NaN"),
         ((; T = Inf), "wave_case needs T >= 0 on the step grid T = 0.05 k, got T = Inf"),
+        (
+        (; T = 1e20), "wave_case needs T >= 0 on the step grid T = 0.05 k, got T = 1.0e20"),
         ((; seed = -1), "wave_case needs a seed >= 0, got seed = -1"))
         @test shown(ArgumentError, () -> wave_case(; kw...)) == "ArgumentError: " * msg
     end
@@ -422,6 +424,15 @@ end
         "stress_case :S3 keeps the box of its density; V is a keyword of :S1 and :S4 only"))
         @test shown(ArgumentError, () -> stress_case(name; kw...)) ==
               "ArgumentError: " * msg
+    end
+    # a box that is not finite and positive is refused before any marker is drawn
+    for (name, V, shownV) in ((:S1, 0.0, "0\\.0"), (:S1, -1.0, "-1\\.0"), (
+        :S1, -Inf, "-Inf"),
+        (:S1, 0, "0\\.0"), (:S4, 0.0, "0\\.0"), (:S4, NaN, "NaN"))
+        @test occursin(
+            Regex("^ArgumentError: StandardCase needs a finite L > 0 and V > 0, " *
+                  "got L = 6\\.28318\\d*, V = $shownV\$"),
+            shown(ArgumentError, () -> stress_case(name; V)))
     end
     @test length(stress_case(:S1; N = 7).markers) == 7
 end
