@@ -1,5 +1,5 @@
 using ParticleRemapping
-using Random: Xoshiro
+using Random: MersenneTwister, Xoshiro
 using Test
 
 # The message that `f()` throws as an exception of type `T`, as `showerror` prints it.
@@ -42,6 +42,12 @@ same_markers(a, b) = a.x == b.x && a.v == b.v && a.w == b.w && a.m == b.m
             Regex("^ArgumentError: StandardCase needs a finite L > 0 and V > 0, " *
                   "got L = 6\\.28318\\d*, V = $s\$"),
             shown(ArgumentError, () -> case(mk.x, mk.v, mk.w, 2π, V)))
+    end
+    for (L, s) in ((0.0, "0\\.0"), (-2π, "-6\\.28318\\d*"), (NaN, "NaN"), (Inf, "Inf"))
+        @test occursin(
+            Regex("^ArgumentError: StandardCase needs a finite L > 0 and V > 0, " *
+                  "got L = $s, V = 2\\.5\$"),
+            shown(ArgumentError, () -> case(mk.x, mk.v, mk.w, L, 2.5)))
     end
     # the box comes first: with V = NaN no marker passes |v| <= V
     @test occursin("finite L > 0",
@@ -216,6 +222,10 @@ end
     r = case.represented
     @test r(1.0, 0.5) == 0.5 && r(0.5, 1.0) == 0.5
     @test (r(1.0, 1.0), r(-1.0, -1.0), r(1.0, -0.5), r(1.05, 0.5)) == (0.5, 0.5, 0.0, 0.0)
+    for k in (1, 4)
+        p = hole_case(; k).positive
+        @test (p(1.0, 1.0), p(1.05, 0.5), p(0.5, -1.05)) == (0.25, 0.0, 0.0)
+    end
 end
 
 @testset "C: the other orders" begin
@@ -242,6 +252,19 @@ end
             @test case.represented(-1 + (2i + 1) / k, -1 + (2j + 1) / k) == 0
         end
     end
+    # the draws of k = 4 as the definition states them: 50 markers in each occupied cell
+    rng = MersenneTwister(505)
+    x, v = Float64[], Float64[]
+    for i in 0:3, j in 0:3
+
+        isodd(i + j) && continue
+        for _ in 1:50
+            push!(x, -1 + 2i / 4 + (2 / 4) * rand(rng))
+            push!(v, -1 + 2j / 4 + (2 / 4) * rand(rng))
+        end
+    end
+    mk = hole_case(; k = 4).markers
+    @test isapprox(mk.x, x; rtol = 1e-14) && isapprox(mk.v, v; rtol = 1e-14)
     for k in (1, 2, 4, 8)
         f = hole_case(; k).represented
         h = 2 / 400
@@ -318,12 +341,36 @@ end
     @test all(abs.(narrow.markers.v) .<= 2.5)
     @test all(isapprox.(narrow.markers.w, 2π * 0.9875806703 / 144; rtol = 1e-9))
     f = stress_case(:S3).represented
-    σx, σv = 0.2π, 0.6
+    σx, σv = 0.1 * 2π, 0.6
     images = sum(exp(-(3.0 + k * 2π)^2 / (2σx^2)) for k in -1:1) / (2π * σx * σv)
     central = exp(-3.0^2 / (2σx^2)) / (2π * σx * σv)
     @test isapprox(f(3.0, 0.0), images; rtol = 1e-14)
     @test abs(f(3.0, 0.0) - central) > 0.05 * central
     @test isapprox(f(-π, 0.4), f(π - 1e-12, 0.4); rtol = 1e-9)
+    # the draws as the definitions state them
+    for (V, seed) in ((4.0, 0), (2.5, 1))
+        rng = Xoshiro(seed)
+        x, v = Float64[], Float64[]
+        while length(x) < 144
+            xa = -π + 2π * rand(rng)
+            1.1 * rand(rng) > 1 + 0.1 * cos(xa) && continue
+            va = randn(rng)
+            abs(va) > V && continue
+            push!(x, xa)
+            push!(v, va)
+        end
+        mk = stress_case(:S1; N = 144, seed, V).markers
+        @test mk.x == x && mk.v == v
+    end
+    rng = Xoshiro(1)
+    x, v = Float64[], Float64[]
+    while length(x) < 576
+        push!(x, ParticleRemapping.periodic_wrap(σx * randn(rng), π))
+        push!(v, 0.1 * (2 * 3.0) * randn(rng))
+        abs(v[end]) > 3.0 && (pop!(x); pop!(v))
+    end
+    mk = stress_case(:S3; N = 576, seed = 1).markers
+    @test mk.x == x && mk.v == v
 end
 
 @testset "S2, the weights over decades" begin

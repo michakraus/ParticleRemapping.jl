@@ -107,6 +107,13 @@ end
     @test_throws DimensionMismatch case_charge_noise(case, case.markers, :represented;
         reference = short)
     @test_throws ArgumentError case_reference(case, :uniform)
+    # the checkerboard has 8 grid nodes and 8 × 8 cells
+    hole = hole_case()
+    href = case_reference(hole, :positive; ngrid = 8, nq = 16, nq_charge = 64)
+    @test length(href.charge) == 8 && size(href.smoothed) == (8, 8)
+    # the exact charge of the constant density 1/4 on [−1, 1]²: ρ = 1/2 times the node
+    # spacing 1/4 on every node
+    @test all(isapprox.(href.charge, 0.125; rtol = 1e-12))
 end
 
 @testset "the weights" begin
@@ -120,6 +127,7 @@ end
     @test c.ratio == 1
     @test c.small_share == 0
     @test case_weights(Markers([0.0, 1.0], [0.0, 0.0], [0.0, 1.0])).ratio == Inf
+    @test case_weights(Markers([0.0, 1.0], [0.0, 0.0], [-1.0, 3.0])).ratio == Inf
 end
 
 @testset "the conservation and the displacement" begin
@@ -141,9 +149,9 @@ end
     short = Markers(after.x[1:575], after.v[1:575], after.w[1:575]; m = after.m)
     @test_throws DimensionMismatch case_displacement(case, before, short)
     # the relative changes against values computed here
-    shifted = Markers(before.x, before.v .+ 0.1, 2 .* before.w; m = before.m)
+    shifted = Markers(before.x, before.v .+ 0.1, 0.5 .* before.w; m = before.m)
     c = case_conservation(case, before, shifted)
-    @test isapprox(c.weight, 1.0; rtol = 1e-14)
+    @test isapprox(c.weight, 0.5; rtol = 1e-14)
     ke(mk) = mk.m / 2 * sum(mk.w .* mk.v .^ 2)
     @test isapprox(c.kinetic_energy, abs(ke(shifted) - ke(before)) / ke(before); rtol = 1e-12)
     p(mk) = mk.m * sum(mk.w .* mk.v)
@@ -152,7 +160,8 @@ end
         rtol = 1e-12)
     d = case_displacement(case, before, shifted)
     @test isapprox(d.max_dv, 0.1; rtol = 1e-12)
-    @test isapprox(d.max_weight_change, 1.0; rtol = 1e-12)
+    @test isapprox(d.max_weight_change, 0.5; rtol = 1e-12)
+    @test d.kinetic_energy_change < 0
     @test isapprox(d.kinetic_energy_change, (ke(shifted) - ke(before)) / ke(before);
         rtol = 1e-12)
     # a position moved across the periodic edge counts its short way round

@@ -24,7 +24,6 @@ nearest to `B_v0 √(N/N0)` and `B_x0 √(N/N0)`, ties to the smaller, with
 `:grid_exact` the same with the density of `variant`. An `ArgumentError` refuses any other key.
 """
 function case_method(key::Symbol, case::StandardCase; variant::Symbol = :positive)
-    _check_variant(variant)
     cb = case.experiment === :checkerboard
     L, V = case.L, case.V
     shift = L / 2
@@ -128,11 +127,11 @@ remap runs. The method of `key` is [`case_method`](@ref)`(key, case; variant)`, 
 function run_case(method::AbstractRemap, case::StandardCase; variant::Symbol = :positive,
         label = string(nameof(typeof(method))), warmup::Bool = false,
         reference = case_reference(case, variant))
-    _check_variant(variant)
-    _check_reference(reference, variant)
     before = case.markers
     common = (; label, case.family, case.parameters, N = length(before), variant)
     versions = (; julia = string(VERSION), package = string(pkgversion(ParticleRemapping)))
+    # the measures before the remap check the variant and the reference, so a call with a
+    # wrong one throws before the remap runs
     measures_before = _case_measures(case, before, variant, reference)
     failure(class, message, time) = (; common..., status = :failure, error_class = class,
         error_message = message, time, versions..., before = measures_before,
