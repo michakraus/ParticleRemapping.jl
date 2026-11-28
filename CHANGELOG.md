@@ -145,6 +145,19 @@
   of the standard page defines them. Tests: `test/standard/cases.jl` and
   `test/standard/reference.jl` in the group `core`, `test/standard/measures.jl` and
   `test/standard/driver.jl` in the group `slow`.
+- The downstream family P of the standard test set: Vlasov–Poisson runs of VlasovMethods'
+  particle model with a remap every `R` steps. `two_stream_case` builds P1, the two-stream
+  instability of VlasovMethods' reference on a lattice or as an equal-weight sample;
+  `bump_on_tail_case` builds P2 from VlasovMethods' own bump-on-tail draw; `pic_method` builds the
+  constructions of `PIC_METHODS` for a remap in the middle of a run, where the exact density is
+  unknown; `run_pic` marches a case by VlasovMethods' leapfrog, without remaps or with a remap
+  every `R` steps, and returns the field-energy history, the growth rate, the charge noise of the
+  initial markers, the deviation of the grid charge from the run without remaps, and the measures
+  of each remap, with a failed remap, a non-finite remap result or a non-finite field energy
+  recorded as a failure. `bump_on_tail_case` and `run_pic` are methods of
+  the new extension `ParticleRemappingVlasovMethodsExt` on the weak dependency VlasovMethods
+  (`compat = "0.5.1"`). Tests: `test/standard/pic.jl` and `test/standard/pic_run.jl` in the group
+  `core`; VlasovMethods and ReducedComplexityModeling are added to `test/Project.toml`.
 
 ### Fixed
 

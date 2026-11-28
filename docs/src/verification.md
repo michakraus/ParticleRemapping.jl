@@ -130,6 +130,23 @@ A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:
   [`run_case`](@ref): the rows of the gauge rezoning, the transport, the sliced map and both
   references, the row of a non-separable fit, a recorded failure, an exception that is rethrown,
   a non-finite result, the reference of a row, and the warm-up.
+- **`test/standard/pic.jl`**: the case P1 of the family P, [`two_stream_case`](@ref): the
+  lattice against its cell centres and weights `c f₀ dx dv` with `Σ w = 4π`, the two densities
+  and their cut at `|v| = 5`, the equal-weight sample against its draws, its truncation at
+  200 000 markers and its seeds, the parameters of the run, and the guards with their messages.
+  [`pic_method`](@ref): the projection and the non-separable stages on the box of the case with
+  no density, the other keys of [`PIC_METHODS`](@ref) as [`case_method`](@ref), and the keys a
+  run refuses.
+- **`test/standard/pic_run.jl`**: the extension on VlasovMethods: it loads and keeps the global
+  logger. [`bump_on_tail_case`](@ref) against VlasovMethods' own draw on the box of the case,
+  the caller's generator, the density against VlasovMethods' and the guards.
+  [`run_pic`](@ref) without remaps: P1 reproduces VlasovMethods' two-stream rate `0.25925`
+  within 2 %, P2 is the field energy of VlasovMethods' own march `integrate_vp`, and the row. With
+  a remap every 40 steps: the reference, the gauge rezoning and the sliced map, the charge
+  deviation, nothing but the markers across a remap, the wrapped positions a remap receives, the
+  markers outside the box after a push and after a remap, the zero weights of the reference on
+  P2, the failures (a remap that throws, a non-finite result, a non-finite field energy), an
+  exception that is rethrown, the edges of a run and the guards of the runner.
 - **`test/standard.jl`** (group `slow`): the [standard experiments](@ref standard-experiments):
   the densities (normalisation, constancy along the discrete characteristics, the cut of the
   represented one), the quadrants kept by the gauge rezoning and the transport and filled by the

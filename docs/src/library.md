@@ -153,6 +153,20 @@ case_method
 run_case
 ```
 
+## The downstream family P
+
+The family P of the standard test set, Vlasov–Poisson runs of VlasovMethods' particle model with
+a remap every `R` steps, of which `bump_on_tail_case` and `run_pic` need `using VlasovMethods`,
+which loads the extension `ParticleRemappingVlasovMethodsExt`.
+
+```@docs
+two_stream_case
+bump_on_tail_case
+PIC_METHODS
+pic_method
+run_pic
+```
+
 ## The examples of the projection chapter
 
 The two marker sets of the projection chapter, each with its exact density: a mildly deformed
