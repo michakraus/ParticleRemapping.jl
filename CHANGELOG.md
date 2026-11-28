@@ -142,9 +142,9 @@
   exact density (`REFERENCE_METHODS`). `case_method` builds every construction with the box of a
   case, and `run_case` runs a method on a case and returns one row of every measure, with a
   failed remap or a non-finite result recorded as a failure. The section *The standard test set*
-  of the standard page defines them. Tests: `test/standard/cases.jl`,
-  `test/standard/measures.jl`, `test/standard/reference.jl` and `test/standard/driver.jl`, in the
-  group `core`.
+  of the standard page defines them. Tests: `test/standard/cases.jl` and
+  `test/standard/reference.jl` in the group `core`, `test/standard/measures.jl` and
+  `test/standard/driver.jl` in the group `slow`.
 
 ### Fixed
 
