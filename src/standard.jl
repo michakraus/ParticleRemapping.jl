@@ -294,3 +294,9 @@ end
 export ShiftedRemap, STANDARD_METHODS, checkerboard_density, electric_wave_density,
        standard_method, standard_checkerboard, standard_wave_markers, standard_long_time,
        standard_remap_history
+
+# the standard test set: the cases, the measures, the reference and the driver
+include("standard/cases.jl")
+include("standard/measures.jl")
+include("standard/reference.jl")
+include("standard/driver.jl")

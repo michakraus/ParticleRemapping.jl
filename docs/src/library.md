@@ -126,6 +126,33 @@ standard_long_time
 standard_remap_history
 ```
 
+## The standard test set
+
+The [standard test set](@ref standard-test-set): the cases, their measures, the reference and the
+driver.
+
+```@docs
+StandardCase
+STANDARD_LADDERS
+wave_case
+hole_case
+lattice_case
+stress_case
+case_density
+case_evenness
+case_outside
+case_representation
+case_charge_noise
+case_weights
+case_conservation
+case_displacement
+case_reference
+GridResample
+REFERENCE_METHODS
+case_method
+run_case
+```
+
 ## The examples of the projection chapter
 
 The two marker sets of the projection chapter, each with its exact density: a mildly deformed
