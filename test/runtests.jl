@@ -16,6 +16,8 @@ if "core" in GROUPS
     @safetestset "Projection examples" include("projection_examples.jl")
     @safetestset "Standard test set: cases" include("standard/cases.jl")
     @safetestset "Standard test set: reference" include("standard/reference.jl")
+    @safetestset "Standard test set: family P" include("standard/pic.jl")
+    @safetestset "Standard test set: family P runs" include("standard/pic_run.jl")
     @safetestset "Remapping: symplecticity condition" include("remapping/canonicity.jl")
     @safetestset "Remapping: gauge rezoning" include("remapping/gauge.jl")
     @safetestset "Remapping: gauge worked examples" include("remapping/gauge_examples.jl")
