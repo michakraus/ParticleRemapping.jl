@@ -71,8 +71,8 @@ function plot_dlra_weights end
 
 The first step of the algorithm: (a) the markers of `problem`, coloured and sized by weight,
 (b) the lumped projection `f_h` of the represented density and (c) the lumped projection `g_h` of
-the marker density ([`lumped_projection`](@ref)), in `(x, v)`, with the hole outline. Needs a
-Makie backend.
+the marker density ([`lumped_projection`](@ref)), in `(x, v)`, with the hole outline where
+`problem` has a `hole` field. Needs a Makie backend.
 """
 function plot_lumped_projection end
 
@@ -81,8 +81,8 @@ function plot_lumped_projection end
 
 The second step of the algorithm: the markers of `problem`, coloured and sized by weight, their
 target points from [`projection_targets`](@ref) (open circles) and the displacement of each marker
-(segments), with the hole outline; `window = (x₀, x₁, v₀, v₁)` restricts the view. Needs a Makie
-backend.
+(segments), with the hole outline where `problem` has a `hole` field; `window = (x₀, x₁, v₀, v₁)`
+restricts the view. Needs a Makie backend.
 """
 function plot_target_flow end
 

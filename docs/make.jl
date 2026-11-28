@@ -29,7 +29,7 @@ const PAGES = [
         "Target weights from a low-rank density" => "projection/lowrank.md",
         "Algorithm" => "projection/algorithm.md",
         "Numerical experiments" => "projection/experiments.md",
-        "Structural statements and target weights" => "projection/checks.md",
+        "Structural statements" => "projection/checks.md",
         "Hole filling" => "projection/holes.md",
         "Properties, limitations and higher dimensions" => "projection/limitations.md"
     ],

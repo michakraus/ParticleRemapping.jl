@@ -172,15 +172,21 @@ determinant with ``(I - \tfrac12 \mathbb{J}K)^{-1}`` by at least ``0.475``.
 
 ### The steps of the map
 
-The non-separable map of the [hole-filling experiment](@ref projection-hole-filling) at
-``x_h = \pi``, here with a fit that ends after its budget of 5 iterations (`MAXITERS`): the
-markers near the hole, coloured and sized by weight, before the map, after each of the two stages
-(at the old weights), after the reweighting and after the charge-conserving reweighting.
+The non-separable map with its default stages and charge-conserving reweighting on 12 periodic
+cubic B-splines on the deformed lattice ([`lattice_example`](@ref
+ParticleRemapping.lattice_example)), with a fit that ends after its budget of 5 iterations
+(`MAXITERS`): the markers, coloured and sized by weight, before the map, after each of the two
+stages (at the old weights), after the reweighting and after the charge-conserving reweighting
+(view ``|v| \leq 6``).
 
 ```@example nonseparable
 using Random
 Random.seed!(20261119)
-demo = hole_filling_experiment(; hole_x = π, variants = (:non_separable,), maxit = 5)
-plot_hole_stages(remap_states(experiment_remap(demo, :non_separable)...), demo.problem.hole;
-    columns = 5)
+ex = lattice_example()
+method = NonSeparableRemap(; L = ex.L, V = ex.V, projection = HatProjection(12, 13),
+    maxit = 5, density = (xs, vs) -> ex.density.(xs, vs),
+    charge = ChargeConservingReweighting(ex.L, 12))
+r = remap(method, ex.markers)
+plot_stages(remap_states(method, ex.markers, r); columns = 5, period = (0, ex.L),
+    window = (0, ex.L, -6, 6))
 ```

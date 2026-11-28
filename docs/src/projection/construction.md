@@ -13,16 +13,16 @@ R_\theta = D_S \circ K_S \circ \dots \circ D_1 \circ K_1 ,
 
 of ``S`` kick–drift stages ``K_s, D_s`` and the reweighting ``\varrho``, a
 [gauge step](@ref gauge-step). The parameters ``\theta`` follow from a fit to target points. The
-steps are described in the order of the [algorithm](@ref projection-algorithm). The pictures on this page use the markers of the
-[hole-filling experiment](@ref projection-hole-filling): a ``48 \times 48`` lattice in
-``[0, 2\pi) \times [-4, 4]`` with the weights ``w = c f``,
-``f = (1 + 0.3 \cos x)(2\pi)^{-1/2} e^{-v^2/2}``, and an elliptic hole around ``(x_h, 1.2)``
-([`hole_filling_problem`](@ref)).
+steps are described in the order of the [algorithm](@ref projection-algorithm). The pictures on
+this page use the main example of the chapter
+([`lattice_example`](@ref ParticleRemapping.lattice_example)): a ``24 \times 24`` lattice in
+``[0, 2\pi) \times [-4, 4]`` whose cells a mild smooth map moved, with the weights ``w = c f J``
+for ``f = (1 + 0.3 \cos x)(2\pi)^{-1/2} e^{-v^2/2}``.
 
 ```@example construction
 using ParticleRemapping, CairoMakie, Random
 Random.seed!(20261119)
-problem = hole_filling_problem(; hole_x = π)
+ex = lattice_example()
 nothing # hide
 ```
 
@@ -42,15 +42,17 @@ Both are nonnegative, and the partition of unity gives ``\int_\Omega f_h = \sum_
 ``\int_\Omega g_h = N``. An ``L^2`` projection with the mass matrix is more accurate but can take
 negative values, which the next step does not tolerate in ``g_h``.
 
-The code uses ``32 \times 33`` bilinear hat functions in the scaled variables ``(x/L, v/V)``
-([`HatProjection`](@ref), [`lumped_projection`](@ref)).
+The code uses ``32 \times 33`` bilinear hat functions in the scaled variables ``(x/L, v/V)`` by
+default ([`HatProjection`](@ref), [`lumped_projection`](@ref)).
 
 ```@example construction
-plot_lumped_projection(problem)
+plot_lumped_projection(ex; projection = HatProjection(12, 13))
 ```
 
-(a) The markers, coloured and sized by weight, (b) the lumped projection ``f_h`` of the represented
-density and (c) the lumped marker density ``g_h``; the hole (dashed) shows in both.
+(a) The markers of the deformed ``24 \times 24`` lattice, coloured and sized by weight, (b) the
+lumped projection ``f_h`` of the represented density on ``12 \times 13`` hat functions and (c) the
+lumped marker density ``g_h``; ``g_h`` follows the spacing of the moved cells and ``f_h`` the
+smooth density ``f``.
 
 ## [Target points](@id projection-targets)
 
@@ -111,18 +113,18 @@ integrates the flow with 40 steps of the classical Runge–Kutta method ([`moser
 from a given density.
 
 ```@example construction
-targets = projection_targets(HatProjection(32, 33), problem.x0, problem.v0, problem.w0;
-    problem.L, problem.V, density = (xs, vs) -> problem.density.(xs, vs))
-plot_target_flow(problem, targets; window = (problem.hole.x - 1.2, problem.hole.x + 1.2, 0, 2.4))
+targets = projection_targets(HatProjection(12, 13), ex.markers.x, ex.markers.v, ex.markers.w;
+    ex.L, ex.V, density = (xs, vs) -> ex.density.(xs, vs))
+plot_target_flow(ex, targets)
 ```
 
-Each marker, coloured and sized by weight, moves to its target (open circle) along the segment;
-near the hole the markers flow into it.
+Each marker, coloured and sized by weight, moves to its target (open circle) along the segment; on
+``12 \times 13`` hat functions the target flow moves the markers toward an even spacing.
 
 ```@example construction
-history = moser_flow_history(problem)
+history = moser_flow_history(ex; projection = HatProjection(12, 13))
 animate_stages("moser-targets.mp4", [fill(history[1], 10); history; fill(history[end], 10)];
-    period = (0, 2π), decorate! = (ax, _) -> plot_hole_outline!(ax, problem.hole))
+    period = (0, 2π))
 nothing # hide
 ```
 

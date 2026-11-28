@@ -87,14 +87,16 @@ a [`RemapResult`](@ref) with the new markers and the diagnostics of the method, 
 [`conservation_report`](@ref) gives the changes of the conserved quantities (with a grid, also of
 the grid charge, current and energy). Each call below uses the example of its chapter.
 
-The Hamiltonian particle projection with non-separable stages, on a lattice with an elliptic
-hole; `objective_ratio` is the fit objective after the fit relative to the identity, and `code`
-the return code of the fit, `MAXITERS` after its budget of 5 iterations:
+The Hamiltonian particle projection with non-separable stages, on the mildly deformed lattice
+([`lattice_example`](@ref ParticleRemapping.lattice_example)); `objective_ratio` is the fit
+objective after the fit relative to the identity, and `code` the return code of the fit,
+`MAXITERS` after its budget of 5 iterations:
 
 ```@example home
-prob = hole_filling_problem(; nL = 16, hole_a = 0.9, hole_b = 0.8)
-method = NonSeparableRemap(; nξ = 6, nv = 7, nℓ = 3, projection = HatProjection(12, 13),
-    maxit = 5)
+prob = lattice_example()
+method = NonSeparableRemap(; L = prob.L, V = prob.V, nξ = 6, nv = 7, nℓ = 3,
+    projection = HatProjection(12, 13), maxit = 5,
+    density = (xs, vs) -> prob.density.(xs, vs))
 r = remap(method, prob.markers)
 (objective_ratio = r.info.objective_ratio, code = r.info.status.code,
     report = conservation_report(prob.markers, r.markers))

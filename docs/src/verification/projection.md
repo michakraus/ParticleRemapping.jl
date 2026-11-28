@@ -2,7 +2,7 @@
 
 Every statement of the [Hamiltonian particle projection](@ref projection-index) has a test under
 `test/projection/`, and each test runs the case that must fail. The pages
-[Structural statements and target weights after a push](@ref projection-checks) and
+[Structural statements](@ref projection-checks) and
 [Hole filling](@ref projection-hole-filling) hold the tables of the measured numbers:
 the structural statements, the hole-filling experiment and the target weights after a push. This
 section says which file checks what. Run a test file with
@@ -108,8 +108,18 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
   ([`experiment_remap`](@ref ParticleRemapping.Projection.experiment_remap)) end at its velocities
   and charge-conserving weights; the history of the density-interpolation flow and the frames of
   the push ([`moser_flow_history`](@ref ParticleRemapping.Projection.moser_flow_history),
-  [`dlra_push_frames`](@ref ParticleRemapping.Projection.dlra_push_frames)). Case that must fail:
-  markers that are not the input of the remap.
+  [`dlra_push_frames`](@ref ParticleRemapping.Projection.dlra_push_frames)), including the flow
+  history of the ``10 \times 10`` deformed lattice. Case that must fail: markers that are not the
+  input of the remap.
+- **`test/projection/example.jl`** (about 12 seconds): the two examples of the
+  [overview](@ref projection-example), [`lattice_example`](@ref ParticleRemapping.lattice_example)
+  and [`clustered_example`](@ref ParticleRemapping.clustered_example), remapped with the overview's
+  kick–drift map on ``12 \times 13`` hat functions: the sizes and boxes, the return code
+  `MAXITERS` and 20 iterations, every quoted number with its digits or, where it is quoted as a
+  range, within that range widened on each side by its width, the conservation of total weight and
+  total momentum to ``10^{-13}`` for the main example, and that each quoted string appears on
+  `docs/src/projection/index.md`. Case that must fail: the lumped projection on ``12 \times 13``
+  hats throws a `DomainError` on the clustered markers.
 
 ## Test files of the group `slow`
 
@@ -152,6 +162,12 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
 
 ## Scripts
 
+- **`scripts/projection/example.jl`** (about 35 seconds): remaps the deformed lattice and the
+  clustered markers of the [overview](@ref projection-example), prints every quoted number and T1
+  of the main example, runs the main example again with positions moved by ``10^{-13}`` relative
+  (`Xoshiro(1)` and `Xoshiro(2)`) and the clustered example with ten such runs (`Xoshiro(1)` to
+  `Xoshiro(10)`), checks that each perturbed ``\theta`` moves, checks every quoted number across
+  every run, and verifies that the lumped projection refuses the clustered markers.
 - **`scripts/projection/checks.jl`** (about one minute): runs `structure.jl`, `stages.jl`,
   `charge.jl` and `lowrank.jl` of `test/projection/`, each in a module of its own, and prints the
   measured numbers of the table of structural statements.
@@ -186,14 +202,15 @@ The files of `test/projection/` are in the group `core` of `test/runtests.jl`; t
 ## The numbers of the source note
 
 The numbers of the note *Hamiltonian particle projection: a symplectic redistribution of weighted
-markers* are the numbers of the first table on
-[Structural statements and target weights after a push](@ref projection-checks). The second table
-there, of the remaps, and the tables on [Hole filling](@ref projection-hole-filling) differ from
+markers* are the numbers of the table on
+[Structural statements](@ref projection-checks). The second table of
+[Target weights after a push](@ref projection-push-test), of the remaps, and the tables on
+[Hole filling](@ref projection-hole-filling) differ from
 the note in value: the note's fit is a damped least-squares method, and the tables give the
 Gauss–Newton fit with the return code of each row, and those on hole filling also the
 mirror-symmetric saddle that it reaches from ``\theta = 0`` at ``x_h = \pi`` and the ranges of the
 seeded fits there.
-The two experiment scripts hold the numbers of both pages in their tables `NOTE_WEIGHTS`,
+The two experiment scripts hold the numbers of both experiments in their tables `NOTE_WEIGHTS`,
 `REMAP_TABLE` and `NOTE`, and the two experiment tests in `TABLES`, `WEIGHT_TABLE` and
 `REMAP_TABLE`; a measured number agrees with a quoted one when it lies within half a unit of the
 last quoted digit. A quoted range holds a number of the script between its ends, and a number of

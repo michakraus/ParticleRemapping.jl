@@ -81,7 +81,8 @@ parameters as the spline basis has functions, independent of ``N``.
 - **Neither the kinetic energy nor the grid current is kept.** The fit has no energy constraint,
   and the reweighting acts on the weights only.
 - **The density-interpolation flow equidistributes at the resolution of its hats.** On hats
-  coarser than the markers the targets keep part of a hole, as in the [example](@ref projection-example).
+  coarser than the markers the targets keep part of a hole, as in the
+  [hole filling](@ref projection-hole-filling) experiment.
 - **1D-1V only.** `remap` with [`KickDriftRemap`](@ref), [`NonSeparableRemap`](@ref) or
   [`ChargeConservingReweighting`](@ref) throws an `ArgumentError` for markers in more dimensions.
 
@@ -110,6 +111,8 @@ The entries of `KNOWN_ISSUES.md` of the package that concern this chapter:
   `scripts/standard/standard_experiments.jl` checks them.
 - **K20** — the kick–drift map does not infer its return type, so the objective values of a
   kick–drift fit infer `Any`.
+- **K21** — the remap of the clustered example sends its velocity tails far outside the box
+  ([clustered markers](@ref projection-clustered-example)).
 
 ## [Open questions](@id projection-open-questions)
 

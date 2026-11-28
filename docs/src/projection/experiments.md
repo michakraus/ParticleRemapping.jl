@@ -8,8 +8,8 @@ The [standard experiments](@ref standard-experiments) with the kick–drift map 
 and the non-separable map (`:nonseparable`) of [`standard_method`](@ref ParticleRemapping.standard_method).
 The [comparison](@ref comparison-standard) sets the results beside those of the other
 constructions. The structural checks of the chapter are on the page
-[structural statements and target weights after a push](@ref projection-checks), the hole of the
-chapter's own example on the page [hole filling](@ref projection-hole-filling).
+[structural statements](@ref projection-checks), and the hole-filling and push experiments on the
+page [hole filling](@ref projection-hole-filling).
 
 ## The checkerboard
 

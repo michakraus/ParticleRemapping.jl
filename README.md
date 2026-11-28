@@ -30,9 +30,11 @@ using ParticleRemapping
 mk = Markers([0.3, 1.2, 2.0], [0.5, -1.0, 2.0], [0.2, 0.5, 0.3]; m = 2.0)
 momentum(mk), total_momentum(mk), kinetic_energy(mk)
 
-# the Hamiltonian particle projection with non-separable stages on a lattice with an elliptic hole
-prob = hole_filling_problem(; nL = 16, hole_a = 0.9, hole_b = 0.8)
-method = NonSeparableRemap(; nξ = 6, nv = 7, nℓ = 3, projection = HatProjection(12, 13), maxit = 5)
+# the Hamiltonian particle projection with non-separable stages on the mildly deformed lattice
+prob = lattice_example()
+method = NonSeparableRemap(; L = prob.L, V = prob.V, nξ = 6, nv = 7, nℓ = 3,
+    projection = HatProjection(12, 13), maxit = 5,
+    density = (xs, vs) -> prob.density.(xs, vs))
 r = remap(method, prob.markers)
 conservation_report(prob.markers, r.markers)
 

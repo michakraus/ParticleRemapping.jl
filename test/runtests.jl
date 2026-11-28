@@ -30,6 +30,7 @@ if "core" in GROUPS
     @safetestset "Projection: diagnostics" include("projection/diagnostics.jl")
     @safetestset "Projection: remap" include("projection/remap.jl")
     @safetestset "Projection: frames" include("projection/frames.jl")
+    @safetestset "Projection: overview example" include("projection/example.jl")
     @safetestset "Redistribution: canonical structure" include("redistribution/canonical.jl")
     @safetestset "Redistribution: spline projection" include("redistribution/projection.jl")
     @safetestset "Redistribution: relaxation" include("redistribution/relaxation.jl")

@@ -121,19 +121,24 @@ hp = HatProjection(12, 13)
     @testset "the examples of the manual" begin
         maxiters(r, budget) = string(r.info.status.code) == "MAXITERS" &&
                               !r.info.status.stationary && r.info.iterations == budget
+        ex = lattice_example()
+        density = (xs, vs) -> ex.density.(xs, vs)
         # the home page
         home = remap(
-            NonSeparableRemap(; nξ = 6, nv = 7, nℓ = 3, projection = hp, maxit = 5), mk)
+            NonSeparableRemap(; L = ex.L, V = ex.V, nξ = 6, nv = 7, nℓ = 3,
+                projection = hp, maxit = 5, density),
+            ex.markers)
         @test maxiters(home, 5)
-        # the algorithm page and the overview of the projection
-        Random.seed!(20261119)
-        small = hole_filling_problem(; hole_x = π / 2, nL = 24, hole_a = 0.9, hole_b = 0.8)
-        algorithm = remap(KickDriftRemap(; projection = hp, maxit = 10), small.markers)
+        # the algorithm page (lumped projection) and the overview of the projection
+        algorithm = remap(
+            KickDriftRemap(; L = ex.L, V = ex.V, projection = hp, nξ = 16, nv = 20, nw = 8,
+                maxit = 10),
+            ex.markers)
         @test maxiters(algorithm, 10)
         overview = remap(
-            KickDriftRemap(; projection = hp, maxit = 20,
-                density = (xs, vs) -> small.density.(xs, vs)),
-            small.markers)
+            KickDriftRemap(; L = ex.L, V = ex.V, projection = hp, nξ = 16, nv = 20, nw = 8,
+                maxit = 20, density),
+            ex.markers)
         @test maxiters(overview, 20)
     end
 end
