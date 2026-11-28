@@ -210,7 +210,7 @@ the note in value: the note's fit is a damped least-squares method, and the tabl
 Gauss–Newton fit with the return code of each row, and those on hole filling also the
 mirror-symmetric saddle that it reaches from ``\theta = 0`` at ``x_h = \pi`` and the ranges of the
 seeded fits there.
-The two experiment scripts hold the numbers of both pages in their tables `NOTE_WEIGHTS`,
+The two experiment scripts hold the numbers of both experiments in their tables `NOTE_WEIGHTS`,
 `REMAP_TABLE` and `NOTE`, and the two experiment tests in `TABLES`, `WEIGHT_TABLE` and
 `REMAP_TABLE`; a measured number agrees with a quoted one when it lies within half a unit of the
 last quoted digit. A quoted range holds a number of the script between its ends, and a number of
