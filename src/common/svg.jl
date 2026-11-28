@@ -259,7 +259,12 @@ function _json_hex_color(c::AbstractString, k::Int)
     if m !== nothing
         rgb = [tryparse(Int, cap) for cap in m.captures]
         if all(v -> v !== nothing && 0 <= v <= 255, rgb)
-            return "#" * join(string.(rgb; base = 16, pad = 2))
+            return sprint() do io
+                print(io, '#')
+                for v in rgb
+                    print(io, string(something(v); base = 16, pad = 2))
+                end
+            end
         end
     end
     throw(ArgumentError(
@@ -368,32 +373,28 @@ function svg_player_json(
         throw(DimensionMismatch("svg_player_json: overlays must hold one entry per state"))
     end
 
-    captions = Vector{String}(undef, n)
-    step_targets = Vector{Any}(undef, n)
-    step_overlays = Vector{Any}(undef, n)
-    for k in 1:n
-        cap = string(titles[k])
-        isempty(strip(cap)) &&
-            throw(ArgumentError("svg_player_json: the caption of state $k is empty"))
-        captions[k] = cap
-        mk = stages[k].markers
-        (all(isfinite, mk.x) && all(isfinite, mk.v) && all(isfinite, mk.w)) ||
-            throw(ArgumentError("svg_player_json: a non-finite number in state $k"))
-        t = _targets(targets, k)
-        if t !== nothing
-            (length(t) == 2 && length(t[1]) == N && length(t[2]) == N) ||
-                throw(DimensionMismatch(
-                    "svg_player_json: the targets of state $k must hold one point per marker"))
-            (all(isfinite, t[1]) && all(isfinite, t[2])) ||
-                throw(ArgumentError("svg_player_json: a non-finite number in state $k"))
-        end
-        step_targets[k] = t
-        ovs = collect(_overlays(overlays, k))
-        for o in ovs
-            _check_overlay(o, k)
-        end
-        step_overlays[k] = ovs
-    end
+    checked = [begin
+                   cap = string(titles[k])
+                   isempty(strip(cap)) &&
+                       throw(ArgumentError("svg_player_json: the caption of state $k is empty"))
+                   mk = stages[k].markers
+                   (all(isfinite, mk.x) && all(isfinite, mk.v) && all(isfinite, mk.w)) ||
+                       throw(ArgumentError("svg_player_json: a non-finite number in state $k"))
+                   t = _targets(targets, k)
+                   if t !== nothing
+                       (length(t) == 2 && length(t[1]) == N && length(t[2]) == N) ||
+                           throw(DimensionMismatch(
+                               "svg_player_json: the targets of state $k must hold one point per marker"))
+                       (all(isfinite, t[1]) && all(isfinite, t[2])) ||
+                           throw(ArgumentError("svg_player_json: a non-finite number in state $k"))
+                   end
+                   ovs = _overlays(overlays, k)
+                   for o in ovs
+                       _check_overlay(o, k)
+                   end
+                   (cap, ovs)
+               end
+               for k in 1:n]
 
     styles = _marker_styles(stages, colors, rmax_f)
     hex_colors = Vector{Vector{String}}(undef, n)
@@ -414,8 +415,9 @@ function svg_player_json(
     for k in 1:n
         k > 1 && print(io, ',')
         mk = stages[k].markers
+        cap, ovs = checked[k]
         print(io, "{\"caption\":")
-        _json_escape(io, captions[k])
+        _json_escape(io, cap)
         print(io, ",\"x\":")
         _json_numbers(io, mk.x)
         print(io, ",\"v\":")
@@ -425,7 +427,7 @@ function svg_player_json(
         print(io, ",\"c\":")
         _json_strings(io, hex_colors[k])
         print(io, ",\"targets\":")
-        t = step_targets[k]
+        t = _targets(targets, k)
         if t === nothing
             print(io, "null")
         else
@@ -436,7 +438,7 @@ function svg_player_json(
             print(io, '}')
         end
         print(io, ",\"overlays\":[")
-        for (i, o) in enumerate(step_overlays[k])
+        for (i, o) in enumerate(ovs)
             i > 1 && print(io, ',')
             _json_overlay(io, o)
         end

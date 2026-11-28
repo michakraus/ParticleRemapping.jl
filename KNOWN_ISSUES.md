@@ -323,3 +323,36 @@
   ```
 - **kind:** defect
 - **found:** 2026-11-28
+
+### K23 · `_marker_styles` does not infer a concrete element type
+
+- **location:** `src/common/svg.jl:124`
+- **problem:** `_marker_styles` reassigns the captured locals `wref` and `hi` before closing over
+  them in `map`, so inference boxes both and returns `Vector{T} where T<:Tuple{Vector, Any}`,
+  propagating `Any` for the marker radii into `svg_stage_panels` and `svg_player_json`.
+- **evidence:** `code_typed` on macOS with Julia 1.13.4:
+  ```julia
+  using ParticleRemapping, InteractiveUtils
+  s = [RemapStage(Markers([0.1, 0.5], [0.0, 0.0], [0.1, 0.2]; m = 1.0), "a")]
+  code_typed(ParticleRemapping._marker_styles, (typeof(s), Nothing, Float64))[1].second
+  # Vector{T} where T<:Tuple{Vector, Any}
+  ```
+- **kind:** found late
+- **found:** 2026-11-28
+
+### K24 · `algorithm_svg` widens the stage bundle across its five helpers
+
+- **location:** `src/algorithm_figures.jl:188`
+- **problem:** `algorithm_svg` dispatches on the runtime `Symbol` `key` to bind `s` across the
+  five `_steps` helpers, widening `s` to `NamedTuple{(:stages, :overlays, :targets, :colors,
+  :window, :columns, :animated)}` with `Any` fields before calling `svg_stage_panels` and
+  `svg_player_json`, while returning concrete `@NamedTuple{key::Symbol, panels::SVGFigure,
+  player::String}`.
+- **evidence:** `code_typed(algorithm_svg, (Symbol,))` on macOS with Julia 1.13.4: the merged
+  `NamedTuple` SSA widens to `NamedTuple{(:stages, :overlays, :targets, :colors, :window,
+  :columns, :animated)}` (keyword tuples `NamedTuple{(:window, :columns, :overlays, :targets,
+  :colors), <:NTuple{5, Any}}` and `NamedTuple{(:window, :id, :overlays, :targets, :colors),
+  <:Tuple{Any, String, Any, Any, Any}}`), while the inferred return type is
+  `@NamedTuple{key::Symbol, panels::SVGFigure, player::String}`.
+- **kind:** found late
+- **found:** 2026-11-28
