@@ -21,7 +21,6 @@ JSON = "1"
 ReducedComplexityModeling = "0.6"
 SafeTestsets = "0.1.0"
 Test = "1"
-VlasovMethods = "0.5.1"
 
 [sources]
 ParticleRemapping = {path = ".."}
