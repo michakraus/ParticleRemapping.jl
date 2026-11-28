@@ -144,9 +144,10 @@ It shows what a resample that ignores the structure gives on each case.
 
 **The measures** compare the markers with the box and the density of the case:
 [`case_evenness`](@ref), the cell counts on the box and on the support of the represented density
-(and on the old window ``|v| \le 2.25`` for W); [`case_outside`](@ref), the markers outside the box
-and the non-finite ones; [`case_representation`](@ref), the smoothed markers against the smoothed
-density; [`case_charge_noise`](@ref), the grid charge against the exact one;
+(and on the window ``|v| \le 2.25`` of the wave experiment for W); [`case_outside`](@ref), the
+markers outside the box and the non-finite ones; [`case_representation`](@ref), the smoothed
+markers against the smoothed density; [`case_charge_noise`](@ref), the grid charge against the
+exact one;
 [`case_weights`](@ref), the spread of the weights; and, for a remap,
 [`case_conservation`](@ref) and [`case_displacement`](@ref). [`case_reference`](@ref) computes
 the integrals of the density once for both measures of a case.

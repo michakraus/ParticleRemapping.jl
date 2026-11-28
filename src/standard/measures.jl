@@ -14,8 +14,8 @@ The evenness of the markers `mk` on the box of `case`: `empty` and `rstd` of
 `:checkerboard`, `10` otherwise; every marker in the box counted), and the same two over the
 `support_cells` cells whose centre has a positive represented density (`support_rstd` with the
 mean over those cells). For family `:W`, `window` holds `(; empty, rstd)` of
-`phase_cell_statistics(mk.x, mk.v)`, the old window `[−π, π) × [−2.25, 2.25]`; otherwise
-`nothing`.
+`phase_cell_statistics(mk.x, mk.v)`, on the window `[−π, π) × [−2.25, 2.25]` of the standard
+wave experiment; otherwise `nothing`.
 """
 function case_evenness(case::StandardCase, mk::Markers)
     g = _case_cells(case)
