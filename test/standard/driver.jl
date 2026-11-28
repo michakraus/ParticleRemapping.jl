@@ -103,6 +103,11 @@ end
     @test ge.density === case.represented
     @test case_method(:grid_exact, case).density === case.positive
     @test case_method(:grid_lumped, hole).projection.nX == 12
+    # the grids of the gauge rezoning and the transport: 8 nodes on the checkerboard, 16 else
+    for key in (:gauge, :transport)
+        @test case_method(key, hole).grid.Ng == 8
+        @test case_method(key, case).grid.Ng == 16
+    end
 end
 
 @testset "the slice counts of the sliced map" begin
@@ -142,6 +147,11 @@ end
     calls = Ref(0)
     @test_throws ArgumentError run_case(Counting(calls), case; reference = ref)
     @test calls[] == 0
+    # the method form builds its default reference of the variant it is given
+    row = run_case(Counting(calls), case; variant = :represented)
+    @test row.status === :success
+    @test row.before.representation == case_representation(case, case.markers, :represented)
+    @test row.before.charge_noise == case_charge_noise(case, case.markers, :represented)
 end
 
 @testset "rows of constructions that succeed" begin
@@ -174,6 +184,11 @@ end
     @test g.conservation.charge < 1e-10
     @test g.conservation.momentum < 1e-10
     @test g.solver.tau == 1
+    # a gauge rezoning whose homotopy stops before τ = 1 reports the τ it reached
+    stopped = GaugeRezoning(PeriodicGrid(2π, 16); maxit = 1, dτ0 = 1.0, dτmin = 1.0)
+    τ = remap(stopped, case.markers).info.τ
+    @test τ < 1
+    @test run_case(stopped, case; reference = ref).solver.tau == τ
     t = rows[:transport]
     @test t.displacement.max_dx == 0
     @test t.conservation.momentum < 1e-12

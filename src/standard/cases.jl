@@ -6,6 +6,13 @@ using Random: MersenneTwister, Xoshiro
 
 const _CASE_FAMILIES = (:W, :C, :E, :S1, :S2, :S3, :S4)
 
+# The box of a case must be finite and positive: with V = NaN no marker passes |v| <= V, with
+# V = Inf every one does, and with V <= 0 the rejection of S1 at |v| > V accepts no draw.
+function _check_box(L::Float64, V::Float64)
+    isfinite(L) && L > 0 && isfinite(V) && V > 0 || throw(ArgumentError(
+        "StandardCase needs a finite L > 0 and V > 0, got L = $L, V = $V"))
+end
+
 """
     StandardCase(family, parameters, markers, L, V, represented, positive, experiment)
 
@@ -34,9 +41,7 @@ struct StandardCase{P <: NamedTuple, M <: Markers, R, Q}
             represented::R, positive::Q, experiment::Symbol) where {P <: NamedTuple,
             M <: Markers, R, Q}
         L, V = Float64(L), Float64(V)
-        # the box first: with V = NaN no marker passes |v| <= V, with V = Inf every one does
-        isfinite(L) && L > 0 && isfinite(V) && V > 0 || throw(ArgumentError(
-            "StandardCase needs a finite L > 0 and V > 0, got L = $L, V = $V"))
+        _check_box(L, V)  # first, because the checks of the markers cannot see a bad box
         family in _CASE_FAMILIES || throw(ArgumentError(
             "unknown family :$family; the families are $_CASE_FAMILIES"))
         experiment in (:wave, :checkerboard) || throw(ArgumentError(
@@ -87,6 +92,14 @@ function _lattice_side(N::Integer)
     n^2 == N ? n : nothing
 end
 
+# The positions and the velocities of the n × n cell centres of [−L/2, L/2) × [−V, V], i outer,
+# j inner.
+function _cell_centres(L, V, n)
+    dx, dv = L / n, 2V / n
+    ([-L / 2 + (i - 0.5) * dx for i in 1:n for j in 1:n],
+        [-V + (j - 0.5) * dv for i in 1:n for j in 1:n])
+end
+
 """
     wave_case(; N = 144, T = 5.0, seed = 0, V = 3.0)
 
@@ -105,15 +118,18 @@ densities are [`electric_wave_density`](@ref) of the same `steps` and lattice, f
 variants; they differ wherever the characteristic through `(x, v)` starts at `|v| > 1.4`.
 
 An `ArgumentError` refuses an `N` that is no square `n²` with `n ≥ 1`, a `T` that is not
-finite, is negative or lies off the step grid by more than `1e-9` steps, and a negative seed.
+finite, is negative, lies off the step grid by more than `1e-9` steps or needs more steps than
+an `Int` holds, and a negative seed.
 """
 function wave_case(; N::Integer = 144, T::Real = 5.0, seed::Integer = 0, V::Real = 3.0)
     n = _lattice_side(N)
     n === nothing &&
         throw(ArgumentError("wave_case needs N = n^2 with n >= 1, got N = $N"))
     k = T / 0.05
-    isfinite(T) && T >= 0 && abs(k - round(k)) <= 1e-9 || throw(ArgumentError(
-        "wave_case needs T >= 0 on the step grid T = 0.05 k, got T = $T"))
+    # k < typemax(Int): a step count that `round(Int, k)` can hold
+    isfinite(T) && T >= 0 && k < typemax(Int) && abs(k - round(k)) <= 1e-9 ||
+        throw(ArgumentError(
+            "wave_case needs T >= 0 on the step grid T = 0.05 k, got T = $T"))
     seed >= 0 || throw(ArgumentError("wave_case needs a seed >= 0, got seed = $seed"))
     steps = round(Int, k)
     initial = seed == 0 ? electric_wave_markers(; Nx = n, Nv = n) :
@@ -266,14 +282,18 @@ function stress_case(name::Symbol; N::Integer = 144, seed::Integer = 0, V = noth
         seed >= 0 ||
             throw(ArgumentError("stress_case :$name needs a seed >= 0, got seed = $seed"))
     end
+    if name in (:S1, :S4)
+        box = V === nothing ? (name === :S1 ? 4.0 : 3.5) : Float64(V)
+        _check_box(2π, box)  # before S1 draws or S4 builds its markers
+    end
     if name === :S1
-        _stress_s1(N, seed, V === nothing ? 4.0 : Float64(V))
+        _stress_s1(N, seed, box)
     elseif name === :S2
         _stress_s2(n)
     elseif name === :S3
         _stress_s3(N, seed)
     else
-        _stress_s4(n, V === nothing ? 3.5 : Float64(V))
+        _stress_s4(n, box)
     end
 end
 
@@ -300,8 +320,7 @@ function _stress_s2(n)
     dx, dv = L / n, 2V / n
     M(v, μ, σ) = exp(-(v - μ)^2 / (2σ^2)) / (σ * sqrt(2π))
     density(x, v) = (1 + 0.04 * cos(x)) * (0.9 * M(v, 0.0, 1.0) + 0.1 * M(v, 4.0, 0.5))
-    x = [-L / 2 + (i - 0.5) * dx for i in 1:n for j in 1:n]
-    v = [-V + (j - 0.5) * dv for i in 1:n for j in 1:n]
+    x, v = _cell_centres(L, V, n)
     StandardCase(:S2, (; N = n^2, seed = 0, V), Markers(x, v, dx * dv .* density.(x, v)),
         L, V, density, density, :wave)
 end

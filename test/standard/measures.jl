@@ -1,4 +1,5 @@
 using ParticleRemapping
+using LinearAlgebra: norm
 using Test
 
 # The message that `f()` throws as an exception of type `T`, as `showerror` prints it.
@@ -66,8 +67,15 @@ end
         (900, 0, :represented) => ((0.0, 0.01), (0.0, 0.02)),
         (144, 0, :represented) => ((0.0, 0.01), (0.0, Inf)),
         (900, 0, :positive) => ((0.30, 0.36), (0.27, 0.33)),
+        (144, 0, :positive) => ((0.0, Inf), (0.0, Inf)),
         (900, 25, :represented) => ((0.05, 0.10), (0.06, 0.11)),
         (900, 25, :positive) => ((0.25, 0.31), (0.27, 0.33)))
+    # the values of the pilot P8, quoted to four digits
+    p8 = Dict(
+        (900, 0, :represented) => (nothing, 0.0116),
+        (900, 0, :positive) => (0.3289, 0.3015),
+        (900, 25, :represented) => (0.0751, 0.0872),
+        (900, 25, :positive) => (0.2834, 0.3027))
     for ((N, T, variant), (rb, cb)) in bounds
         case = wave_case(; N, T)
         mk = case.markers
@@ -76,10 +84,45 @@ end
         c = case_charge_noise(case, mk, variant; reference = ref)
         @test rb[1] < r < rb[2]
         @test cb[1] < c < cb[2]
+        rp, cp8 = get(p8, (N, T, variant), (nothing, nothing))
+        rp === nothing || @test isapprox(r, rp; rtol = 5e-3)
+        cp8 === nothing || @test isapprox(c, cp8; rtol = 5e-3)
         @test isfinite(r) && isfinite(c)
         cp = copy(mk)
         @test case_representation(case, cp, variant; reference = ref) == r
         @test case_charge_noise(case, cp, variant; reference = ref) == c
+    end
+end
+
+@testset "the representation error against a kernel sum written here" begin
+    # the kernel exp(−(d²/hx² + Δv²/hv²)/2), d² = 2s²(1 − cos(Δx/s)), s = L/2π, at the widths
+    # hx = 0.45 s and hv = 0.35 V/2.25, on boxes with s ≠ 1 (L = 2) and V ≠ 2.25 (V = 2.5, 1)
+    ngrid, nq = 6, 24
+    for case in (hole_case(; k = 4), wave_case(; N = 16, T = 0, V = 2.5))
+        L, V, mk = case.L, case.V, case.markers
+        s = L / 2π
+        hx, hv = 0.45 * s, 0.35 * V / 2.25
+        K(dx, dv) = exp(-(2s^2 * (1 - cos(dx / s)) / hx^2 + dv^2 / hv^2) / 2)
+        mid(a, b, n) = [a + (b - a) * (i - 0.5) / n for i in 1:n]
+        xg, vg = mid(-L / 2, L / 2, ngrid), mid(-V, V, ngrid)
+        xq, vq = mid(-L / 2, L / 2, nq), mid(-V, V, nq)
+        f = case.represented
+        Kf = [sum(f(p, q) * K(a - p, b - q) for p in xq, q in vq) * (L / nq) * (2V / nq)
+              for a in xg, b in vg]
+        fm = [sum(mk.w[c] * K(a - mk.x[c], b - mk.v[c]) for c in eachindex(mk.w))
+              for a in xg, b in vg]
+        @test isapprox(case_representation(case, mk, :represented; ngrid, nq),
+            norm(fm - Kf) / norm(Kf); rtol = 1e-10)
+        # with a reference the measure takes its integrals and computes none of its own
+        ref = case_reference(case, :represented; ngrid, nq, nq_charge = nq)
+        twice = (; variant = :represented, smoothed = 2 .* ref.smoothed,
+            charge = 2 .* ref.charge)
+        @test isapprox(
+            case_representation(case, mk, :represented; ngrid, nq, reference = twice),
+            norm(fm - 2Kf) / norm(2Kf); rtol = 1e-10)
+        M = grid_moment(PeriodicGrid(L, length(ref.charge)), mk.x, mk.v, mk.w, 0)
+        @test isapprox(case_charge_noise(case, mk, :represented; nq, reference = twice),
+            norm(M - twice.charge) / norm(twice.charge); rtol = 1e-12)
     end
 end
 
@@ -164,6 +207,25 @@ end
     @test d.kinetic_energy_change < 0
     @test isapprox(d.kinetic_energy_change, (ke(shifted) - ke(before)) / ke(before);
         rtol = 1e-12)
+    # all five relative changes on a pair of mass m = 1.2 with weights of their own, the scales
+    # of the charge and the current the largest grid moments of |v| before
+    wave = wave_case(; N = 144, T = 0)
+    b = wave.markers
+    a1 = wave_case(; N = 144, T = 0, seed = 1).markers
+    a = Markers(a1.x, a1.v, 0.7 .* a1.w; m = a1.m)
+    @test b.m == 1.2
+    c = case_conservation(wave, b, a)
+    g = PeriodicGrid(2π, 16)
+    rel(k) = maximum(abs, grid_moment(g, a.x, a.v, a.w, k) -
+                          grid_moment(g, b.x, b.v, b.w, k)) /
+             maximum(grid_moment(g, b.x, abs.(b.v), b.w, k))
+    @test isapprox(c.weight, abs(sum(a.w) - sum(b.w)) / sum(abs, b.w); rtol = 1e-12)
+    @test isapprox(c.momentum,
+        abs(1.2 * sum(a.w .* a.v) - 1.2 * sum(b.w .* b.v)) / (1.2 * sum(abs.(b.w .* b.v)));
+        rtol = 1e-12)
+    @test isapprox(c.kinetic_energy, abs(ke(a) - ke(b)) / ke(b); rtol = 1e-12)
+    @test isapprox(c.charge, rel(0); rtol = 1e-12)
+    @test isapprox(c.current, rel(1); rtol = 1e-12)
     # a position moved across the periodic edge counts its short way round
     x = copy(before.x)
     x[1] = before.x[1] + 2π - 0.05
