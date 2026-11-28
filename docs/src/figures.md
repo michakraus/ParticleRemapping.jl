@@ -76,7 +76,7 @@ reach the marker counts of the run with its defaults (K2).
 | animation with the stage parameters scaled from zero | A1 | [`animate_stages`](@ref) | [overview](@ref projection-example) | named | `projection-stages.mp4` | yes |
 | conserved quantities | T1 | [`conservation_report`](@ref) | [overview](@ref projection-example) | text | — | — |
 | clustered markers before and after, with targets | S1 | [`plot_remap`](@ref) | [clustered markers](@ref projection-clustered-example) | — | — | yes |
-| clustered markers, animated | A1 | [`animate_stages`](@ref) | [clustered markers](@ref projection-clustered-example) | — | `projection-clustered.mp4` | yes |
+| clustered markers, animated | A1 | [`animate_stages`](@ref) | [clustered markers](@ref projection-clustered-example) | — | `projection-clustered.mp4` (manual only) | yes |
 | markers, ``f_h`` and ``g_h`` | C | `plot_lumped_projection` | [construction](@ref projection-construction) | — | `projection-projection.pdf` | yes in (a); (b), (c) are fields |
 | markers, targets and displacements | C | `plot_target_flow` | [construction](@ref projection-construction) | — | `projection-target-flow.pdf` | yes |
 | the density-interpolation flow | C | [`animate_stages`](@ref) | [construction](@ref projection-construction) | named | `projection-moser-targets.mp4` | yes |
