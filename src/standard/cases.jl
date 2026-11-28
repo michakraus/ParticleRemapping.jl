@@ -206,9 +206,10 @@ end
 
 The case of family `:E`, do no harm: the markers of [`lattice_example`](@ref) with
 `nL = √N` and the maps `a = 0.2`, `b = 0.3` when `deformed` (`a = b = 0`, the plain lattice,
-otherwise), shifted by `−π` into `[−π, π)`, with the one density `(1 + 0.3 cos x) e^{−v²/2}/√(2π)`
-of the example in both fields, on the box `L = 2π`, `V = 4`, with mass `1` and the experiment
-`:wave`. An `ArgumentError` refuses an `N` that is no square `n²` with `n ≥ 1`.
+otherwise), shifted by `−π` into `[−π, π)`, with the density of the example shifted with them,
+`(1 − 0.3 cos x) e^{−v²/2}/√(2π)`, in both fields, on the box `L = 2π`, `V = 4`, with mass `1`
+and the experiment `:wave`. An `ArgumentError` refuses an `N` that is no square `n²` with
+`n ≥ 1`.
 """
 function lattice_case(; N::Integer = 144, deformed::Bool = false)
     n = _lattice_side(N)
@@ -240,9 +241,9 @@ fields, the experiment `:wave` and `L = 2π`:
   `σx = 0.1 L`, `σv = 0.6`, `V = 3`, mass `1`; the density is the Gaussian with its two periodic
   images in `x`, `Σ_{k=−1}^{1} e^{−(x + kL)²/(2σx²)} e^{−v²/(2σv²)} / (2π σx σv)`.
 - `:S4`, the clustered example of the projection: the markers of
-  [`clustered_example`](@ref)`(; nx0 = n, nv0 = n, V)` shifted by `−π`, with its density, on
-  the box `V` (`3.5` by default), mass `1.5`; `clustered_example` refuses a `V` below the
-  largest `|v|` of its markers.
+  [`clustered_example`](@ref)`(; nx0 = n, nv0 = n, V)` shifted by `−π`, with its density
+  shifted with them, on the box `V` (`3.5` by default), mass `1.5`; `clustered_example` refuses
+  a `V` below the largest `|v|` of its markers.
 
 `V` is a keyword of `:S1` and `:S4` only; `:S2` and `:S3` keep the box of their density. `:S2`
 and `:S4` need `N = n²` with `n ≥ 1` and take only the seed `0`; `:S1` and `:S3` need `N ≥ 1`
