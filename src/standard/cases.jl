@@ -4,7 +4,7 @@
 
 using Random: MersenneTwister, Xoshiro
 
-const _CASE_FAMILIES = (:W, :C, :E, :S1, :S2, :S3, :S4)
+const _CASE_FAMILIES = (:W, :C, :E, :S1, :S2, :S3, :S4, :P1, :P2)
 
 # The box of a case must be finite and positive: with V = NaN no marker passes |v| <= V, with
 # V = Inf every one does, and with V <= 0 the rejection of S1 at |v| > V accepts no draw.
@@ -17,7 +17,7 @@ end
     StandardCase(family, parameters, markers, L, V, represented, positive, experiment)
 
 A case of the standard test set: the `markers` of the family `family` (`:W`, `:C`, `:E`, `:S1`,
-`:S2`, `:S3` or `:S4`) built with `parameters`, on the box `Ω = [−L/2, L/2) × [−V, V]`, with
+`:S2`, `:S3`, `:S4`, `:P1` or `:P2`) built with `parameters`, on `Ω = [−L/2, L/2) × [−V, V]`, with
 the two scalar densities `represented(x, v)` and `positive(x, v)` (see [`case_density`](@ref);
 one function in both fields where the family has one density) and the parameter set
 `experiment` (`:wave` or `:checkerboard`) of [`standard_method`](@ref) that

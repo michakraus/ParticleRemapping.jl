@@ -17,9 +17,11 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [weakdeps]
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
+VlasovMethods = "4a954452-39e6-424b-ae51-38fc4bbc42ef"
 
 [extensions]
 ParticleRemappingMakieExt = "Makie"
+ParticleRemappingVlasovMethodsExt = "VlasovMethods"
 
 [sources]
 GeometricSolvers = {url = "https://github.com/JuliaGNI/GeometricSolvers.jl", rev = "d41d37945ff76f5b3e8f35b97be71ff6446e9ab4"}
@@ -33,4 +35,5 @@ Printf = "1"
 Random = "1"
 SimpleSplines = "0.5"
 SparseArrays = "1"
+VlasovMethods = "0.5.1"
 julia = "1.13"
