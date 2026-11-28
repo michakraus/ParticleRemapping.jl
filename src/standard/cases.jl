@@ -247,7 +247,8 @@ fields, the experiment `:wave` and `L = 2π`:
   mass `1`, `N` markers of weight `2π g(V)/N`, `g(V)` the mass of `e^{−v²/2}/√(2π)` on
   `[−V, V]` (the midpoint rule on 10 000 cells), drawn with `Xoshiro(seed)` by rejection: per
   attempt `x = −π + 2π rand(rng)`, rejected when `1.1 rand(rng) > 1 + 0.1 cos x`, then
-  `v = randn(rng)`, rejected when `|v| > V`.
+  `v = randn(rng)`, rejected when `|v| > V`. A box with `g(V) < 1e-3` is refused before the
+  draw.
 - `:S2`, weights over decades: the `n × n` cell centres of `[−π, π) × [−6, 6]`, `i` outer,
   `j` inner, with the weights `f dx dv` of the bump-on-tail density
   `f = (1 + 0.04 cos x)(0.9 M(v; 0, 1) + 0.1 M(v; 4, 0.5))`, `M(v; μ, σ)` the normal density;
@@ -300,6 +301,10 @@ end
 function _stress_s1(N, seed, V)
     nq = 10_000
     g = sum(exp(-(-V + (j - 0.5) * 2V / nq)^2 / 2) for j in 1:nq) / sqrt(2π) * 2V / nq
+    # a draw is accepted with probability g/1.1, so at the floor a marker takes about 1100 attempts on average
+    g >= 1e-3 || throw(ArgumentError(
+        "stress_case :S1 needs g(V) >= 0.001, the mass of e^(-v^2/2)/sqrt(2π) on [-V, V], " *
+        "got g(V) = $g at V = $V"))
     rng = Xoshiro(seed)
     x, v = Float64[], Float64[]
     while length(x) < N
