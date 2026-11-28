@@ -34,7 +34,7 @@ const EXAMPLES = Dict(
         @test length(st["x"]) == N && all(isfinite, st["x"])
         @test length(st["v"]) == N && all(isfinite, st["v"])
         @test length(st["r"]) == N && all(isfinite, st["r"])
-        @test length(st["c"]) == N && all(c -> occursin(r"^#[0-9a-f]{6}$", c), st["c"])
+        @test length(st["c"]) == N && all(c -> occursin(r"^#[0-9a-f]{6}\z", c), st["c"])
         tg = st["targets"]
         if tg !== nothing
             @test length(tg["x"]) == N && all(isfinite, tg["x"])

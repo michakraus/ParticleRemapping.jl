@@ -302,3 +302,24 @@
 - **evidence:** the section *Cost* of the sliced algorithm in the manual.
 - **kind:** found late
 - **found:** 2026-11-20
+
+## Common
+
+### K22 · `_marker_styles` throws `InexactError` for large equal or extreme weights
+
+- **location:** `src/common/svg.jl:129`
+- **problem:** `_marker_styles` guards equal weight extrema with `hi == lo && (hi = lo + 1)`, which
+  leaves `hi == lo` when `abs(lo) >= 2^53`, and computes `(wa - lo) / (hi - lo)` without scaling,
+  which overflows to `Inf / Inf = NaN` for extreme weights such as `±floatmax(Float64)`; both
+  cases pass `NaN` into `_viridis` and throw `InexactError: Int64(NaN)` in `svg_stage_panels` and
+  `svg_player_json`.
+- **evidence:** on macOS with Julia 1.13.4:
+  ```julia
+  using ParticleRemapping
+  s1 = [RemapStage(Markers([0.1, 0.5], [0.0, 0.0], [1e17, 1e17]; m = 1.0), "a")]
+  ParticleRemapping._marker_styles(s1, nothing, 7.0)  # InexactError: Int64(NaN)
+  s2 = [RemapStage(Markers([0.1, 0.5], [0.0, 0.0], [-floatmax(Float64), floatmax(Float64)]; m = 1.0), "a")]
+  ParticleRemapping._marker_styles(s2, nothing, 7.0)  # InexactError: Int64(NaN)
+  ```
+- **kind:** defect
+- **found:** 2026-11-28

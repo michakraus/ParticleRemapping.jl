@@ -12,6 +12,7 @@ const props = defineProps({
 const HOLD = 1.2
 const MOVE = 1.6
 const STEP_DUR = HOLD + MOVE
+const STEP_EPS = 1e-9
 const PANEL = { x0: 30, y0: 24, w: 420, h: 300 }
 
 const uid = useId()
@@ -50,8 +51,9 @@ const frameState = computed(() => {
   if (n <= 1) return { fromIdx: 0, toIdx: 0, alpha: 0, activeIdx: 0 }
   const total = n * STEP_DUR
   const t = ((clock.value % total) + total) % total
-  const fromIdx = Math.min(n - 1, Math.floor(t / STEP_DUR))
-  const local = t - fromIdx * STEP_DUR
+  const rawIdx = Math.floor((t + STEP_EPS) / STEP_DUR)
+  const fromIdx = rawIdx % n
+  const local = Math.max(0, t - rawIdx * STEP_DUR)
   if (local <= HOLD) {
     return { fromIdx, toIdx: fromIdx, alpha: 0, activeIdx: fromIdx }
   }

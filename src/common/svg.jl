@@ -252,10 +252,10 @@ end
 
 function _json_hex_color(c::AbstractString, k::Int)
     s = String(c)
-    if occursin(r"^#[0-9a-fA-F]{6}$", s)
+    if occursin(r"^#[0-9a-fA-F]{6}\z", s)
         return lowercase(s)
     end
-    m = match(r"^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$", s)
+    m = match(r"^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)\z", s)
     if m !== nothing
         rgb = [tryparse(Int, cap) for cap in m.captures]
         if all(v -> v !== nothing && 0 <= v <= 255, rgb)

@@ -58,7 +58,7 @@ end
     for st in steps
         @test length(st["r"]) == 3
         @test length(st["c"]) == 3
-        @test all(c -> occursin(r"^#[0-9a-f]{6}$", c), st["c"])
+        @test all(c -> occursin(r"^#[0-9a-f]{6}\z", c), st["c"])
     end
     # shared colour range and size reference across all states
     @test s1["c"][1] == s2["c"][3]
@@ -120,6 +120,45 @@ end
     @test length(d_one["steps"]) == 1
     @test d_one["steps"][1]["caption"] == "a"
 
+    # asymmetric coordinates on every overlay kind, id and overlay-text escaping, and 4-decimal rounding
+    stages_asym = [
+        RemapStage(mk([1 / 3, 0.5, 2 / 3], [-0.5, 0.0, 0.5], [0.1, 0.2, 0.3]), "a"),
+        RemapStage(mk([0.2, 0.6, 0.8], [0.5, 0.1, -0.5], [0.2, 0.4, 0.6]), "b")]
+    d_asym = JSON.parse(svg_player_json(stages_asym; window = (0, 1, -1, 1),
+        id = "id \"q\" \\ \x01\n\t",
+        overlays = k -> [
+            svg_line(0.1, -0.2, 0.8, 0.3; color = "#345678", width = 2.5, dash = true),
+            svg_arrow(0.15, -0.25, 0.75, 0.45; color = "#456789", width = 1.5),
+            svg_rect(0.12, -0.35, 0.33, 0.67; color = "#123456", opacity = 0.25),
+            svg_text(0.22, 0.73, "t$k \"q\" \\ \x02\n\r\b\f"; color = "#234567", size = 13)]))
+    @test d_asym["id"] == "id \"q\" \\ \x01\n\t"
+    # 4-decimal rounding
+    @test d_asym["steps"][1]["x"] == [0.3333, 0.5, 0.6667]
+    # shared colour range and size reference with unequal per-state weight extrema/maxima
+    a1, a2 = d_asym["steps"][1], d_asym["steps"][2]
+    @test a1["c"][2] == a2["c"][1]
+    @test a1["r"][2] == a2["r"][1]
+    @test a1["r"][3] < 7.0
+    @test a2["r"][3] == 7.0
+    @test a1["c"][3] != a2["c"][3]
+    # every overlay coordinate field and escaped overlay text
+    for (k, st) in enumerate(d_asym["steps"])
+        ovs = st["overlays"]
+        @test ovs[1]["x1"] == 0.1 && ovs[1]["v1"] == -0.2 &&
+              ovs[1]["x2"] == 0.8 && ovs[1]["v2"] == 0.3 &&
+              ovs[1]["color"] == "#345678" && ovs[1]["width"] == 2.5 &&
+              ovs[1]["dash"] === true
+        @test ovs[2]["x1"] == 0.15 && ovs[2]["v1"] == -0.25 &&
+              ovs[2]["x2"] == 0.75 && ovs[2]["v2"] == 0.45 &&
+              ovs[2]["color"] == "#456789" && ovs[2]["width"] == 1.5
+        @test ovs[3]["x"] == 0.12 && ovs[3]["v"] == -0.35 &&
+              ovs[3]["dx"] == 0.33 && ovs[3]["dv"] == 0.67 &&
+              ovs[3]["color"] == "#123456" && ovs[3]["opacity"] == 0.25
+        @test ovs[4]["x"] == 0.22 && ovs[4]["v"] == 0.73 &&
+              ovs[4]["text"] == "t$k \"q\" \\ \x02\n\r\b\f" &&
+              ovs[4]["color"] == "#234567" && ovs[4]["size"] == 13.0
+    end
+
     # refusals (every guard with an anchored message pattern)
     @test_throws r"^ArgumentError: svg_player_json: a non-finite number in state 2$" svg_player_json(
         [
@@ -169,6 +208,8 @@ end
         window = (0, 1, -1, 1), id = "t")
     @test_throws r"^ArgumentError: svg_player_json: the caption of state 2 is empty$" svg_player_json(
         stages; window = (0, 1, -1, 1), id = "t", titles = ["a", ""])
+    @test_throws r"^ArgumentError: svg_player_json: the caption of state 2 is empty$" svg_player_json(
+        stages; window = (0, 1, -1, 1), id = "t", titles = ["a", "   "])
     @test_throws r"^DimensionMismatch: svg_player_json: the targets of state 2 must hold one point per marker$" svg_player_json(
         stages; window = (0, 1, -1, 1), id = "t",
         targets = [nothing, ([0.2, 0.3], [0.5, 0.5])])
@@ -178,11 +219,23 @@ end
     @test_throws r"^ArgumentError: svg_player_json: the colour \"rgb\(256,0,0\)\" of state 1 is not #rrggbb or rgb\(r,g,b\)$" svg_player_json(
         stages; window = (0, 1, -1, 1), id = "t",
         colors = ["rgb(256,0,0)", "#000000", "#000000"])
+    @test_throws r"^ArgumentError: svg_player_json: the colour \"#123456\\n\" of state 1 is not #rrggbb or rgb\(r,g,b\)$" svg_player_json(
+        stages; window = (0, 1, -1, 1), id = "t",
+        colors = ["#123456\n", "#000000", "#000000"])
+    @test_throws r"^ArgumentError: svg_player_json: the colour \"rgb\(1,2,3\)\\n\" of state 1 is not #rrggbb or rgb\(r,g,b\)$" svg_player_json(
+        stages; window = (0, 1, -1, 1), id = "t",
+        colors = ["rgb(1,2,3)\n", "#000000", "#000000"])
     @test_throws r"^ArgumentError: svg_player_json: an overlay of state 1 has the unknown kind :circle$" svg_player_json(
         stages; window = (0, 1, -1, 1), id = "t",
         overlays = [[(; kind = :circle)], []])
     @test_throws r"^ArgumentError: svg_player_json: rmax must be finite and positive" svg_player_json(
         stages; window = (0, 1, -1, 1), id = "t", rmax = 0)
+    @test_throws r"^ArgumentError: svg_player_json: rmax must be finite and positive" svg_player_json(
+        stages; window = (0, 1, -1, 1), id = "t", rmax = -1)
+    @test_throws r"^ArgumentError: svg_player_json: rmax must be finite and positive" svg_player_json(
+        stages; window = (0, 1, -1, 1), id = "t", rmax = Inf)
+    @test_throws r"^ArgumentError: svg_player_json: rmax must be finite and positive" svg_player_json(
+        stages; window = (0, 1, -1, 1), id = "t", rmax = NaN)
     @test_throws r"^DimensionMismatch: svg_player_json: titles must hold one caption per state$" svg_player_json(
         stages; window = (0, 1, -1, 1), id = "t", titles = ["only one"])
     @test_throws r"^DimensionMismatch: svg_player_json: targets must hold one entry per state$" svg_player_json(
