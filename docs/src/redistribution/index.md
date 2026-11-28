@@ -59,13 +59,25 @@ weight; open circles are the relaxed targets.
 ```@example rd-steps
 using ParticleRemapping
 steps = algorithm_svg(:spline)
-steps.panels
+write_algorithm_player(".", steps) # hide
+nothing # hide
 ```
 
-The animation runs through steps 1, 2, 4 and 5 (step 3 moves no marker):
+```@raw html
+<script setup>
+import spline from './algorithm-spline.json'
+</script>
+```
+
+The player runs through steps 1, 2, 4 and 5 automatically (step 3 moves no marker); pause it or
+step back and forward through them:
+
+```@raw html
+<AlgorithmPlayer :player="spline" />
+```
 
 ```@example rd-steps
-steps.animation
+steps.panels
 ```
 
 The [algorithm](@ref rd-algorithm) page gives the steps with the functions of the package.

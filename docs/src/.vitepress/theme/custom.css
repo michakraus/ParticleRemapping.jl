@@ -21,3 +21,134 @@
 .VPDoc.has-aside .content-container {
   max-width: 860px !important;
 }
+
+/* ==========================================================================
+   Interactive SVG Algorithm Player (card, controls bar, buttons and caption)
+   ========================================================================== */
+
+.algorithm-player {
+  margin: 1.5rem 0;
+  max-width: 540px;
+  background: var(--vp-c-bg);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 10px;
+  box-shadow: 0 4px 18px rgba(15, 30, 50, 0.05);
+  overflow: hidden;
+}
+
+.dark .algorithm-player {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.28);
+}
+
+.algorithm-player .ap-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  padding: 0.65rem 1rem;
+  background: var(--vp-c-bg-soft);
+  border-bottom: 1px solid var(--vp-c-divider);
+  font-size: 0.84rem;
+  color: var(--vp-c-text-1);
+}
+
+.algorithm-player .ap-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.72rem;
+  border-radius: 6px;
+  border: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+  font-size: 0.81rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.algorithm-player .ap-btn:hover {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+}
+
+.algorithm-player .ap-btn.active {
+  background: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+  color: #ffffff;
+}
+
+.dark .algorithm-player .ap-btn.active {
+  color: #0d1117;
+}
+
+.algorithm-player .ap-btn-group {
+  display: inline-flex;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--vp-c-divider);
+}
+
+.algorithm-player .ap-btn-group .ap-btn {
+  border: none;
+  border-right: 1px solid var(--vp-c-divider);
+  border-radius: 0;
+  padding: 0.25rem 0.65rem;
+}
+
+.algorithm-player .ap-btn-group .ap-btn:last-child {
+  border-right: none;
+}
+
+.algorithm-player .ap-btn:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 2px;
+}
+
+.algorithm-player .ap-btn-group .ap-btn:focus-visible {
+  outline-offset: -2px;
+}
+
+.algorithm-player .ap-canvas {
+  padding: 0.75rem 0.85rem 0.5rem;
+  background: #ffffff;
+}
+
+.algorithm-player .ap-canvas svg {
+  display: block;
+  width: 100%;
+  max-width: 470px;
+  height: auto;
+  margin: 0 auto;
+  font-family: sans-serif;
+  user-select: none;
+}
+
+.algorithm-player .ap-caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem 0.75rem;
+  background: var(--vp-c-bg-soft);
+  border-top: 1px solid var(--vp-c-divider);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--vp-c-text-2);
+}
+
+.algorithm-player .ap-step-counter {
+  font-weight: 700;
+  color: var(--vp-c-brand-1);
+  white-space: nowrap;
+}
+
+.algorithm-player .ap-step-text {
+  color: var(--vp-c-text-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .algorithm-player .ap-btn {
+    transition: none;
+  }
+}
