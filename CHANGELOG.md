@@ -127,6 +127,24 @@
   play/pause and previous/next step controls. `JSON` (`compat = "1"`) is added to
   `test/Project.toml` to verify the emitted JSON in `test/common/svg.jl` and
   `test/algorithm_figures.jl`.
+- The standard test set as code (`src/standard/`), the cases of a benchmark of every construction
+  on one box each with their exact densities. `StandardCase` holds a marker set, its box
+  `[−L/2, L/2) × [−V, V]` and its two densities, and refuses a marker outside the box;
+  `wave_case` (family W, the long run after the time `T`, with stratified seeds), `hole_case` (C,
+  the `k × k` checkerboard), `lattice_case` (E, the plain and the deformed lattice, do no harm)
+  and `stress_case` (S1–S4: sparse tails, weights over decades, one dense cluster, the clustered
+  example) build the cases, `case_density` gives a density, and `STANDARD_LADDERS` lists the
+  rungs, sizes and seeds. The box `V` is a keyword of W, S1 and S4. The measures `case_evenness`,
+  `case_outside`, `case_representation`, `case_charge_noise`, `case_weights`, `case_conservation`
+  and `case_displacement` compare markers with the box and the density of a case, and
+  `case_reference` computes the integrals of the density once. `GridResample` is the reference: a
+  resample on a lattice of the box that keeps the total weight, by the lumped projection or the
+  exact density (`REFERENCE_METHODS`). `case_method` builds every construction with the box of a
+  case, and `run_case` runs a method on a case and returns one row of every measure, with a
+  failed remap or a non-finite result recorded as a failure. The section *The standard test set*
+  of the standard page defines them. Tests: `test/standard/cases.jl`,
+  `test/standard/measures.jl`, `test/standard/reference.jl` and `test/standard/driver.jl`, in the
+  group `core`.
 
 ### Fixed
 

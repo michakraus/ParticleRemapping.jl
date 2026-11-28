@@ -93,3 +93,69 @@ its verification set-up, with the relaxation step scaled to ``0.006 \cdot 16 / N
 
 A construction that fails on a marker set reports the failure: `after` is `nothing` and `error`
 holds the message. Such a failure is a result of the experiment.
+
+## [The standard test set](@id standard-test-set)
+
+The standard test set grades the two experiments above into ladders of cases, so that every
+construction meets a weak and a strong form of each difficulty with the same measures. Each case
+is a [`StandardCase`](@ref): a marker set on one box ``\Omega = [-L/2, L/2) \times [-V, V]``,
+periodic in ``x``, with the exact density that goes with it. Where the markers represent a density
+with holes, the case holds both variants of [`case_density`](@ref), `:represented` and
+`:positive`, as the two experiments above do; otherwise it holds one density in both.
+
+**The box.** Every marker of a case lies in its box: [`StandardCase`](@ref) refuses a marker with
+``|v| > V``. Each case has one box for all its markers. For the families W, S1 and S4 the box
+``V`` is a keyword, which a benchmark sweeps; the families C, E, S2 and S3 keep the box of their
+density. A marker outside the box after a remap is a structure failure: the hat projection clamps
+it onto the edge nodes of the box (`_hat_weights` in `src/projection/targets.jl`), so the next
+deposit, remap or push sees it on the edge of the box.
+
+**The families.** [`STANDARD_LADDERS`](@ref) lists their rungs, sizes and seeds.
+
+- W, the wave ladder, [`wave_case`](@ref): the markers of the long run after the time ``T``, for
+  ``T \in \{0, 1.25, 2.5, 5, 10, 15, 25\}`` and ``N \in \{16, 144, 576, 900\}``, on the box
+  ``L = 2\pi`` and ``V = 3`` by default, for every rung, size and seed. Seed 0 pushes the lattice
+  of the long run; the seeds 1 to 4 move each lattice point to a random point of its cell and
+  weight it by ``f_0`` there. The densities are those of [`electric_wave_density`](@ref) at the
+  same time; they differ wherever the characteristic starts at ``|v| > 1.4``, which the lattice
+  does not fill. The rung ``T = 0`` is the first rung of the ladder, not an even filling of its
+  box.
+- C, the hole ladder, [`hole_case`](@ref): 400 markers of weight ``1/400`` on the occupied cells
+  of the ``k \times k`` checkerboard of ``[-1, 1]^2``, ``k \in \{1, 2, 4, 8\}``, seeds 505 to
+  509, on the box ``L = 2``, ``V = 1``. ``k = 2`` is the checkerboard above. The represented
+  density is constant on the occupied cells and zero in the holes; the positive density is ``1/4``
+  on the box.
+- E, do no harm, [`lattice_case`](@ref): the plain and the deformed lattice of
+  [`lattice_example`](@ref) with 144 and 576 markers, on the box ``L = 2\pi``, ``V = 4``, with
+  their exact density. The markers already fill the box with no hole and represent their density,
+  so a remap should not make them worse: E is the do-no-harm family.
+- S, the stress cases, [`stress_case`](@ref), with 144 and 576 markers: S1, sparse tails, a
+  sample of ``(1 + 0.1 \cos x)\, e^{-v^2/2}/\sqrt{2\pi}`` on the box ``V``, ``4`` by default; S2,
+  weights over decades, a lattice weighted by a Maxwellian with a narrow beam at ``v = 4``, on
+  ``V = 6``; S3, one dense cluster, a Gaussian sample of the widths ``0.1 L`` and ``0.6``, on
+  ``V = 3``; S4, the clustered markers of [`clustered_example`](@ref), on the box ``V``, ``3.5``
+  by default.
+
+**The reference.** [`GridResample`](@ref) puts the ``N = n^2`` markers on the cell centres of an
+``n \times n`` lattice of the box and weights them by a density: the lumped projection of the
+markers on the hats of the box, or the exact density of the case
+([`REFERENCE_METHODS`](@ref)). It keeps the total weight and nothing else; it is not symplectic.
+It shows what a resample that ignores the structure gives on each case.
+
+**The measures** compare the markers with the box and the density of the case:
+[`case_evenness`](@ref), the cell counts on the box and on the support of the represented density
+(and on the old window ``|v| \le 2.25`` for W); [`case_outside`](@ref), the markers outside the box
+and the non-finite ones; [`case_representation`](@ref), the smoothed markers against the smoothed
+density; [`case_charge_noise`](@ref), the grid charge against the exact one;
+[`case_weights`](@ref), the spread of the weights; and, for a remap,
+[`case_conservation`](@ref) and [`case_displacement`](@ref). [`case_reference`](@ref) computes
+the integrals of the density once for both measures of a case.
+
+**The driver.** [`case_method`](@ref) gives the method of a construction for a case: the
+parameters of [`standard_method`](@ref) with the box of the case, and for the sliced map the slice
+counts nearest to those of the experiment scaled with ``\sqrt{N}`` among the divisors of ``N``.
+[`run_case`](@ref) runs a method on a case and returns one row of every measure before and after,
+the conservation, the displacement and the state of the solver. A `DomainError`, an
+`ArgumentError` or a failure of a factorisation in the remap is recorded with its class and
+message, any other exception is thrown again, and a non-finite result is a failure; the row
+records the markers outside the box after a remap and classifies nothing more.

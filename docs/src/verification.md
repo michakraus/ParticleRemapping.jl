@@ -102,6 +102,32 @@ A cold run of both groups with Julia 1.13.4 (aarch64) passes every check:
   does not hold the markers. The remaps: the deformed `10 × 10` lattice by the method of the SVG
   steps, the plain lattice, whose fitted map is the identity, and the clustered markers on hats
   finer than their spacing, which need the example's density.
+- **`test/standard/cases.jl`**: the cases of the [standard test set](@ref standard-test-set).
+  [`StandardCase`](@ref): the guard of the box, with its message for every refusal and the box
+  checked first. [`wave_case`](@ref): seed 0 against the old lattice and the old long run, one box
+  for every rung, the box as a keyword and its refusal at `V = 2`, the longest rungs inside the
+  default box, the stratified seeds against their draws, and the guards of `N`, `T` and the seed.
+  [`hole_case`](@ref): `k = 2` against the checkerboard and its density on `41 × 41` points, the
+  closed box, the other orders cell by cell, the draws of `k = 4`, the integral of the
+  represented density, and the guards. [`lattice_case`](@ref): the plain and the deformed lattice
+  against [`lattice_example`](@ref). [`stress_case`](@ref): the samples of S1 and S3 against their
+  draws, the weights of S1 with the mass of the box, the images of the density of S3, the weights
+  of S2, S4 against [`clustered_example`](@ref) and its box, and the guards. The two densities of
+  each family and [`STANDARD_LADDERS`](@ref).
+- **`test/standard/measures.jl`**: the measures of the test set. [`case_evenness`](@ref) on the
+  box, on the support and on the old window; [`case_outside`](@ref) with markers outside the box,
+  on its edge and non-finite; [`case_representation`](@ref) and [`case_charge_noise`](@ref) within
+  bounds for both variants; [`case_reference`](@ref) against the measures without it, and its
+  refusals; [`case_weights`](@ref); [`case_conservation`](@ref) and [`case_displacement`](@ref)
+  against values computed in the test, finite where the per-node report divides by an empty node.
+- **`test/standard/reference.jl`**: [`GridResample`](@ref), lumped and exact: the lattice, the
+  total weight, the weights against the density, the zero weights, a marker beyond the box, and
+  the refusals.
+- **`test/standard/driver.jl`**: [`case_method`](@ref): the box of the case in every method, the
+  parameters of [`standard_method`](@ref), the slice counts of the sliced map and an unknown key.
+  [`run_case`](@ref): the rows of the gauge rezoning, the transport, the sliced map and both
+  references, the row of a non-separable fit, a recorded failure, an exception that is rethrown,
+  a non-finite result, the reference of a row, and the warm-up.
 - **`test/standard.jl`** (group `slow`): the [standard experiments](@ref standard-experiments):
   the densities (normalisation, constancy along the discrete characteristics, the cut of the
   represented one), the quadrants kept by the gauge rezoning and the transport and filled by the
