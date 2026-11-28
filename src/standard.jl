@@ -299,3 +299,4 @@ export ShiftedRemap, STANDARD_METHODS, checkerboard_density, electric_wave_densi
 include("standard/cases.jl")
 include("standard/measures.jl")
 include("standard/reference.jl")
+include("standard/driver.jl")
